@@ -20,6 +20,8 @@ class Cache(object):
     """
     
     def __init__(self, app=None):
+        self.cache = None
+        
         if app is not None:
             self.init_app(app)
         else:

@@ -66,16 +66,6 @@ You may also set up your ``Cache`` instance later at configuration time using
     app = Flask(__name__)
     cache.init_app(app)
     
-.. warning::
-
-    If you are using an application factory, make sure your app is instantiated
-    **BEFORE** you use the cache object in a view.
-    
-    Set up the app with your Cache object first **THEN** import your views.
-    
-    Otherwise Flask-Cache will have the un-intended side-effect of not being
-    initalised properly and will use NullCache for your view functions.
-    
 Caching View Functions
 ----------------------
 
