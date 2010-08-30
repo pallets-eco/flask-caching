@@ -1,0 +1,5 @@
+*.py[co]
+docs/_build/*
+Flask_Cache.egg-info/*
+build/*
+dist/
