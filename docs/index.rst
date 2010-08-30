@@ -90,7 +90,7 @@ non-view related functions. The only stipulation is that you replace the
     @cache.cached(timeout=50, key_prefix='all_comments')
     def get_all_comments():
         comments = do_serious_dbio()
-        return list([x.author for x in comments])
+        return [x.author for x in comments]
         
     cached_comments = get_all_comments()
 
