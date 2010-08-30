@@ -1,0 +1,11 @@
+# Sphinx inventory version 1
+# Project: Flask-Cache
+# Version: 0.1
+flaskext.cache mod index.html
+flaskext.cache.Cache.cached method index.html
+flaskext.cache.Cache.add method index.html
+flaskext.cache.Cache class index.html
+flaskext.cache.Cache.memoize method index.html
+flaskext.cache.Cache.get method index.html
+flaskext.cache.Cache.set method index.html
+flaskext.cache.Cache.delete method index.html
