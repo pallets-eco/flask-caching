@@ -9,8 +9,10 @@
     :license: BSD, see LICENSE for more details
 """
 from functools import wraps
+
 from werkzeug.contrib.cache import (SimpleCache, NullCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache)
+from flask import request, current_app
 
 
 class Cache(object):
@@ -50,22 +52,22 @@ class Cache(object):
                 self.cache = NullCache()
             elif self.app.config['CACHE_TYPE'] == 'Simple':
                 self.cache = SimpleCache(
-                    threshold=app.config['CACHE_THRESHOLD'],
-                    default_timeout=app.config['CACHE_DEFAULT_TIMEOUT'])
+                    threshold=self.app.config['CACHE_THRESHOLD'],
+                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'])
             elif self.app.config['CACHE_TYPE'] == 'Memcached':
                 self.cache = MemcachedCache(
-                    app.config['CACHE_MEMCACHED_SERVERS'],
-                    default_timeout=app.config['CACHE_DEFAULT_TIMEOUT'],
-                    key_prefix=app.config['CACHE_KEY_PREFIX'])
+                    self.app.config['CACHE_MEMCACHED_SERVERS'],
+                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'],
+                    key_prefix=self.app.config['CACHE_KEY_PREFIX'])
             elif self.app.config['CACHE_TYPE'] == 'GAE':
                 self.cache = GAEMemcachedCache(
-                    default_timeout=app.config['CACHE_DEFAULT_TIMEOUT'],
-                    key_prefix=app.config['CACHE_KEY_PREFIX'])
+                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'],
+                    key_prefix=self.app.config['CACHE_KEY_PREFIX'])
             elif self.app.config['CACHE_TYPE'] == 'FileSystem':
                 self.cache = FileSystemCache(
-                    app.config['CACHE_DIR'],
-                    threshold=app.config['CACHE_THRESHOLD'],
-                    default_timeout=app.config['CACHE_DEFAULT_TIMEOUT'])
+                    self.app.config['CACHE_DIR'],
+                    threshold=self.app.config['CACHE_THRESHOLD'],
+                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'])
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
