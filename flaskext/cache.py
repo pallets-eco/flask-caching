@@ -94,15 +94,17 @@ class Cache(object):
 
         Example::
 
-            #: An example view function
+            # An example view function
             @cache.cached(timeout=50)
             def big_foo():
                 return big_bar_calc()
 
-            #: An example misc function to cache.
+            # An example misc function to cache.
             @cache.cached(key_prefix='MyCachedList')
             def get_list():
                 return [random.randrange(0, 1) for i in range(50000)]
+
+        .. code-block:: pycon
 
             >>> my_list = get_list()
 
@@ -149,6 +151,8 @@ class Cache(object):
             @cache.memoize(timeout=50)
             def big_foo(a, b):
                 return a + b + random.randrange(0, 1000)
+
+        .. code-block:: pycon
 
             >>> big_foo(5, 2)
             753
