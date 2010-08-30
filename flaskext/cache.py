@@ -89,7 +89,7 @@ class Cache(object):
         """
         Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
-        function by changing the `key_prefix`. If the token `%s` is loacted
+        function by changing the `key_prefix`. If the token `%s` is located
         within the `key_prefix` then it will replace that with `request.path`
 
         Example::
