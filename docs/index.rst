@@ -24,24 +24,42 @@ The following configuration values exist for Flask-SQLAlchemy:
 
 =============================== =========================================
 ``CACHE_TYPE``                  Specifies which type of caching object to
-                                use. This is one of
+                                use. This is an import string that will
+                                be imported and instantiated. It is
+                                assumed that the import object adheres
+                                to the werkzeug cache API.
+                                
+                                For werkzeug.contrib.cache objects, you
+                                do not need to specify the entire 
+                                import string, just the class name.
+                                
+                                Built-in cache types:
 
-                                * **Null**: Do not use cache.
-                                * **Simple**: Uses SimpleCache
-                                * **Memcached**: Uses MemcachedCache
-                                * **GAE**: Uses GAEMemcachedCache
-                                * **FileSystem**: Uses FileSysteCache
+                                * **NullCache**
+                                * **SimpleCache**
+                                * **MemcachedCache**
+                                * **GAEMemcachedCache**
+                                * **FileSystemCache**
+                                
+``CACHE_ARGS``					Optional list to unpack and pass during
+								the cache class instantiation.
+``CACHE_OPTIONS``				Optional dictionary to pass during the
+								cache class instantiation.
 ``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
                                 timeout is specified.
 ``CACHE_THRESHOLD``             The maximum number of items the cache
                                 will store before it starts deleting
-                                some
+                                some. Used only for SimpleCache and
+                                FileSystemCache
 ``CACHE_KEY_PREFIX``            A prefix that is added before all keys.
                                 This makes it possible to use the same
                                 memcached server for different apps.
+                                Used only for MemcachedCache and
+                                GAEMemcachedCache.
 ``CACHE_MEMCACHED_SERVERS``     A list or a tuple of server addresses.
-``CACHE_DIR``                   Specifies the connection timeout for the
-                                pool.  Defaults to 10.
+								Used only for MemcachedCache
+``CACHE_DIR``                   Directory to store cache. Used only for
+								FileSystemCache.
 =============================== =========================================
 
 In addition the standard Flask ``TESTING`` configuration option is used. If this
@@ -99,10 +117,47 @@ Memoization
 
 See :meth:`~Cache.memoize`
 
+In memoization, the functions arguments are also included into the cache_key.
+
+.. note::
+
+	With functions that do not receive arguments, :meth:`~Cache.cached` and
+	:meth:`~Cache.memoize` are effectively the same.
+	
+Memoize is also designed for instance objects, since it will take into account
+that functions id. The theory here is that if you have a function you need
+to call several times in one request, it would only be calculated the first
+time that function is called with those arguments. For example, an sqlalchemy
+object that determines if a user has a role. You might need to call this 
+function many times during a single request.::
+
+	User(db.Model):
+		@cache.memoize(50)
+		def has_membership(role):
+			return self.groups.filter_by(role=role).count() >= 1
+			
+		
+Deleting memoize cache
+``````````````````````
+
+.. versionadded:: 0.2
+
+You might need to delete the cache on a per-function bases. Using the above
+example, lets say you change the users permissions and assign them to a role,
+but now you need to re-calculate if they have certain memberships or not.
+You can do this with the :meth:`~Cache.delete_memoized` function.::
+
+	cache.delete_memoized('has_membership')
+	
+.. note::
+
+	You can pass as many function names as you wish to delete_memoized.
+
+
 API
 ---
 
 .. autoclass:: Cache
-   :members: get, set, add, delete, cached, memoize
+   :members: get, set, add, delete, cached, memoize, delete_memoized
 
 .. include:: ../CHANGES

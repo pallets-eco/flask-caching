@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.2
+```````````
+- CACHE_TYPE now uses an import_string.
+- Added CACHE_OPTIONS and CACHE_ARGS configuration values.
+- Added delete_memoized
+
 Version 0.1
 ```````````
 

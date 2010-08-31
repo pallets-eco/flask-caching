@@ -15,15 +15,10 @@ class CacheTestCase(unittest.TestCase):
         app = Flask(__name__)
         
         app.debug = False
-        app.config['CACHE_TYPE'] = 'Simple'
+        app.config['CACHE_TYPE'] = 'SimpleCache'
         
         self.cache = Cache()
         self.cache.init_app(app)
-        
-        # Override the cache type. We need to do this
-        # since app['TESTING'] is True, this allows the
-        # test to properly make sure cache is working.
-        self.cache.cache = SimpleCache()
         
         self.app = app
         
@@ -31,16 +26,6 @@ class CacheTestCase(unittest.TestCase):
         self.app = None
         self.cache = None
         self.tc = None
-        
-    def test_00_app(self):
-        @self.app.route('/')
-        def hello():
-            return 'world'
-        
-        tc = self.app.test_client()
-        
-        rv = tc.get('/')
-        assert rv.data == 'world'
 
     def test_00_set(self):
         self.cache.set('hi', 'hello')
@@ -157,6 +142,23 @@ class CacheTestCase(unittest.TestCase):
             time.sleep(1)
             
             assert big_foo(5, 3) != result2
+            
+    def test_07_delete_memoize(self):
+        
+        with self.app.test_request_context():
+            @self.cache.memoize(5)
+            def big_foo(a, b):
+                return a+b+random.randrange(0, 100000)
+            
+            result = big_foo(5, 2)
+            
+            time.sleep(1)
+            
+            assert big_foo(5, 2) == result
+            
+            self.cache.delete_memoized('big_foo')
+            
+            assert big_foo(5, 2) != result
             
 
 if __name__ == '__main__':

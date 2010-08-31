@@ -10,9 +10,11 @@
 """
 from functools import wraps
 
+from werkzeug import import_string
 from werkzeug.contrib.cache import (SimpleCache, NullCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache)
 from flask import request, current_app
+from migrate.versioning.util import Memoize
 
 
 class Cache(object):
@@ -29,6 +31,8 @@ class Cache(object):
             self.init_app(app)
         else:
             self.app = None
+            
+        self._memoized = []
 
     def init_app(self, app):
         "This is used to initialize cache with your app object"
@@ -38,6 +42,8 @@ class Cache(object):
         app.config.setdefault('CACHE_KEY_PREFIX', None)
         app.config.setdefault('CACHE_MEMCACHED_SERVERS', None)
         app.config.setdefault('CACHE_DIR', None)
+        app.config.setdefault('CACHE_OPTIONS', None)
+        app.config.setdefault('CACHE_ARGS', None)
         app.config.setdefault('CACHE_TYPE', 'NullCache')
 
         self.app = app
@@ -48,26 +54,37 @@ class Cache(object):
         if self.app.config['TESTING']:
             self.cache = NullCache()
         else:
-            if self.app.config['CACHE_TYPE'] == 'Null':
-                self.cache = NullCache()
-            elif self.app.config['CACHE_TYPE'] == 'Simple':
-                self.cache = SimpleCache(
-                    threshold=self.app.config['CACHE_THRESHOLD'],
-                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'])
-            elif self.app.config['CACHE_TYPE'] == 'Memcached':
-                self.cache = MemcachedCache(
-                    self.app.config['CACHE_MEMCACHED_SERVERS'],
-                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'],
-                    key_prefix=self.app.config['CACHE_KEY_PREFIX'])
-            elif self.app.config['CACHE_TYPE'] == 'GAE':
-                self.cache = GAEMemcachedCache(
-                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'],
-                    key_prefix=self.app.config['CACHE_KEY_PREFIX'])
-            elif self.app.config['CACHE_TYPE'] == 'FileSystem':
-                self.cache = FileSystemCache(
-                    self.app.config['CACHE_DIR'],
-                    threshold=self.app.config['CACHE_THRESHOLD'],
-                    default_timeout=self.app.config['CACHE_DEFAULT_TIMEOUT'])
+            import_me = self.app.config['CACHE_TYPE']
+            if '.' not in import_me:
+                import_me = 'werkzeug.contrib.cache.' + \
+                            import_me
+            
+            cache_obj = import_string(import_me)
+            cache_args = []
+            cache_options = {}
+            
+            if self.app.config['CACHE_OPTIONS']:
+                cache_options.update(self.app.config['CACHE_OPTIONS'])
+                
+            cache_options.update(dict(default_timeout= \
+                                      self.app.config['CACHE_DEFAULT_TIMEOUT']))
+                        
+            if self.app.config['CACHE_TYPE'] == 'SimpleCache':
+                cache_options.update(dict(
+                    threshold=self.app.config['CACHE_THRESHOLD']))
+            elif self.app.config['CACHE_TYPE'] == 'MemcachedCache':
+                cache_args.append(self.app.config['CACHE_MEMCACHED_SERVERS'])
+                cache_options.update(dict(
+                    key_prefix=self.app.config['CACHE_KEY_PREFIX']))
+            elif self.app.config['CACHE_TYPE'] == 'GAEMemcachedCache':
+                cache_options.update(dict(
+                    key_prefix=self.app.config['CACHE_KEY_PREFIX']))
+            elif self.app.config['CACHE_TYPE'] == 'FileSystemCache':
+                cache_args.append(self.app.config['CACHE_DIR'])
+                cache_options.update(dict(
+                    threshold=self.app.config['CACHE_THRESHOLD']))
+            
+            self.cache = cache_obj(*cache_args, **cache_options)
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
@@ -174,12 +191,46 @@ class Cache(object):
 
             @wraps(f)
             def decorated_function(*args, **kwargs):
-                cache_key = (f.__name__, id(f), args, str(kwargs))
-
+                cache_key = ('memoize', f.__name__, id(f), args, str(kwargs))
+                                
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
                     self.cache.set(cache_key, rv, timeout=timeout)
+                    if cache_key not in self._memoized:
+                        self._memoized.append(cache_key)
                 return rv
             return decorated_function
         return memoize
+    
+    def delete_memoized(self, *keys):
+        """
+        Deletes all of the cached functions that used Memoize for caching.
+        
+        Example::
+        
+            @cache.memoize(50)
+            def random_func():
+                return random.randrange(1, 50)
+            
+        .. code-block:: pycon
+        
+            >>> random_func()
+            43
+            >>> random_func()
+            43
+            >>> cache.delete_memoized('random_func')
+            >>> random_func()
+            16
+            
+        :param *keys: A list of function names to clear from cache.
+        """
+        def deletes(item):
+            if item[0] == 'memoize' and item[1] in keys:
+                self.cache.delete(item)
+                return True
+            return False
+        
+        self._memoized[:] = [x for x in self._memoized if not deletes(x)]
+        
+
