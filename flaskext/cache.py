@@ -107,6 +107,11 @@ class Cache(object):
         .. code-block:: pycon
 
             >>> my_list = get_list()
+            
+        .. note::
+        
+            You MUST have a request context to actually called any functions
+            that are cached.
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time.
@@ -123,7 +128,7 @@ class Cache(object):
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
                 if callable(unless) and unless() is True:
-                        return f(*args, **kwargs)
+                    return f(*args, **kwargs)
 
                 if '%s' in key_prefix:
                     cache_key = key_prefix % request.path
@@ -131,7 +136,7 @@ class Cache(object):
                     cache_key = key_prefix
 
                 rv = self.cache.get(cache_key)
-                if not rv or current_app.debug:
+                if rv is None:
                     rv = f(*args, **kwargs)
                     self.cache.set(cache_key, rv, timeout=timeout)
                 return rv
@@ -174,7 +179,7 @@ class Cache(object):
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
-                    self.cache.set(cache_key, rv)
+                    self.cache.set(cache_key, rv, timeout=timeout)
                 return rv
             return decorated_function
         return memoize
