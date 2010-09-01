@@ -140,7 +140,6 @@ class Cache(object):
         """
 
         def decorator(f):
-
             @wraps(f)
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
@@ -151,7 +150,7 @@ class Cache(object):
                     cache_key = key_prefix % request.path
                 else:
                     cache_key = key_prefix
-
+                
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
@@ -188,7 +187,6 @@ class Cache(object):
         """
 
         def memoize(f):
-
             @wraps(f)
             def decorated_function(*args, **kwargs):
                 cache_key = ('memoize', f.__name__, id(f), args, str(kwargs))
