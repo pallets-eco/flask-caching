@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+Version 0.3 (not yet released)
+```````````
+
+- CACHE_TYPE changed. Now one of ['null', 'simple', 'memcached', 
+  'gaememcached', 'filesystem'], or an import string to a function that will
+  instantiate a cache object.
+
 Version 0.2
 ```````````
 - CACHE_TYPE now uses an import_string.
