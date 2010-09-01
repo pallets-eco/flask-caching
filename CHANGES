@@ -6,7 +6,8 @@ Version 0.3
 
 - CACHE_TYPE changed. Now one of ['null', 'simple', 'memcached', 
   'gaememcached', 'filesystem'], or an import string to a function that will
-  instantiate a cache object.
+  instantiate a cache object. This allows Flask-Cache to be much more 
+  extensible and configurable.
 
 Version 0.2
 ```````````
