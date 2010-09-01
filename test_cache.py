@@ -6,7 +6,6 @@ import time
 import random
 
 from flask import Flask
-from werkzeug.contrib.cache import SimpleCache
 from flaskext.cache import Cache
 
 class CacheTestCase(unittest.TestCase):
@@ -15,7 +14,7 @@ class CacheTestCase(unittest.TestCase):
         app = Flask(__name__)
         
         app.debug = False
-        app.config['CACHE_TYPE'] = 'SimpleCache'
+        app.config['CACHE_TYPE'] = 'simple'
         
         self.cache = Cache()
         self.cache.init_app(app)

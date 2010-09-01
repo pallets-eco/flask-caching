@@ -11,11 +11,11 @@
 from functools import wraps
 
 from werkzeug import import_string
-from werkzeug.contrib.cache import (SimpleCache, NullCache, MemcachedCache,
-                                    GAEMemcachedCache, FileSystemCache)
 from flask import request, current_app
-from migrate.versioning.util import Memoize
 
+
+#: Cache Object
+################
 
 class Cache(object):
     """
@@ -43,7 +43,7 @@ class Cache(object):
         app.config.setdefault('CACHE_MEMCACHED_SERVERS', None)
         app.config.setdefault('CACHE_DIR', None)
         app.config.setdefault('CACHE_OPTIONS', None)
-        app.config.setdefault('CACHE_ARGS', None)
+        app.config.setdefault('CACHE_ARGS', [])
         app.config.setdefault('CACHE_TYPE', 'NullCache')
 
         self.app = app
@@ -56,35 +56,18 @@ class Cache(object):
         else:
             import_me = self.app.config['CACHE_TYPE']
             if '.' not in import_me:
-                import_me = 'werkzeug.contrib.cache.' + \
+                import_me = 'flaskext.cache.backends.' + \
                             import_me
             
             cache_obj = import_string(import_me)
-            cache_args = []
-            cache_options = {}
+            cache_args = self.app.config['CACHE_ARGS'][:]
+            cache_options = dict(default_timeout= \
+                                 self.app.config['CACHE_DEFAULT_TIMEOUT'])
             
             if self.app.config['CACHE_OPTIONS']:
                 cache_options.update(self.app.config['CACHE_OPTIONS'])
-                
-            cache_options.update(dict(default_timeout= \
-                                      self.app.config['CACHE_DEFAULT_TIMEOUT']))
-                        
-            if self.app.config['CACHE_TYPE'] == 'SimpleCache':
-                cache_options.update(dict(
-                    threshold=self.app.config['CACHE_THRESHOLD']))
-            elif self.app.config['CACHE_TYPE'] == 'MemcachedCache':
-                cache_args.append(self.app.config['CACHE_MEMCACHED_SERVERS'])
-                cache_options.update(dict(
-                    key_prefix=self.app.config['CACHE_KEY_PREFIX']))
-            elif self.app.config['CACHE_TYPE'] == 'GAEMemcachedCache':
-                cache_options.update(dict(
-                    key_prefix=self.app.config['CACHE_KEY_PREFIX']))
-            elif self.app.config['CACHE_TYPE'] == 'FileSystemCache':
-                cache_args.append(self.app.config['CACHE_DIR'])
-                cache_options.update(dict(
-                    threshold=self.app.config['CACHE_THRESHOLD']))
             
-            self.cache = cache_obj(*cache_args, **cache_options)
+            self.cache = cache_obj(self.app, cache_args, cache_options)
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
