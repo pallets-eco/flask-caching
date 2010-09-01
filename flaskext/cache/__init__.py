@@ -11,6 +11,7 @@
 from functools import wraps
 
 from werkzeug import import_string
+from werkzeug.contrib.cache import BaseCache
 from flask import request, current_app
 
 
@@ -68,6 +69,10 @@ class Cache(object):
                 cache_options.update(self.app.config['CACHE_OPTIONS'])
             
             self.cache = cache_obj(self.app, cache_args, cache_options)
+            
+            if not isinstance(self.cache, BaseCache):
+                raise TypeError("Cache object must subclass "
+                                "werkzeug.contrib.cache.BaseCache")
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."

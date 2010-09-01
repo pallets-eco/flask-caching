@@ -26,25 +26,28 @@ The following configuration values exist for Flask-SQLAlchemy:
 ``CACHE_TYPE``                  Specifies which type of caching object to
                                 use. This is an import string that will
                                 be imported and instantiated. It is
-                                assumed that the import object adheres
-                                to the werkzeug cache API.
+                                assumed that the import object is a
+                                function that will return a cache
+                                object that adheres to the werkzeug cache 
+                                API.
                                 
                                 For werkzeug.contrib.cache objects, you
                                 do not need to specify the entire 
-                                import string, just the class name.
+                                import string, just one of the following
+                                names.
                                 
                                 Built-in cache types:
-
-                                * **NullCache**
-                                * **SimpleCache**
-                                * **MemcachedCache**
-                                * **GAEMemcachedCache**
-                                * **FileSystemCache**
                                 
-``CACHE_ARGS``					Optional list to unpack and pass during
-								the cache class instantiation.
-``CACHE_OPTIONS``				Optional dictionary to pass during the
-								cache class instantiation.
+                                * **null**: NullCache
+                                * **simple**: SimpleCache
+                                * **memcached**: MemcachedCache
+                                * **gaememcached**: GAEMemcachedCache
+                                * **filesystem**: FileSystemCache
+                                
+``CACHE_ARGS``                  Optional list to unpack and pass during
+                                the cache class instantiation.
+``CACHE_OPTIONS``               Optional dictionary to pass during the
+                                cache class instantiation.
 ``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
                                 timeout is specified.
 ``CACHE_THRESHOLD``             The maximum number of items the cache
@@ -57,9 +60,9 @@ The following configuration values exist for Flask-SQLAlchemy:
                                 Used only for MemcachedCache and
                                 GAEMemcachedCache.
 ``CACHE_MEMCACHED_SERVERS``     A list or a tuple of server addresses.
-								Used only for MemcachedCache
+                                Used only for MemcachedCache
 ``CACHE_DIR``                   Directory to store cache. Used only for
-								FileSystemCache.
+                                FileSystemCache.
 =============================== =========================================
 
 In addition the standard Flask ``TESTING`` configuration option is used. If this
@@ -153,6 +156,33 @@ You can do this with the :meth:`~Cache.delete_memoized` function.::
 
 	You can pass as many function names as you wish to delete_memoized.
 
+Custom Cache Backends
+---------------------
+
+You are able to easily add your own custom cache backends by exposing a function
+that can instantiate and return a cache object. ``CACHE_TYPE`` will be the
+import string to your custom function. It should expect to receive three
+arguments.
+
+* ``app``
+* ``args``
+* ``kwargs``
+
+Your custom cache object must also subclass the 
+:class:`werkzeug.contrib.cache.BaseCache` class. Flask-Cache will make sure
+that ``threshold`` is already included in the kwargs options dictionary since
+it is common to all BaseCache classes.
+
+An example Redis cache implementation::
+
+	#: custom.py
+	class RedisCache(BaseCache):
+		def __init__(self, servers, default_timeout=500):
+			pass
+	
+	def redis(app, args, kwargs):
+	   args.append(app.config['REDIS_SERVERS'])
+	   return RedisCache(*args, **kwargs)
 
 API
 ---
