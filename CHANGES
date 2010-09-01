@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-Version 0.3 (not yet released)
+Version 0.3
 ```````````
 
 - CACHE_TYPE changed. Now one of ['null', 'simple', 'memcached', 

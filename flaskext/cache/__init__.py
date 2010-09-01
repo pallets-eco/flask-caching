@@ -11,7 +11,7 @@
 from functools import wraps
 
 from werkzeug import import_string
-from werkzeug.contrib.cache import BaseCache
+from werkzeug.contrib.cache import BaseCache, NullCache
 from flask import request, current_app
 
 
@@ -209,7 +209,7 @@ class Cache(object):
             >>> random_func()
             16
             
-        :param *keys: A list of function names to clear from cache.
+        :param \*keys: A list of function names to clear from cache.
         """
         def deletes(item):
             if item[0] == 'memoize' and item[1] in keys:

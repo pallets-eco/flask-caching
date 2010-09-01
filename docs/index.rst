@@ -175,7 +175,7 @@ it is common to all BaseCache classes.
 
 An example Redis cache implementation::
 
-	#: custom.py
+	#: the_app/custom.py
 	class RedisCache(BaseCache):
 		def __init__(self, servers, default_timeout=500):
 			pass
@@ -183,6 +183,8 @@ An example Redis cache implementation::
 	def redis(app, args, kwargs):
 	   args.append(app.config['REDIS_SERVERS'])
 	   return RedisCache(*args, **kwargs)
+
+With this example, your ``CACHE_TYPE`` might be ``the_app.custom.redis``
 
 API
 ---
