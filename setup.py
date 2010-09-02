@@ -11,14 +11,17 @@ from setuptools import setup
 
 setup(
     name='Flask-Cache',
-    version='0.3',
+    version='0.3.1',
     url='http://github.com/thadeusb/flask-cache',
     license='BSD',
     author='Thadeus Burgess',
     author_email='thadeusb@thadeusb.com',
     description='Adds cache support to your Flask application',
     long_description=__doc__,
-    packages=['flaskext'],
+    packages=[
+        'flaskext',
+        'flaskext.cache',
+    ],
     namespace_packages=['flaskext'],
     zip_safe=False,
     platforms='any',
