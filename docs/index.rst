@@ -49,7 +49,8 @@ The following configuration values exist for Flask-SQLAlchemy:
 ``CACHE_OPTIONS``               Optional dictionary to pass during the
                                 cache class instantiation.
 ``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
-                                timeout is specified.
+                                timeout is specified. Unit of time is
+                                seconds.
 ``CACHE_THRESHOLD``             The maximum number of items the cache
                                 will store before it starts deleting
                                 some. Used only for SimpleCache and

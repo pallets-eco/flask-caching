@@ -119,7 +119,7 @@ class Cache(object):
             that are cached.
 
         :param timeout: Default None. If set to an integer, will cache for that
-                        amount of time.
+                        amount of time. Unit of time is in seconds.
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key.
         :param unless: Default None. Cache will *always* execute the caching
@@ -171,7 +171,7 @@ class Cache(object):
             753
 
         :param timeout: Default None. If set to an integer, will cache for that
-                        amount of time.
+                        amount of time. Unit of time is in seconds.
         """
 
         def memoize(f):
