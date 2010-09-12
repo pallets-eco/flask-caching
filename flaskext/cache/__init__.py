@@ -45,7 +45,7 @@ class Cache(object):
         app.config.setdefault('CACHE_DIR', None)
         app.config.setdefault('CACHE_OPTIONS', None)
         app.config.setdefault('CACHE_ARGS', [])
-        app.config.setdefault('CACHE_TYPE', 'NullCache')
+        app.config.setdefault('CACHE_TYPE', 'null')
 
         self.app = app
 

@@ -1,6 +1,17 @@
 Changelog
 ---------
 
+Version 0.3.2
+`````````````
+
+Bugfix release. Fixes a bug that would cause an exception if no 
+``CACHE_TYPE`` was supplied.
+
+Version 0.3.1
+`````````````
+
+Pypi egg fix.
+
 Version 0.3
 ```````````
 
