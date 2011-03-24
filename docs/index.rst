@@ -18,7 +18,7 @@ or alternatively if you have pip installed::
 Configuring Flask-Cache
 -----------------------
 
-The following configuration values exist for Flask-SQLAlchemy:
+The following configuration values exist for Flask-Cache:
 
 .. tabularcolumns:: |p{6.5cm}|p{8.5cm}|
 
