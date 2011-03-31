@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details
 """
+import md5
 from functools import wraps
 
 from werkzeug import import_string
@@ -177,14 +178,14 @@ class Cache(object):
         def memoize(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
-                cache_key = ('memoize', f.__name__, id(f), args, str(kwargs))
-                                
+                cache_key = md5.new(
+                    "{}{}{}".format(f.__name__, args, kwargs)).hexdigest()
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
                     self.cache.set(cache_key, rv, timeout=timeout)
                     if cache_key not in self._memoized:
-                        self._memoized.append(cache_key)
+                        self._memoized.append((f.__name__, cache_key))
                 return rv
             return decorated_function
         return memoize
@@ -212,8 +213,8 @@ class Cache(object):
         :param \*keys: A list of function names to clear from cache.
         """
         def deletes(item):
-            if item[0] == 'memoize' and item[1] in keys:
-                self.cache.delete(item)
+            if item[0] in keys:
+                self.cache.delete(item[1])
                 return True
             return False
         
