@@ -184,8 +184,7 @@ class Cache(object):
                 if rv is None:
                     rv = f(*args, **kwargs)
                     self.cache.set(cache_key, rv, timeout=timeout)
-                    if cache_key not in self._memoized:
-                        self._memoized.append((f.__name__, cache_key))
+                    self._memoized.append((f.__name__, cache_key))
                 return rv
             return decorated_function
         return memoize
