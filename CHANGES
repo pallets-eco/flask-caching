@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.3.3 (not released yet)
+````````````````````````````````
+
+Uses hex for memoize caching. This fixes rare issues where the cache_key could
+become larger than the caching backend would be able to support.
+
 Version 0.3.2
 `````````````
 
