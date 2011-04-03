@@ -8,7 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details
 """
-import md5
+import hashlib
 from functools import wraps
 
 from werkzeug import import_string
@@ -178,8 +178,10 @@ class Cache(object):
         def memoize(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
-                cache_key = md5.new(
-                    "{}{}{}".format(f.__name__, args, kwargs)).hexdigest()
+                cache_key = hashlib.md5()
+                cache_key.update("{1}{1}{1}".format(f.__name__, args, kwargs))
+                cache_key = cache_key.hexdigest()
+                
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
