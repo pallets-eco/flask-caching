@@ -179,7 +179,11 @@ class Cache(object):
             @wraps(f)
             def decorated_function(*args, **kwargs):
                 cache_key = hashlib.md5()
-                cache_key.update("{1}{1}{1}".format(f.__name__, args, kwargs))
+                try:
+                    updated = "{1}{1}{1}".format(f.__name__, args, kwargs)
+                except AttributeError:
+                    updated = "%s%s%s" % (f.__name__, args, kwargs)
+                cache_key.update(updated)
                 cache_key = cache_key.hexdigest()
                 
                 rv = self.cache.get(cache_key)
