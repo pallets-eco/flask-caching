@@ -180,7 +180,7 @@ class Cache(object):
             def decorated_function(*args, **kwargs):
                 cache_key = hashlib.md5()
                 try:
-                    updated = "{1}{2}{3}".format(f.__name__, args, kwargs)
+                    updated = "{0}{1}{2}".format(f.__name__, args, kwargs)
                 except AttributeError:
                     updated = "%s%s%s" % (f.__name__, args, kwargs)
                 cache_key.update(updated)
