@@ -191,15 +191,21 @@ class Cache(object):
             return decorated_function
         return memoize
     
-    def delete_memoized(self, *keys):
+    def delete_memoized(self, *keys, **kwargs):
         """
-        Deletes all of the cached functions that used Memoize for caching.
+        Deletes the specified functions caches, based by given parameters.
+        If parameters are given, only the functions that were memoized with them
+        will be erased. Otherwise all the versions of the caches will be deleted.
         
         Example::
         
             @cache.memoize(50)
             def random_func():
                 return random.randrange(1, 50)
+
+            @cache.memoize()
+            def param_func(a, b):
+                return a+b+random.randrange(1, 50)
             
         .. code-block:: pycon
         
@@ -210,11 +216,38 @@ class Cache(object):
             >>> cache.delete_memoized('random_func')
             >>> random_func()
             16
+            >>> param_func(1, 2)
+            32
+            >>> param_func(1, 2)
+            32
+            >>> param_func(2, 2)
+            47
+            >>> cache.delete_memoized('param_func', 1, 2)
+            >>> param_func(1, 2)
+            13
+            >>> param_func(2, 2)
+            47
+
             
-        :param \*keys: A list of function names to clear from cache.
+        :param \*keys: A list of positional parameters used with memoized function.
+        :param \*kwargs: A list of named parameters used with memoized function.
         """
         def deletes(item):
-            if item[0] in keys:
+
+            # If no parameters given, delete all memoized versions of the function
+            # NOTE: first key is the function name
+            if not keys[1:] and not kwargs:
+              if item[0] in keys:
+                self.cache.delete(item[1])
+                return True
+              return False
+
+            # Construct the cache key as in memoized function
+            cache_key = hashlib.md5()
+            cache_key.update("{1}{1}{1}".format(item[0], keys[1:], kwargs))
+            cache_key = cache_key.hexdigest()
+
+            if item[1] == cache_key:
                 self.cache.delete(item[1])
                 return True
             return False

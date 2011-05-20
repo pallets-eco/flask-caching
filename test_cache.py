@@ -154,10 +154,32 @@ class CacheTestCase(unittest.TestCase):
             time.sleep(1)
             
             assert big_foo(5, 2) == result
+            assert big_foo(5, 2) == result
+            assert big_foo(5, 3) != result
             
             self.cache.delete_memoized('big_foo')
             
             assert big_foo(5, 2) != result
+
+
+    def test_08_delete_memoize(self):
+
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def big_foo(a, b):
+                return a+b+random.randrange(0, 100000)
+
+            result_a = big_foo(5, 1)
+            result_b = big_foo(5, 2)
+
+            assert big_foo(5, 1) == result_a
+            assert big_foo(5, 2) == result_b
+
+            self.cache.delete_memoized('big_foo', 5, 2)
+
+            assert big_foo(5, 1) == result_a
+            assert big_foo(5, 2) != result_b
+
             
 
 if __name__ == '__main__':

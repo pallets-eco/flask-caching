@@ -155,7 +155,18 @@ You can do this with the :meth:`~Cache.delete_memoized` function.::
 	
 .. note::
 
-	You can pass as many function names as you wish to delete_memoized.
+  If only the function name is given as parameter, all the memoized versions
+  of it will be erazed. However, you can delete specific cache by providing the
+  same parameter values as when caching. In following example only the ``user``
+  -roled cache is erased:
+
+  .. code-block:: python
+
+     has_membership('admin')
+     has_membership('user')
+
+     cache.delete_memoized('has_membership', 'user')
+
 
 Custom Cache Backends
 ---------------------
