@@ -195,7 +195,7 @@ class Cache(object):
             return decorated_function
         return memoize
     
-    def delete_memoized(self, *keys, **kwargs):
+    def delete_memoized(self, fname, *args, **kwargs):
         """
         Deletes the specified functions caches, based by given parameters.
         If parameters are given, only the functions that were memoized with them
@@ -233,22 +233,26 @@ class Cache(object):
             47
 
             
-        :param \*keys: A list of positional parameters used with memoized function.
-        :param \*kwargs: A list of named parameters used with memoized function.
+        :param fname: Name of the memoized function.
+        :param \*args: A list of positional parameters used with memoized function.
+        :param \*kwargs: A dict of named parameters used with memoized function.
         """
         def deletes(item):
 
             # If no parameters given, delete all memoized versions of the function
-            # NOTE: first key is the function name
-            if not keys[1:] and not kwargs:
-              if item[0] in keys:
+            if not args and not kwargs:
+              if item[0] == fname:
                 self.cache.delete(item[1])
                 return True
               return False
 
             # Construct the cache key as in memoized function
             cache_key = hashlib.md5()
-            cache_key.update("{1}{1}{1}".format(item[0], keys[1:], kwargs))
+            try:
+                updated = "{0}{1}{2}".format(fname, args, kwargs)
+            except AttributeError:
+                updated = "%s%s%s" % (fname, args, kwargs)
+            cache_key.update(updated)
             cache_key = cache_key.hexdigest()
 
             if item[1] == cache_key:
