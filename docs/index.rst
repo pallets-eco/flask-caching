@@ -202,6 +202,6 @@ API
 ---
 
 .. autoclass:: Cache
-   :members: get, set, add, delete, cached, memoize, delete_memoized
+   :members: get, set, add, delete, cached, memoize, delete_memoized, get_memoize_names, get_memoize_keys
 
 .. include:: ../CHANGES
