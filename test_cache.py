@@ -180,6 +180,43 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, 1) == result_a
             assert big_foo(5, 2) != result_b
 
+    def test_09_args_memoize(self):
+    
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def big_foo(a, b):
+                return sum(a)+sum(b)+random.randrange(0, 100000)
+            
+            result_a = big_foo([5,3,2], [1])
+            result_b = big_foo([3,3], [3,1])
+            
+            assert big_foo([5,3,2], [1]) == result_a
+            assert big_foo([3,3], [3,1]) == result_b
+            
+            self.cache.delete_memoized('big_foo', [5,3,2], [1])
+            
+            assert big_foo([5,3,2], [1]) != result_a
+            assert big_foo([3,3], [3,1]) == result_b
+            
+    def test_10_kwargs_memoize(self):
+        
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def big_foo(a, b=None):
+                return a+sum(b.values())+random.randrange(0, 100000)
+            
+            result_a = big_foo(1, dict(one=1,two=2))
+            result_b = big_foo(5, dict(three=3,four=4))
+            
+            assert big_foo(1, dict(one=1,two=2)) == result_a
+            assert big_foo(5, dict(three=3,four=4)) == result_b
+            
+            self.cache.delete_memoized('big_foo', 1, dict(one=1,two=2))
+            
+            assert big_foo(1, dict(one=1,two=2)) != result_a
+            assert big_foo(5, dict(three=3,four=4)) == result_b
+            
+                    
             
 
 if __name__ == '__main__':

@@ -147,6 +147,25 @@ class Cache(object):
                 return rv
             return decorated_function
         return decorator
+        
+    def get_memoize_names(self):
+        """
+        Returns all function names used for memoized functions.
+        
+        This *will* include multiple function names when the memoized function
+        has been called with differing arguments.
+        
+        :return: set of function names
+        """
+        return set([item[0] for item in self._memoized])
+        
+    def get_memoize_keys(self):
+        """
+        Returns all cache_keys used for memoized functions.
+        
+        :return: list generator of cache_keys
+        """    
+        return [item[1] for item in self._memoized]
 
     def memoize(self, timeout=None):
         """

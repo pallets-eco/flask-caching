@@ -8,6 +8,12 @@ Uses base64 for memoize caching. This fixes rare issues where the cache_key
 was either a tuple or larger than the caching backend would be able to
 support.
 
+Adds support for deleting memoized caches optionally based on function parameters.
+
+Python 2.5 compatibility, plus bugfix with string.format.
+
+Added the ability to retrieve memoized function names or cache keys.
+
 Version 0.3.2
 `````````````
 
