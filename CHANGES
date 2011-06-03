@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-Version 0.3.3 (not released yet)
-````````````````````````````````
+Version 0.3.3 2011-06-03
+````````````````````````
 
 Uses base64 for memoize caching. This fixes rare issues where the cache_key
 was either a tuple or larger than the caching backend would be able to
