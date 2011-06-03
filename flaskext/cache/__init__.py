@@ -180,8 +180,8 @@ class Cache(object):
             def decorated_function(*args, **kwargs):
                 cache_key = hashlib.md5()
                 cache_key.update("{1}{1}{1}".format(f.__name__, args, kwargs))
-                cache_key = cache_key.hexdigest()
-                
+                cache_key = cache_key.digest().encode('base64')[:22]
+
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
