@@ -179,13 +179,15 @@ class Cache(object):
             @wraps(f)
             def decorated_function(*args, **kwargs):
                 cache_key = hashlib.md5()
+                
                 try:
                     updated = "{0}{1}{2}".format(f.__name__, args, kwargs)
                 except AttributeError:
                     updated = "%s%s%s" % (f.__name__, args, kwargs)
+                    
                 cache_key.update(updated)
-                cache_key = cache_key.hexdigest()
-                
+                cache_key = cache_key.digest().encode('base64')[:22]
+
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
@@ -235,7 +237,7 @@ class Cache(object):
             
         :param fname: Name of the memoized function.
         :param \*args: A list of positional parameters used with memoized function.
-        :param \*kwargs: A dict of named parameters used with memoized function.
+        :param \**kwargs: A dict of named parameters used with memoized function.
         """
         def deletes(item):
 
@@ -253,7 +255,7 @@ class Cache(object):
             except AttributeError:
                 updated = "%s%s%s" % (fname, args, kwargs)
             cache_key.update(updated)
-            cache_key = cache_key.hexdigest()
+            cache_key = cache_key.digest().encode('base64')[:22]
 
             if item[1] == cache_key:
                 self.cache.delete(item[1])
