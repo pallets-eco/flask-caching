@@ -139,6 +139,7 @@ class Cache(object):
                     cache_key = key_prefix % request.path
                 else:
                     cache_key = key_prefix
+                cache_key = cache_key.encode('utf-8')
                 
                 rv = self.cache.get(cache_key)
                 if rv is None:
