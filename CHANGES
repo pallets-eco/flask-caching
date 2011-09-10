@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.3.4 2011-09-10
+````````````````````````
+
+- UTF-8 encoding of cache key
+- key_prefix argument of the cached decorator now supports callables.
+
 Version 0.3.3 2011-06-03
 ````````````````````````
 

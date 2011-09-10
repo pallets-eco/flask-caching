@@ -123,6 +123,12 @@ class Cache(object):
                         amount of time. Unit of time is in seconds.
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key.
+                           
+                           .. versionadded:: 0.3.4
+                           
+                               Can optionally be a callable which takes no arguments
+                               but returns a string that will be used as the cache_key.
+                               
         :param unless: Default None. Cache will *always* execute the caching
                        facilities unless this callable is true.
                        This will bypass the caching entirely.
@@ -137,8 +143,11 @@ class Cache(object):
 
                 if '%s' in key_prefix:
                     cache_key = key_prefix % request.path
+                elif callable(key_prefix):
+                    cache_key = key_prefix()
                 else:
                     cache_key = key_prefix
+                    
                 cache_key = cache_key.encode('utf-8')
                 
                 rv = self.cache.get(cache_key)
