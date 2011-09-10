@@ -124,8 +124,7 @@ class Cache(object):
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key.
                            
-                           .. versionadded:: 0.3.4
-                           
+                           .. versionadded:: 0.3.4                           
                                Can optionally be a callable which takes no arguments
                                but returns a string that will be used as the cache_key.
                                
