@@ -42,6 +42,7 @@ The following configuration values exist for Flask-Cache:
                                 * **simple**: SimpleCache
                                 * **memcached**: MemcachedCache
                                 * **gaememcached**: GAEMemcachedCache
+                                * **redis**: RedisCache (Werkzeug 0.7 required)
                                 * **filesystem**: FileSystemCache
                                 
 ``CACHE_ARGS``                  Optional list to unpack and pass during
@@ -62,6 +63,9 @@ The following configuration values exist for Flask-Cache:
                                 GAEMemcachedCache.
 ``CACHE_MEMCACHED_SERVERS``     A list or a tuple of server addresses.
                                 Used only for MemcachedCache
+``CACHE_REDIS_HOST``            A Redis server host. Used only for RedisCache.
+``CACHE_REDIS_PORT``            A Redis server port. Default is 6379.
+                                Used only for RedisCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
 =============================== =========================================
