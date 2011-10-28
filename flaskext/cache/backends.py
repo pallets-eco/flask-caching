@@ -29,7 +29,10 @@ except ImportError:
     pass
 else:
     def redis(app, args, kwargs):
-        kwargs.update(dict(host=app.config['CACHE_REDIS_HOST'],
-                           port=app.config.get('CACHE_REDIS_PORT', 6379)))
+        kwargs.update(dict(
+            host=app.config.get('CACHE_REDIS_HOST', 'localhost'),
+            port=app.config.get('CACHE_REDIS_PORT', 6379),
+            password=app.config.get('CACHE_REDIS_PASSWORD', None)
+        ))
         return RedisCache(*args, **kwargs)
-    
+
