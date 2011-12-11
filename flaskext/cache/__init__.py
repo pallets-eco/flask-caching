@@ -90,7 +90,7 @@ class Cache(object):
     def delete(self, *args, **kwargs):
         "Proxy function for internal cache object."
         self.cache.delete(*args, **kwargs)
-
+        
     def cached(self, timeout=None, key_prefix='view/%s', unless=None):
         """
         Decorator. Use this to cache a function. By default the cache key
@@ -138,16 +138,14 @@ class Cache(object):
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
                 if callable(unless) and unless() is True:
-                    return decorated_function.uncached(*args, **kwargs)
+                    return f(*args, **kwargs)
 
                 rv = self.cache.get(decorated_function.cache_key)
                 if rv is None:
                     rv = decorated_function.uncached(*args, **kwargs)
-                    self.cache.set(decorated_function.cache_key, rv, timeout=decorated_function.cache_timeout)
+                    self.cache.set(decorated_function.cache_key, rv, 
+                                   timeout=decorated_function.cache_timeout)
                 return rv
-
-            decorated_function.uncached = f
-            decorated_function.cache_timeout = timeout
 
             if '%s' in key_prefix:
                 cache_key = key_prefix % request.path
@@ -155,7 +153,11 @@ class Cache(object):
                 cache_key = key_prefix()
             else:
                 cache_key = key_prefix
+                
             cache_key = cache_key.encode('utf-8')
+            
+            decorated_function.uncached = f
+            decorated_function.cache_timeout = timeout
             decorated_function.cache_key = cache_key
 
             return decorated_function
@@ -214,21 +216,23 @@ class Cache(object):
 
                 rv = self.cache.get(cache_key)
                 if rv is None:
-                    rv = decorated_function.uncached(*args, **kwargs)
-                    self.cache.set(cache_key, rv, timeout=decorated_function.cache_timeout)
-                    self._memoized.append((decorated_function.uncached.__name__, cache_key))
+                    rv = f(*args, **kwargs)
+                    self.cache.set(cache_key, rv, 
+                                   timeout=decorated_function.cache_timeout)
+                    self._memoized.append((f.__name__, cache_key))
                 return rv
 
             def make_cache_key(*args, **kwargs):
                 cache_key = hashlib.md5()
 
                 try:
-                    updated = "{0}{1}{2}".format(decorated_function.uncached.__name__, args, kwargs)
+                    updated = "{0}{1}{2}".format(f.__name__, args, kwargs)
                 except AttributeError:
-                    updated = "%s%s%s" % (decorated_function.uncached.__name__, args, kwargs)
+                    updated = "%s%s%s" % (f.__name__, args, kwargs)
 
                 cache_key.update(updated)
                 cache_key = cache_key.digest().encode('base64')[:22]
+                
                 return cache_key
 
             decorated_function.uncached = f
