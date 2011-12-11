@@ -216,9 +216,93 @@ class CacheTestCase(unittest.TestCase):
             
             assert big_foo(1, dict(one=1,two=2)) != result_a
             assert big_foo(5, dict(three=3,four=4)) == result_b
+
+    def test_11_cache_key_property(self):
+        with self.app.test_request_context():
+            @self.app.route('/')
+            @self.cache.cached(5)
+            def cached_view():
+                return str(time.time())
+
+            assert hasattr(cached_view, "cache_key")
+            assert isinstance(cached_view.cache_key, basestring)
+
+            tc = self.app.test_client()
             
-                    
+            rv = tc.get('/')
+            the_time = rv.data
+
+            cache_data = self.cache.get(cached_view.cache_key)
+            assert the_time == cache_data
+
+    def test_12_make_cache_key_function_property(self):
+        with self.app.test_request_context():
+            @self.app.route('/<foo>/<bar>')
+            @self.cache.memoize(5)
+            def cached_view(foo, bar):
+                return str(time.time())
+
+            assert hasattr(cached_view, "make_cache_key")
+            assert callable(cached_view.make_cache_key)
+
+            tc = self.app.test_client()
             
+            rv = tc.get('/a/b')
+            the_time = rv.data
+
+            cache_key = cached_view.make_cache_key(foo=u"a", bar=u"b")
+            cache_data = self.cache.get(cache_key)
+            assert the_time == cache_data
+
+            different_key = cached_view.make_cache_key(foo=u"b", bar=u"a")
+            different_data = self.cache.get(different_key)
+            assert the_time != different_data
+
+    def test_13_cache_timeout_property(self):
+        with self.app.test_request_context():
+            @self.app.route('/')
+            @self.cache.memoize(5)
+            def cached_view1():
+                return str(time.time())
+
+            @self.app.route('/<foo>/<bar>')
+            @self.cache.memoize(10)
+            def cached_view2(foo, bar):
+                return str(time.time())
+
+            assert hasattr(cached_view1, "cache_timeout")
+            assert hasattr(cached_view2, "cache_timeout")
+            assert cached_view1.cache_timeout == 5
+            assert cached_view2.cache_timeout == 10
+
+            # test that this is a read-write property
+            cached_view1.cache_timeout = 2
+            cached_view2.cache_timeout = 3
+
+            assert cached_view1.cache_timeout == 2
+            assert cached_view2.cache_timeout == 3
+
+            tc = self.app.test_client()
+
+            rv1 = tc.get('/')
+            time1 = rv1.data
+            time.sleep(1)
+            rv2 = tc.get('/a/b')
+            time2 = rv2.data
+
+            # VIEW1
+            # it's been 1 second, cache is still active
+            assert time1 == tc.get('/').data
+            time.sleep(2)
+            # it's been 3 seconds, cache is not still active
+            assert time1 != tc.get('/').data
+
+            # VIEW2
+            # it's been 2 seconds, cache is still active
+            assert time2 == tc.get('/a/b').data
+            time.sleep(2)
+            # it's been 4 seconds, cache is not still active
+            assert time2 != tc.get('/a/b').data
 
 if __name__ == '__main__':
     unittest.main()
