@@ -139,26 +139,31 @@ class Cache(object):
                 #: Bypass the cache entirely.
                 if callable(unless) and unless() is True:
                     return f(*args, **kwargs)
+                    
+                cache_key = decorated_function.make_cache_key(*args, **kwargs)
 
-                rv = self.cache.get(decorated_function.cache_key)
+                rv = self.cache.get(cache_key)
                 if rv is None:
-                    rv = decorated_function.uncached(*args, **kwargs)
-                    self.cache.set(decorated_function.cache_key, rv, 
+                    rv = f(*args, **kwargs)
+                    self.cache.set(cache_key, rv, 
                                    timeout=decorated_function.cache_timeout)
                 return rv
 
-            if '%s' in key_prefix:
-                cache_key = key_prefix % request.path
-            elif callable(key_prefix):
-                cache_key = key_prefix()
-            else:
-                cache_key = key_prefix
+            def make_cache_key(*args, **kwargs):
+                if '%s' in key_prefix:
+                    cache_key = key_prefix % request.path
+                elif callable(key_prefix):
+                    cache_key = key_prefix()
+                else:
+                    cache_key = key_prefix
+                    
+                cache_key = cache_key.encode('utf-8')
                 
-            cache_key = cache_key.encode('utf-8')
+                return cache_key
             
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.cache_key = cache_key
+            decorated_function.make_cache_key = make_cache_key
 
             return decorated_function
         return decorator
