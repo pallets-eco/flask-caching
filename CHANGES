@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.4.0 2011-12-11
+````````````````````````
+
+- Added attributes for uncached, make_cache_key, cache_timeout 
+  to the decorated functions.
+
 Version 0.3.4 2011-09-10
 ````````````````````````
 

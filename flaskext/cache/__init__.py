@@ -118,6 +118,20 @@ class Cache(object):
         
             You MUST have a request context to actually called any functions
             that are cached.
+            
+        .. versionadded:: 0.4
+            The returned decorated function now has three function attributes
+            assigned to it. These attributes are readable/writable.
+            
+            *uncached*
+                The original undecorated function
+            
+            *cache_timeout*
+                The cache timeout value for this function. For a custom value
+                to take affect, this must be set before the function is called.
+                
+            *make_cache_key*
+                A function used in generating the cache_key used.
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
@@ -209,6 +223,20 @@ class Cache(object):
             234
             >>> big_foo(5, 2)
             753
+            
+        .. versionadded:: 0.4
+            The returned decorated function now has three function attributes
+            assigned to it. These attributes are readable/writable.
+            
+            *uncached*
+                The original undecorated function
+            
+            *cache_timeout*
+                The cache timeout value for this function. For a custom value
+                to take affect, this must be set before the function is called.
+                
+            *make_cache_key*
+                A function used in generating the cache_key used.
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
