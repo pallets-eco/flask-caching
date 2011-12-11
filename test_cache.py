@@ -48,57 +48,56 @@ class CacheTestCase(unittest.TestCase):
         assert self.cache.get('hi') is None
         
     def test_03_cached_view(self):
-        with self.app.test_request_context():
-            @self.app.route('/')
-            @self.cache.cached(5)
-            def cached_view():
-                return str(time.time())
-            
-            tc = self.app.test_client()
-            
-            rv = tc.get('/')
-            the_time = rv.data
-            
-            time.sleep(2)
-            
-            rv = tc.get('/')
-            
-            assert the_time == rv.data
-            
-            time.sleep(5)
-            
-            rv = tc.get('/')
-            assert the_time != rv.data
+        
+        @self.app.route('/')
+        @self.cache.cached(5)
+        def cached_view():
+            return str(time.time())
+        
+        tc = self.app.test_client()
+        
+        rv = tc.get('/')
+        the_time = rv.data
+        
+        time.sleep(2)
+        
+        rv = tc.get('/')
+        
+        assert the_time == rv.data
+        
+        time.sleep(5)
+        
+        rv = tc.get('/')
+        assert the_time != rv.data
         
     def test_04_cached_view_unless(self):        
-        with self.app.test_request_context():
-            @self.app.route('/a')
-            @self.cache.cached(5, unless=lambda: True)
-            def non_cached_view():
-                return str(time.time())
-            
-            @self.app.route('/b')
-            @self.cache.cached(5, unless=lambda: False)
-            def cached_view():
-                return str(time.time())
-                    
-            tc = self.app.test_client()
-            
-            rv = tc.get('/a')
-            the_time = rv.data
-            
-            time.sleep(1)
-            
-            rv = tc.get('/a')
-            assert the_time != rv.data
-            
-            rv = tc.get('/b')
-            the_time = rv.data
-            
-            time.sleep(1)
-            rv = tc.get('/b')
-            
-            assert the_time == rv.data
+        @self.app.route('/a')
+        @self.cache.cached(5, unless=lambda: True)
+        def non_cached_view():
+            return str(time.time())
+        
+        @self.app.route('/b')
+        @self.cache.cached(5, unless=lambda: False)
+        def cached_view():
+            return str(time.time())
+                
+        tc = self.app.test_client()
+        
+        rv = tc.get('/a')
+        the_time = rv.data
+        
+        time.sleep(1)
+        
+        rv = tc.get('/a')
+        assert the_time != rv.data
+        
+        rv = tc.get('/b')
+        the_time = rv.data
+        
+        time.sleep(1)
+        rv = tc.get('/b')
+        
+        assert the_time == rv.data
         
     def test_05_cached_function(self):
         
