@@ -110,9 +110,7 @@ class Cache(object):
             def get_list():
                 return [random.randrange(0, 1) for i in range(50000)]
 
-        .. code-block:: pycon
-
-            >>> my_list = get_list()
+            my_list = get_list()
             
         .. note::
         
@@ -123,14 +121,14 @@ class Cache(object):
             The returned decorated function now has three function attributes
             assigned to it. These attributes are readable/writable.
             
-            *uncached*
+            **uncached**
                 The original undecorated function
             
-            *cache_timeout*
+            **cache_timeout**
                 The cache timeout value for this function. For a custom value
                 to take affect, this must be set before the function is called.
                 
-            *make_cache_key*
+            **make_cache_key**
                 A function used in generating the cache_key used.
 
         :param timeout: Default None. If set to an integer, will cache for that
@@ -228,14 +226,14 @@ class Cache(object):
             The returned decorated function now has three function attributes
             assigned to it. These attributes are readable/writable.
             
-            *uncached*
+            **uncached**
                 The original undecorated function
             
-            *cache_timeout*
+            **cache_timeout**
                 The cache timeout value for this function. For a custom value
                 to take affect, this must be set before the function is called.
                 
-            *make_cache_key*
+            **make_cache_key**
                 A function used in generating the cache_key used.
 
         :param timeout: Default None. If set to an integer, will cache for that
