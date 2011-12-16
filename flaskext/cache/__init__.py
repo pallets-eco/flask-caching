@@ -15,6 +15,7 @@ from werkzeug import import_string
 from werkzeug.contrib.cache import BaseCache, NullCache
 from flask import request, current_app
 
+JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
 #: Cache Object
 ################
@@ -26,7 +27,7 @@ class Cache(object):
     If TESTING is True it will use NullCache.
     """
 
-    def __init__(self, app=None):
+    def __init__(self, app=None, with_jinja2_ext=True):
         self.cache = None
 
         if app is not None:
@@ -35,6 +36,11 @@ class Cache(object):
             self.app = None
             
         self._memoized = []
+        if self.app and with_jinja2_ext:
+            from jinja2ext import CacheExtension
+            env = self.app.jinja_env
+            setattr(env, JINJA_CACHE_ATTR_NAME, self.cache)
+            env.add_extension(CacheExtension)
 
     def init_app(self, app):
         "This is used to initialize cache with your app object"
@@ -90,6 +96,10 @@ class Cache(object):
     def delete(self, *args, **kwargs):
         "Proxy function for internal cache object."
         self.cache.delete(*args, **kwargs)
+
+    def delete_many(self, *args, **kwargs):
+        "Proxy function for internal cache object."
+        self.cache.delete_many(*args, **kwargs)
         
     def cached(self, timeout=None, key_prefix='view/%s', unless=None):
         """
