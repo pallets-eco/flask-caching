@@ -32,7 +32,10 @@ else:
         kwargs.update(dict(
             host=app.config.get('CACHE_REDIS_HOST', 'localhost'),
             port=app.config.get('CACHE_REDIS_PORT', 6379),
-            password=app.config.get('CACHE_REDIS_PASSWORD', None)
         ))
+        password = app.config.get('CACHE_REDIS_PASSWORD')
+        if password:
+            kwargs['password'] = password
+
         return RedisCache(*args, **kwargs)
 
