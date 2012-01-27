@@ -37,5 +37,9 @@ else:
         if password:
             kwargs['password'] = password
 
+        key_prefix = app.config.get('CACHE_KEY_PREFIX')
+        if key_prefix:
+            kwargs['key_prefix'] = key_prefix
+
         return RedisCache(*args, **kwargs)
 
