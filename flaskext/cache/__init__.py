@@ -197,6 +197,12 @@ class Cache(object):
         This *will* include multiple function names when the memoized function
         has been called with differing arguments.
         
+        .. note::
+            
+            This list is only for the current thread, this function will NOT
+            work in production settings where there are multiple instances
+            of the Cache object. This function could be deprecated soon.
+        
         :return: set of function names
         """
         return set([item[0] for item in self._memoized])
@@ -204,6 +210,12 @@ class Cache(object):
     def get_memoize_keys(self):
         """
         Returns all cache_keys used for memoized functions.
+        
+        .. note::
+            
+            This list is only for the current thread, this function will NOT
+            work in production settings where there are multiple instances
+            of the Cache object. This function could be deprecated soon.
         
         :return: list generator of cache_keys
         """    
@@ -234,17 +246,21 @@ class Cache(object):
             
         .. versionadded:: 0.4
             The returned decorated function now has three function attributes
-            assigned to it. These attributes are readable/writable.
+            assigned to it.
             
                 **uncached**
-                    The original undecorated function
+                    The original undecorated function. readable only
                 
                 **cache_timeout**
                     The cache timeout value for this function. For a custom value
                     to take affect, this must be set before the function is called.
                     
+                    readable and writable
+                    
                 **make_cache_key**
                     A function used in generating the cache_key used.
+                    
+                    readable and writable
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
