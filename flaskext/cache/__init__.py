@@ -31,7 +31,7 @@ class Cache(object):
 
     def __init__(self, app=None, with_jinja2_ext=True):
         self.with_jinja2_ext = with_jinja2_ext
-    
+
         self.cache = None
 
         if app is not None:
@@ -52,15 +52,15 @@ class Cache(object):
         app.config.setdefault('CACHE_OPTIONS', None)
         app.config.setdefault('CACHE_ARGS', [])
         app.config.setdefault('CACHE_TYPE', 'null')
-        
+
         if self.with_jinja2_ext:
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
-            
+
             app.jinja_env.add_extension(CacheExtension)
 
         self.app = app
 
-        self._set_cache()                
+        self._set_cache()
 
     def _set_cache(self):
         if self.app.config['TESTING']:
@@ -70,17 +70,17 @@ class Cache(object):
             if '.' not in import_me:
                 import_me = 'flaskext.cache.backends.' + \
                             import_me
-            
+
             cache_obj = import_string(import_me)
             cache_args = self.app.config['CACHE_ARGS'][:]
             cache_options = dict(default_timeout= \
                                  self.app.config['CACHE_DEFAULT_TIMEOUT'])
-            
+
             if self.app.config['CACHE_OPTIONS']:
                 cache_options.update(self.app.config['CACHE_OPTIONS'])
-            
+
             self.cache = cache_obj(self.app, cache_args, cache_options)
-            
+
             if not isinstance(self.cache, BaseCache):
                 raise TypeError("Cache object must subclass "
                                 "werkzeug.contrib.cache.BaseCache")
@@ -104,7 +104,7 @@ class Cache(object):
     def delete_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
         self.cache.delete_many(*args, **kwargs)
-        
+
     def cached(self, timeout=None, key_prefix='view/%s', unless=None):
         """
         Decorator. Use this to cache a function. By default the cache key
@@ -125,23 +125,23 @@ class Cache(object):
                 return [random.randrange(0, 1) for i in range(50000)]
 
             my_list = get_list()
-            
+
         .. note::
-        
+
             You MUST have a request context to actually called any functions
             that are cached.
-            
+
         .. versionadded:: 0.4
             The returned decorated function now has three function attributes
             assigned to it. These attributes are readable/writable.
-            
+
                 **uncached**
                     The original undecorated function
-                
+
                 **cache_timeout**
                     The cache timeout value for this function. For a custom value
                     to take affect, this must be set before the function is called.
-                    
+
                 **make_cache_key**
                     A function used in generating the cache_key used.
 
@@ -149,11 +149,11 @@ class Cache(object):
                         amount of time. Unit of time is in seconds.
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key.
-                           
-                           .. versionadded:: 0.3.4                           
+
+                           .. versionadded:: 0.3.4
                                Can optionally be a callable which takes no arguments
                                but returns a string that will be used as the cache_key.
-                               
+
         :param unless: Default None. Cache will *always* execute the caching
                        facilities unless this callable is true.
                        This will bypass the caching entirely.
@@ -165,13 +165,13 @@ class Cache(object):
                 #: Bypass the cache entirely.
                 if callable(unless) and unless() is True:
                     return f(*args, **kwargs)
-                    
+
                 cache_key = decorated_function.make_cache_key(*args, **kwargs)
 
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
-                    self.cache.set(cache_key, rv, 
+                    self.cache.set(cache_key, rv,
                                    timeout=decorated_function.cache_timeout)
                 return rv
 
@@ -182,47 +182,47 @@ class Cache(object):
                     cache_key = key_prefix()
                 else:
                     cache_key = key_prefix
-                    
+
                 cache_key = cache_key.encode('utf-8')
-                
+
                 return cache_key
-            
+
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
             decorated_function.make_cache_key = make_cache_key
 
             return decorated_function
         return decorator
-        
+
     def get_memoize_names(self):
         """
         Returns all function names used for memoized functions.
-        
+
         This *will* include multiple function names when the memoized function
         has been called with differing arguments.
-        
+
         .. note::
-            
+
             This list is only for the current thread, this function will NOT
             work in production settings where there are multiple instances
             of the Cache object. This function could be deprecated soon.
-        
+
         :return: set of function names
         """
         return set([item[0] for item in self._memoized])
-        
+
     def get_memoize_keys(self):
         """
         Returns all cache_keys used for memoized functions.
-        
+
         .. note::
-            
+
             This list is only for the current thread, this function will NOT
             work in production settings where there are multiple instances
             of the Cache object. This function could be deprecated soon.
-        
+
         :return: list generator of cache_keys
-        """    
+        """
         return [item[1] for item in self._memoized]
 
     def memoize(self, timeout=None):
@@ -247,23 +247,23 @@ class Cache(object):
             234
             >>> big_foo(5, 2)
             753
-            
+
         .. versionadded:: 0.4
             The returned decorated function now has three function attributes
             assigned to it.
-            
+
                 **uncached**
                     The original undecorated function. readable only
-                
+
                 **cache_timeout**
                     The cache timeout value for this function. For a custom value
                     to take affect, this must be set before the function is called.
-                    
+
                     readable and writable
-                    
+
                 **make_cache_key**
                     A function used in generating the cache_key used.
-                    
+
                     readable and writable
 
         :param timeout: Default None. If set to an integer, will cache for that
@@ -278,7 +278,7 @@ class Cache(object):
                 rv = self.cache.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
-                    self.cache.set(cache_key, rv, 
+                    self.cache.set(cache_key, rv,
                                    timeout=decorated_function.cache_timeout)
                     self._memoized.append((f.__name__, cache_key))
                 return rv
@@ -293,7 +293,7 @@ class Cache(object):
 
                 cache_key.update(updated)
                 cache_key = cache_key.digest().encode('base64')[:22]
-                
+
                 return cache_key
 
             decorated_function.uncached = f
@@ -302,15 +302,15 @@ class Cache(object):
 
             return decorated_function
         return memoize
-    
+
     def delete_memoized(self, fname, *args, **kwargs):
         """
         Deletes the specified functions caches, based by given parameters.
         If parameters are given, only the functions that were memoized with them
         will be erased. Otherwise all the versions of the caches will be deleted.
-        
+
         Example::
-        
+
             @cache.memoize(50)
             def random_func():
                 return random.randrange(1, 50)
@@ -318,9 +318,9 @@ class Cache(object):
             @cache.memoize()
             def param_func(a, b):
                 return a+b+random.randrange(1, 50)
-            
+
         .. code-block:: pycon
-        
+
             >>> random_func()
             43
             >>> random_func()
@@ -340,7 +340,7 @@ class Cache(object):
             >>> param_func(2, 2)
             47
 
-            
+
         :param fname: Name of the memoized function.
         :param \*args: A list of positional parameters used with memoized function.
         :param \**kwargs: A dict of named parameters used with memoized function.
@@ -367,7 +367,7 @@ class Cache(object):
                 self.cache.delete(item[1])
                 return True
             return False
-        
+
         self._memoized[:] = [x for x in self._memoized if not deletes(x)]
-        
+
 
