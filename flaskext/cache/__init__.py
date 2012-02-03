@@ -17,6 +17,8 @@ from flask import request, current_app
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
+from flaskext.cache.jinja2ext import CacheExtension
+
 #: Cache Object
 ################
 
@@ -28,19 +30,16 @@ class Cache(object):
     """
 
     def __init__(self, app=None, with_jinja2_ext=True):
+        self.with_jinja2_ext = with_jinja2_ext
+    
         self.cache = None
 
         if app is not None:
             self.init_app(app)
         else:
             self.app = None
-            
+
         self._memoized = []
-        if self.app and with_jinja2_ext:
-            from jinja2ext import CacheExtension
-            env = self.app.jinja_env
-            setattr(env, JINJA_CACHE_ATTR_NAME, self.cache)
-            env.add_extension(CacheExtension)
 
     def init_app(self, app):
         "This is used to initialize cache with your app object"
@@ -53,10 +52,15 @@ class Cache(object):
         app.config.setdefault('CACHE_OPTIONS', None)
         app.config.setdefault('CACHE_ARGS', [])
         app.config.setdefault('CACHE_TYPE', 'null')
+        
+        if self.with_jinja2_ext:
+            setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
+            
+            app.jinja_env.add_extension(CacheExtension)
 
         self.app = app
 
-        self._set_cache()
+        self._set_cache()                
 
     def _set_cache(self):
         if self.app.config['TESTING']:

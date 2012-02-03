@@ -30,7 +30,7 @@ Example:
 
 from jinja2 import nodes
 from jinja2.ext import Extension
-from . import JINJA_CACHE_ATTR_NAME
+from flaskext.cache import JINJA_CACHE_ATTR_NAME
 
 class CacheExtension(Extension):
     tags = set(['cache'])
@@ -66,13 +66,15 @@ class CacheExtension(Extension):
         except AttributeError, e:
             raise e
 
+        if timeout == "del":
+            cache.delete_many(*keys_list)
+            return caller()
+
         rv = cache.get(keys_list[0])
+
         if rv is None:
             rv = caller()
 
-        if timeout == "del":
-            cache.delete_many(*keys_list)
-        else:
             for key in keys_list:
                 cache.set(key, rv, timeout)
 
