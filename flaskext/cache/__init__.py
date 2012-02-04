@@ -195,10 +195,10 @@ class Cache(object):
 
             return decorated_function
         return decorator
-        
+
     def _memvname(self, funcname):
         return funcname + '_memver'
-        
+
     def memoize_make_cache_key(self, fname):
         """
         Function used to create the cache_key for memoized functions.
@@ -206,11 +206,11 @@ class Cache(object):
         def make_cache_key(*args, **kwargs):
             version_key = self._memvname(fname)
             version_data = self.cache.get(version_key)
-            
+
             if version_data is None:
                 version_data = uuid.uuid4().bytes.encode('base64')[:6]
                 self.cache.set(version_key, version_data)
-        
+
             cache_key = hashlib.md5()
 
             try:
@@ -224,7 +224,7 @@ class Cache(object):
 
             return cache_key
         return make_cache_key
-        
+
     def memoize(self, timeout=None):
         """
         Use this to cache the result of a function, taking its arguments into
@@ -330,16 +330,16 @@ class Cache(object):
         :param fname: Name of the memoized function.
         :param \*args: A list of positional parameters used with memoized function.
         :param \**kwargs: A dict of named parameters used with memoized function.
-        
+
         .. note::
-        
-            Flask-Cache maintains an internal random version hash for the function. 
-            Using delete_memoized will only swap out the version hash, causing 
+
+            Flask-Cache maintains an internal random version hash for the function.
+            Using delete_memoized will only swap out the version hash, causing
             the memoize function to recompute results and put them into another key.
-            
+
             This leaves any computed caches for this memoized function within the
             caching backend.
-            
+
             It is recommended to use a very high timeout with memoize if using
             this function, so that when the version has is swapped, the old cached
             results would eventually be reclaimed by the caching backend.
@@ -348,6 +348,6 @@ class Cache(object):
             version_key = self._memvname(fname)
             self.cache.delete(version_key)
         else:
-            cache_key = self.memoize_make_cache_key(fname)(*args, **kwargs)            
+            cache_key = self.memoize_make_cache_key(fname)(*args, **kwargs)
             self.cache.delete(cache_key)
 
