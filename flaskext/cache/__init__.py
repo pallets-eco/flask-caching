@@ -198,6 +198,9 @@ class Cache(object):
 
     def _memvname(self, funcname):
         return funcname + '_memver'
+        
+    def memoize_make_version_hash(self):
+        return uuid.uuid4().bytes.encode('base64')[:6]
 
     def memoize_make_cache_key(self, fname):
         """
@@ -208,7 +211,7 @@ class Cache(object):
             version_data = self.cache.get(version_key)
 
             if version_data is None:
-                version_data = uuid.uuid4().bytes.encode('base64')[:6]
+                version_data = self.memoize_make_version_hash()
                 self.cache.set(version_key, version_data)
 
             cache_key = hashlib.md5()
@@ -346,7 +349,8 @@ class Cache(object):
         """
         if not args and not kwargs:
             version_key = self._memvname(fname)
-            self.cache.delete(version_key)
+            version_data = self.memoize_make_version_hash()
+            self.cache.set(version_key, version_data)
         else:
             cache_key = self.memoize_make_cache_key(fname)(*args, **kwargs)
             self.cache.delete(cache_key)
