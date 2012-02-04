@@ -8,7 +8,9 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details
 """
+import uuid
 import hashlib
+
 from functools import wraps
 
 from werkzeug import import_string
@@ -193,38 +195,36 @@ class Cache(object):
 
             return decorated_function
         return decorator
-
-    def get_memoize_names(self):
+        
+    def _memvname(self, funcname):
+        return funcname + '_memver'
+        
+    def memoize_make_cache_key(self, fname):
         """
-        Returns all function names used for memoized functions.
-
-        This *will* include multiple function names when the memoized function
-        has been called with differing arguments.
-
-        .. note::
-
-            This list is only for the current thread, this function will NOT
-            work in production settings where there are multiple instances
-            of the Cache object. This function could be deprecated soon.
-
-        :return: set of function names
+        Function used to create the cache_key for memoized functions.
         """
-        return set([item[0] for item in self._memoized])
+        def make_cache_key(*args, **kwargs):
+            version_key = self._memvname(fname)
+            version_data = self.cache.get(version_key)
+            
+            if version_data is None:
+                version_data = uuid.uuid4().bytes.encode('base64')[:6]
+                self.cache.set(version_key, version_data)
+        
+            cache_key = hashlib.md5()
 
-    def get_memoize_keys(self):
-        """
-        Returns all cache_keys used for memoized functions.
+            try:
+                updated = "{0}{1}{2}".format(fname, args, kwargs)
+            except AttributeError:
+                updated = "%s%s%s" % (fname, args, kwargs)
 
-        .. note::
+            cache_key.update(updated)
+            cache_key = cache_key.digest().encode('base64')[:16]
+            cache_key += version_data
 
-            This list is only for the current thread, this function will NOT
-            work in production settings where there are multiple instances
-            of the Cache object. This function could be deprecated soon.
-
-        :return: list generator of cache_keys
-        """
-        return [item[1] for item in self._memoized]
-
+            return cache_key
+        return make_cache_key
+        
     def memoize(self, timeout=None):
         """
         Use this to cache the result of a function, taking its arguments into
@@ -280,25 +280,11 @@ class Cache(object):
                     rv = f(*args, **kwargs)
                     self.cache.set(cache_key, rv,
                                    timeout=decorated_function.cache_timeout)
-                    self._memoized.append((f.__name__, cache_key))
                 return rv
-
-            def make_cache_key(*args, **kwargs):
-                cache_key = hashlib.md5()
-
-                try:
-                    updated = "{0}{1}{2}".format(f.__name__, args, kwargs)
-                except AttributeError:
-                    updated = "%s%s%s" % (f.__name__, args, kwargs)
-
-                cache_key.update(updated)
-                cache_key = cache_key.digest().encode('base64')[:22]
-
-                return cache_key
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = make_cache_key
+            decorated_function.make_cache_key = self.memoize_make_cache_key(f.__name__)
 
             return decorated_function
         return memoize
@@ -344,30 +330,24 @@ class Cache(object):
         :param fname: Name of the memoized function.
         :param \*args: A list of positional parameters used with memoized function.
         :param \**kwargs: A dict of named parameters used with memoized function.
+        
+        .. note::
+        
+            Flask-Cache maintains an internal random version hash for the function. 
+            Using delete_memoized will only swap out the version hash, causing 
+            the memoize function to recompute results and put them into another key.
+            
+            This leaves any computed caches for this memoized function within the
+            caching backend.
+            
+            It is recommended to use a very high timeout with memoize if using
+            this function, so that when the version has is swapped, the old cached
+            results would eventually be reclaimed by the caching backend.
         """
-        def deletes(item):
-
-            # If no parameters given, delete all memoized versions of the function
-            if not args and not kwargs:
-              if item[0] == fname:
-                self.cache.delete(item[1])
-                return True
-              return False
-
-            # Construct the cache key as in memoized function
-            cache_key = hashlib.md5()
-            try:
-                updated = "{0}{1}{2}".format(fname, args, kwargs)
-            except AttributeError:
-                updated = "%s%s%s" % (fname, args, kwargs)
-            cache_key.update(updated)
-            cache_key = cache_key.digest().encode('base64')[:22]
-
-            if item[1] == cache_key:
-                self.cache.delete(item[1])
-                return True
-            return False
-
-        self._memoized[:] = [x for x in self._memoized if not deletes(x)]
-
+        if not args and not kwargs:
+            version_key = self._memvname(fname)
+            self.cache.delete(version_key)
+        else:
+            cache_key = self.memoize_make_cache_key(fname)(*args, **kwargs)            
+            self.cache.delete(cache_key)
 
