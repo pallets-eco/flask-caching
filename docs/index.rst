@@ -139,11 +139,9 @@ time that function is called with those arguments. For example, an sqlalchemy
 object that determines if a user has a role. You might need to call this 
 function many times during a single request.::
 
-	User(db.Model):
-		@cache.memoize(50)
-		def has_membership(role):
-			return self.groups.filter_by(role=role).count() >= 1
-			
+	@cache.memoize(50)
+	def user_has_membership(user, role):
+		return Group.query.filter_by(user=user, role=role).count() >= 1
 		
 Deleting memoize cache
 ``````````````````````
@@ -160,16 +158,16 @@ You can do this with the :meth:`~Cache.delete_memoized` function.::
 .. note::
 
   If only the function name is given as parameter, all the memoized versions
-  of it will be erazed. However, you can delete specific cache by providing the
-  same parameter values as when caching. In following example only the ``user``
-  -roled cache is erased:
+  of it will be invalidated. However, you can delete specific cache by 
+  providing the same parameter values as when caching. In following 
+  example only the ``user``-role cache is deleted:
 
   .. code-block:: python
 
-     has_membership('admin')
-     has_membership('user')
+     user_has_membership('demo', 'admin')
+     user_has_membership('demo', 'user')
 
-     cache.delete_memoized('has_membership', 'user')
+     cache.delete_memoized('has_membership', 'demo', 'user')
 
 
 Custom Cache Backends
@@ -206,6 +204,6 @@ API
 ---
 
 .. autoclass:: Cache
-   :members: get, set, add, delete, cached, memoize, delete_memoized, get_memoize_names, get_memoize_keys
+   :members: get, set, add, delete, cached, memoize, delete_memoized
 
 .. include:: ../CHANGES
