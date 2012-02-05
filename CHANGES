@@ -7,6 +7,11 @@ Version 0.5.0 2012-02-03
 - Deleting memoized functions now properly functions in production 
   environments where multiple instances of the application are running.
 - get_memoized_names and get_memoized_keys have been removed.
+- Added ``make_name`` to memoize, make_name is an optional callable that can be passed 
+  to memoize to modify the cache_key that gets generated.
+- Added ``unless`` to memoize, this is the same as the unless parameter in ``cached``
+- memoization now converts all kwargs to positional arguments, this is so that
+  when a function is called multiple ways, it would evaluate to the same cache_key
 
 Version 0.4.0 2011-12-11
 ````````````````````````
