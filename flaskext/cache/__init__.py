@@ -10,6 +10,7 @@
 """
 import uuid
 import hashlib
+import inspect
 
 from functools import wraps
 
@@ -198,15 +199,15 @@ class Cache(object):
 
     def _memvname(self, funcname):
         return funcname + '_memver'
-        
+
     def memoize_make_version_hash(self):
         return uuid.uuid4().bytes.encode('base64')[:6]
 
-    def memoize_make_cache_key(self, fname):
+    def memoize_make_cache_key(self, fname, make_name=None):
         """
         Function used to create the cache_key for memoized functions.
         """
-        def make_cache_key(*args, **kwargs):
+        def make_cache_key(f, *args, **kwargs):
             version_key = self._memvname(fname)
             version_data = self.cache.get(version_key)
 
@@ -216,10 +217,20 @@ class Cache(object):
 
             cache_key = hashlib.md5()
 
+            #: this should have to be after version_data, so that it
+            #: does not break the delete_memoized functionality.
+            if callable(make_name):
+                altfname = make_name(fname)
+            else:
+                altfname = fname
+
+            if callable(f):
+                args, kwargs = self.memoize_kwargs_to_args(f, *args, **kwargs)
+
             try:
-                updated = "{0}{1}{2}".format(fname, args, kwargs)
+                updated = "{0}{1}{2}".format(altfname, args, kwargs)
             except AttributeError:
-                updated = "%s%s%s" % (fname, args, kwargs)
+                updated = "%s%s%s" % (altfname, args, kwargs)
 
             cache_key.update(updated)
             cache_key = cache_key.digest().encode('base64')[:16]
@@ -228,7 +239,25 @@ class Cache(object):
             return cache_key
         return make_cache_key
 
-    def memoize(self, timeout=None):
+    def memoize_kwargs_to_args(self, f, *args, **kwargs):
+        #: Inspect the arguments to the function
+        #: This allows the memoization to be the same
+        #: whether the function was called with
+        #: 1, b=2 is equivilant to a=1, b=2, etc.
+        new_args = []
+        arg_num = 0
+        m_args = inspect.getargspec(f)[0]
+
+        for i in range(len(m_args)):
+            if m_args[i] in kwargs:
+                new_args.append(kwargs[m_args[i]])
+            elif arg_num < len(args):
+                new_args.append(args[arg_num])
+                arg_num += 1
+
+        return tuple(new_args), {}
+
+    def memoize(self, timeout=None, make_name=None, unless=None):
         """
         Use this to cache the result of a function, taking its arguments into
         account in the cache key.
@@ -269,14 +298,29 @@ class Cache(object):
 
                     readable and writable
 
+
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
+        :param make_name: Default None. If set this is a function that accepts
+                          a single argument, the function name, and returns a
+                          new string to be used as the function name. If not set
+                          then the function name is used.
+        :param unless: Default None. Cache will *always* execute the caching
+                       facilities unelss this callable is true.
+                       This will bypass the caching entirely.
+
+        .. versionadded:: 0.5
+            params ``make_name``, ``unless``
         """
 
         def memoize(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
-                cache_key = decorated_function.make_cache_key(*args, **kwargs)
+                #: bypass cache
+                if callable(unless) and unless() is True:
+                    return f(*args, **kwargs)
+
+                cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
 
                 rv = self.cache.get(cache_key)
                 if rv is None:
@@ -287,7 +331,8 @@ class Cache(object):
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = self.memoize_make_cache_key(f.__name__)
+            decorated_function.make_cache_key = self.memoize_make_cache_key(f.__name__,
+                                                                            make_name)
 
             return decorated_function
         return memoize
@@ -330,9 +375,21 @@ class Cache(object):
             47
 
 
-        :param fname: Name of the memoized function.
+        :param fname: Name of the memoized function, or a reference to the function.
         :param \*args: A list of positional parameters used with memoized function.
         :param \**kwargs: A dict of named parameters used with memoized function.
+
+        .. note::
+
+            Flask-Cache uses inspect to order kwargs into positional args when
+            the function is memoized. If you pass a function reference into ``fname``
+            instead of the function name, Flask-Cache will be able to place
+            the args/kwargs in the proper order, and delete the positional cache.
+
+            However, if ``delete_memozied`` is just called with the name of the
+            function, be sure to pass in potential arguments in the same order
+            as defined in your function as args only, otherwise Flask-Cache
+            will not be able to compute the same cache key.
 
         .. note::
 
@@ -347,11 +404,19 @@ class Cache(object):
             this function, so that when the version has is swapped, the old cached
             results would eventually be reclaimed by the caching backend.
         """
+        if callable(fname):
+            assert hasattr(fname, 'uncached')
+            f = fname.uncached
+            _fname = f.__name__
+        else:
+            f = None
+            _fname = fname
+
         if not args and not kwargs:
             version_key = self._memvname(fname)
             version_data = self.memoize_make_version_hash()
             self.cache.set(version_key, version_data)
         else:
-            cache_key = self.memoize_make_cache_key(fname)(*args, **kwargs)
+            cache_key = self.memoize_make_cache_key(_fname)(f, *args, **kwargs)
             self.cache.delete(cache_key)
 

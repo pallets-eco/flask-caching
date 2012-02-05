@@ -251,11 +251,11 @@ class CacheTestCase(unittest.TestCase):
         rv = tc.get('/a/b')
         the_time = rv.data
 
-        cache_key = cached_view.make_cache_key(foo=u"a", bar=u"b")
+        cache_key = cached_view.make_cache_key(cached_view.uncached, foo=u"a", bar=u"b")
         cache_data = self.cache.get(cache_key)
         assert the_time == cache_data
 
-        different_key = cached_view.make_cache_key(foo=u"b", bar=u"a")
+        different_key = cached_view.make_cache_key(cached_view.uncached, foo=u"b", bar=u"a")
         different_data = self.cache.get(different_key)
         assert the_time != different_data
 
@@ -303,6 +303,68 @@ class CacheTestCase(unittest.TestCase):
         time.sleep(2)
         # it's been 4 seconds, cache is not still active
         assert time2 != tc.get('/a/b').data
+
+    def test_14_memoized_multiple_arg_kwarg_calls(self):
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def big_foo(a, b,c=[1,1],d=[1,1]):
+                return sum(a)+sum(b)+sum(c)+sum(d)+random.randrange(0, 100000)
+
+            result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+
+            assert big_foo([5,3,2], [1], d=[3,3], c=[3,3]) == result_a
+            assert big_foo(b=[1],a=[5,3,2],c=[3,3],d=[3,3]) == result_a
+            assert big_foo([5,3,2], [1], [3,3], [3,3]) == result_a
+
+    def test_15_memoize_multiple_arg_kwarg_delete(self):
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def big_foo(a, b,c=[1,1],d=[1,1]):
+                return sum(a)+sum(b)+sum(c)+sum(d)+random.randrange(0, 100000)
+
+            result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+            self.cache.delete_memoized('big_foo', [5,3,2],[1],[3,3],[3,3])
+            result_b = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+            assert result_a != result_b
+
+            self.cache.delete_memoized(big_foo, [5,3,2],b=[1],c=[3,3],d=[3,3])
+            result_b = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+            assert result_a != result_b
+
+            self.cache.delete_memoized(big_foo, [5,3,2],[1],c=[3,3],d=[3,3])
+            result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+            assert result_a != result_b
+
+            self.cache.delete_memoized(big_foo, [5,3,2],b=[1],c=[3,3],d=[3,3])
+            result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+            assert result_a != result_b
+
+            self.cache.delete_memoized(big_foo, [5,3,2],[1],c=[3,3],d=[3,3])
+            result_b = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+            assert result_a != result_b
+
+            self.cache.delete_memoized('big_foo', [5,3,2],[1],[3,3],[3,3])
+            result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
+            assert result_a != result_b
+
+
+    def test_16_memoize_kwargs_to_args(self):
+        with self.app.test_request_context():
+            def big_foo(a, b, c=None, d=None):
+                return sum(a)+sum(b)+random.randrange(0, 100000)
+
+            expected = (1,2,'foo','bar')
+
+            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, 1,2,'foo','bar')
+            assert (args == expected)
+            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, 2,'foo','bar',a=1)
+            assert (args == expected)
+            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, a=1,b=2,c='foo',d='bar')
+            assert (args == expected)
+            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, d='bar',b=2,a=1,c='foo')
+            assert (args == expected)
+            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, 1,2,d='bar',c='foo')
+            assert (args == expected)
 
 if __name__ == '__main__':
     unittest.main()
