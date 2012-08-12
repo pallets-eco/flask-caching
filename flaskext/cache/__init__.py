@@ -40,8 +40,6 @@ def function_namespace(f):
 class Cache(object):
     """
     This class is used to control the cache objects.
-
-    If TESTING is True it will use NullCache.
     """
 
     def __init__(self, app=None, with_jinja2_ext=True):
@@ -78,27 +76,24 @@ class Cache(object):
         self._set_cache()
 
     def _set_cache(self):
-        if self.app.config['TESTING']:
-            self.cache = NullCache()
-        else:
-            import_me = self.app.config['CACHE_TYPE']
-            if '.' not in import_me:
-                import_me = 'flaskext.cache.backends.' + \
-                            import_me
+        import_me = self.app.config['CACHE_TYPE']
+        if '.' not in import_me:
+            import_me = 'flaskext.cache.backends.' + \
+                        import_me
 
-            cache_obj = import_string(import_me)
-            cache_args = self.app.config['CACHE_ARGS'][:]
-            cache_options = dict(default_timeout= \
-                                 self.app.config['CACHE_DEFAULT_TIMEOUT'])
+        cache_obj = import_string(import_me)
+        cache_args = self.app.config['CACHE_ARGS'][:]
+        cache_options = dict(default_timeout= \
+                             self.app.config['CACHE_DEFAULT_TIMEOUT'])
 
-            if self.app.config['CACHE_OPTIONS']:
-                cache_options.update(self.app.config['CACHE_OPTIONS'])
+        if self.app.config['CACHE_OPTIONS']:
+            cache_options.update(self.app.config['CACHE_OPTIONS'])
 
-            self.cache = cache_obj(self.app, cache_args, cache_options)
+        self.cache = cache_obj(self.app, cache_args, cache_options)
 
-            if not isinstance(self.cache, BaseCache):
-                raise TypeError("Cache object must subclass "
-                                "werkzeug.contrib.cache.BaseCache")
+        if not isinstance(self.cache, BaseCache):
+            raise TypeError("Cache object must subclass "
+                            "werkzeug.contrib.cache.BaseCache")
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
