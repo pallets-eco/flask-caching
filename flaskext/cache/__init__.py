@@ -8,6 +8,9 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details
 """
+
+__version__ = '0.6.0'
+
 import uuid
 import hashlib
 import inspect

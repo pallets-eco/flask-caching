@@ -1,13 +1,20 @@
 Changelog
 ---------
 
+Version 0.6.0 2012-08-12
+````````````````````````
+
+- Memoization is now safer for multiple applications using the same backing store.
+- Removed the explicit set of NullCache if the Flask app is set testing=True
+- Swapped Conditional order for key_prefix
+
 Version 0.5.0 2012-02-03
 ````````````````````````
 
-- Deleting memoized functions now properly functions in production 
+- Deleting memoized functions now properly functions in production
   environments where multiple instances of the application are running.
 - get_memoized_names and get_memoized_keys have been removed.
-- Added ``make_name`` to memoize, make_name is an optional callable that can be passed 
+- Added ``make_name`` to memoize, make_name is an optional callable that can be passed
   to memoize to modify the cache_key that gets generated.
 - Added ``unless`` to memoize, this is the same as the unless parameter in ``cached``
 - memoization now converts all kwargs to positional arguments, this is so that
@@ -16,7 +23,7 @@ Version 0.5.0 2012-02-03
 Version 0.4.0 2011-12-11
 ````````````````````````
 
-- Added attributes for uncached, make_cache_key, cache_timeout 
+- Added attributes for uncached, make_cache_key, cache_timeout
   to the decorated functions.
 
 Version 0.3.4 2011-09-10
@@ -41,7 +48,7 @@ Added the ability to retrieve memoized function names or cache keys.
 Version 0.3.2
 `````````````
 
-Bugfix release. Fixes a bug that would cause an exception if no 
+Bugfix release. Fixes a bug that would cause an exception if no
 ``CACHE_TYPE`` was supplied.
 
 Version 0.3.1
@@ -52,9 +59,9 @@ Pypi egg fix.
 Version 0.3
 ```````````
 
-- CACHE_TYPE changed. Now one of ['null', 'simple', 'memcached', 
+- CACHE_TYPE changed. Now one of ['null', 'simple', 'memcached',
   'gaememcached', 'filesystem'], or an import string to a function that will
-  instantiate a cache object. This allows Flask-Cache to be much more 
+  instantiate a cache object. This allows Flask-Cache to be much more
   extensible and configurable.
 
 Version 0.2
