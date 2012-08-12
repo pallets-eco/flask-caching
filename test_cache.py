@@ -159,7 +159,7 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, 3) != result
             assert big_foo(5, 3) == result2
 
-            self.cache.delete_memoized('big_foo')
+            self.cache.delete_memoized(big_foo)
 
             assert big_foo(5, 2) != result
             assert big_foo(5, 3) != result2
@@ -178,7 +178,7 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, 1) == result_a
             assert big_foo(5, 2) == result_b
 
-            self.cache.delete_memoized('big_foo', 5, 2)
+            self.cache.delete_memoized(big_foo, 5, 2)
 
             assert big_foo(5, 1) == result_a
             assert big_foo(5, 2) != result_b
@@ -196,7 +196,7 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo([5,3,2], [1]) == result_a
             assert big_foo([3,3], [3,1]) == result_b
 
-            self.cache.delete_memoized('big_foo', [5,3,2], [1])
+            self.cache.delete_memoized(big_foo, [5,3,2], [1])
 
             assert big_foo([5,3,2], [1]) != result_a
             assert big_foo([3,3], [3,1]) == result_b
@@ -214,7 +214,7 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(1, dict(one=1,two=2)) == result_a
             assert big_foo(5, dict(three=3,four=4)) == result_b
 
-            self.cache.delete_memoized('big_foo', 1, dict(one=1,two=2))
+            self.cache.delete_memoized(big_foo, 1, dict(one=1,two=2))
 
             assert big_foo(1, dict(one=1,two=2)) != result_a
             assert big_foo(5, dict(three=3,four=4)) == result_b
@@ -323,7 +323,7 @@ class CacheTestCase(unittest.TestCase):
                 return sum(a)+sum(b)+sum(c)+sum(d)+random.randrange(0, 100000)
 
             result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
-            self.cache.delete_memoized('big_foo', [5,3,2],[1],[3,3],[3,3])
+            self.cache.delete_memoized(big_foo, [5,3,2],[1],[3,3],[3,3])
             result_b = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
             assert result_a != result_b
 
@@ -343,7 +343,7 @@ class CacheTestCase(unittest.TestCase):
             result_b = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
             assert result_a != result_b
 
-            self.cache.delete_memoized('big_foo', [5,3,2],[1],[3,3],[3,3])
+            self.cache.delete_memoized(big_foo, [5,3,2],[1],[3,3],[3,3])
             result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
             assert result_a != result_b
 

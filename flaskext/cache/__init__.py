@@ -11,6 +11,8 @@
 import uuid
 import hashlib
 import inspect
+import warnings
+import exceptions
 
 from functools import wraps
 
@@ -21,6 +23,16 @@ from flask import request, current_app
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
 from flaskext.cache.jinja2ext import CacheExtension
+
+def function_namespace(f):
+    """
+    Attempts to returns unique namespace for function
+    """
+
+    if hasattr(f, 'im_func'):
+        return '%s.%s.%s' % (f.__module__, f.im_class.__name__, f.__name__)
+    else:
+        return '%s.%s' % (f.__module__, f.__name__)
 
 #: Cache Object
 ################
@@ -249,6 +261,9 @@ class Cache(object):
         m_args = inspect.getargspec(f)[0]
 
         for i in range(len(m_args)):
+            if i == 0 and m_args[i] in ('self', 'cls'):
+                continue
+
             if m_args[i] in kwargs:
                 new_args.append(kwargs[m_args[i]])
             elif arg_num < len(args):
@@ -329,10 +344,13 @@ class Cache(object):
                                    timeout=decorated_function.cache_timeout)
                 return rv
 
+            fname = function_namespace(f)
+
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = self.memoize_make_cache_key(f.__name__,
+            decorated_function.make_cache_key = self.memoize_make_cache_key(fname,
                                                                             make_name)
+            decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
             return decorated_function
         return memoize
@@ -407,16 +425,21 @@ class Cache(object):
         if callable(fname):
             assert hasattr(fname, 'uncached')
             f = fname.uncached
-            _fname = f.__name__
+            _fname = function_namespace(f)
         else:
             f = None
             _fname = fname
 
+            #: print import_string(_fname)
+
+            raise exceptions.DeprecationWarning("Deleting messages by relative name is no longer"
+                          " reliable, please switch to a function reference"
+                          " or use the full function import name")
+
         if not args and not kwargs:
-            version_key = self._memvname(fname)
+            version_key = self._memvname(_fname)
             version_data = self.memoize_make_version_hash()
             self.cache.set(version_key, version_data)
         else:
-            cache_key = self.memoize_make_cache_key(_fname)(f, *args, **kwargs)
+            cache_key = fname.make_cache_key(f, *args, **kwargs)
             self.cache.delete(cache_key)
-
