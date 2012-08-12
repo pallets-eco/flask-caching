@@ -191,10 +191,10 @@ class Cache(object):
                 return rv
 
             def make_cache_key(*args, **kwargs):
-                if '%s' in key_prefix:
-                    cache_key = key_prefix % request.path
-                elif callable(key_prefix):
+                if callable(key_prefix):
                     cache_key = key_prefix()
+                elif '%s' in key_prefix:
+                    cache_key = key_prefix % request.path
                 else:
                     cache_key = key_prefix
 
