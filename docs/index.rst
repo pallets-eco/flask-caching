@@ -28,23 +28,23 @@ The following configuration values exist for Flask-Cache:
                                 be imported and instantiated. It is
                                 assumed that the import object is a
                                 function that will return a cache
-                                object that adheres to the werkzeug cache 
+                                object that adheres to the werkzeug cache
                                 API.
-                                
+
                                 For werkzeug.contrib.cache objects, you
-                                do not need to specify the entire 
+                                do not need to specify the entire
                                 import string, just one of the following
                                 names.
-                                
+
                                 Built-in cache types:
-                                
+
                                 * **null**: NullCache
                                 * **simple**: SimpleCache
                                 * **memcached**: MemcachedCache
                                 * **gaememcached**: GAEMemcachedCache
                                 * **redis**: RedisCache (Werkzeug 0.7 required)
                                 * **filesystem**: FileSystemCache
-                                
+
 ``CACHE_ARGS``                  Optional list to unpack and pass during
                                 the cache class instantiation.
 ``CACHE_OPTIONS``               Optional dictionary to pass during the
@@ -131,18 +131,18 @@ In memoization, the functions arguments are also included into the cache_key.
 
 	With functions that do not receive arguments, :meth:`~Cache.cached` and
 	:meth:`~Cache.memoize` are effectively the same.
-	
+
 Memoize is also designed for instance objects, since it will take into account
 that functions id. The theory here is that if you have a function you need
 to call several times in one request, it would only be calculated the first
 time that function is called with those arguments. For example, an sqlalchemy
-object that determines if a user has a role. You might need to call this 
+object that determines if a user has a role. You might need to call this
 function many times during a single request.::
 
 	@cache.memoize(50)
 	def user_has_membership(user, role):
 		return Group.query.filter_by(user=user, role=role).count() >= 1
-		
+
 Deleting memoize cache
 ``````````````````````
 
@@ -154,12 +154,12 @@ but now you need to re-calculate if they have certain memberships or not.
 You can do this with the :meth:`~Cache.delete_memoized` function.::
 
 	cache.delete_memoized('has_membership')
-	
+
 .. note::
 
   If only the function name is given as parameter, all the memoized versions
-  of it will be invalidated. However, you can delete specific cache by 
-  providing the same parameter values as when caching. In following 
+  of it will be invalidated. However, you can delete specific cache by
+  providing the same parameter values as when caching. In following
   example only the ``user``-role cache is deleted:
 
   .. code-block:: python
@@ -182,7 +182,7 @@ arguments.
 * ``args``
 * ``kwargs``
 
-Your custom cache object must also subclass the 
+Your custom cache object must also subclass the
 :class:`werkzeug.contrib.cache.BaseCache` class. Flask-Cache will make sure
 that ``threshold`` is already included in the kwargs options dictionary since
 it is common to all BaseCache classes.
@@ -193,12 +193,40 @@ An example Redis cache implementation::
 	class RedisCache(BaseCache):
 		def __init__(self, servers, default_timeout=500):
 			pass
-	
+
 	def redis(app, args, kwargs):
 	   args.append(app.config['REDIS_SERVERS'])
 	   return RedisCache(*args, **kwargs)
 
 With this example, your ``CACHE_TYPE`` might be ``the_app.custom.redis``
+
+Caching Jinja2 Snippets
+-----------------------
+
+Usage::
+
+    {% cache [timeout [,[key1, [key2, ...]]]] %}
+    ...
+    {% endcache %}
+
+    By default the value of "path to template file" + "block start line" is used as cache key.
+    Also one or multiple key names can be set manually
+    that can be used to avoid the same block evaluating in different templates.
+
+    Set timeout to "del" to delete cached value:
+    {% cache 'del' %}...
+
+Example::
+
+    Considering we have render_form_field and render_submit macroses.
+    {% cache 60*5 %}
+    <div>
+        <form>
+        {% render_form_field form.username %}
+        {% render_submit %}
+        </form>
+    </div>
+    {% endcache %}
 
 API
 ---
