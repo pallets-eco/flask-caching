@@ -66,7 +66,7 @@ class Cache(object):
         "This is used to initialize cache with your app object"
 
         if self.config is None:
-            self.config = self.config
+            self.config = app.config
 
         self.config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
         self.config.setdefault('CACHE_THRESHOLD', 500)
