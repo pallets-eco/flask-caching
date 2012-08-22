@@ -92,6 +92,16 @@ You may also set up your ``Cache`` instance later at configuration time using
     app = Flask(__name__)
     cache.init_app(app)
 
+You may also provide an alternate configuration dictionary, useful if there will
+be multiple ``Cache`` instances each with a different backend.::
+
+    #: Method A: During instantiation of class
+    cache = Cache(config={'CACHE_TYPE': 'simple'})
+    #: Method B: During init_app call
+    cache.init_app(app, config={'CACHE_TYPE': 'simple'})
+
+.. versionadded:: 0.7
+
 Caching View Functions
 ----------------------
 
