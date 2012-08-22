@@ -50,9 +50,6 @@ class Cache(object):
         self.with_jinja2_ext = with_jinja2_ext
         self.config = config
 
-        if not isinstance(self.config, (NoneType, dict)):
-            raise ValueError("`config` must be an instance of dict or NoneType")
-
         self.cache = None
 
         if app is not None:
@@ -62,11 +59,16 @@ class Cache(object):
 
         self._memoized = []
 
-    def init_app(self, app):
+    def init_app(self, app, config=None):
         "This is used to initialize cache with your app object"
 
-        if self.config is None:
+        if config is not None:
+            self.config = config
+        elif self.config is None:
             self.config = app.config
+
+        if not isinstance(self.config, (NoneType, dict)):
+            raise ValueError("`config` must be an instance of dict or NoneType")
 
         self.config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
         self.config.setdefault('CACHE_THRESHOLD', 500)
