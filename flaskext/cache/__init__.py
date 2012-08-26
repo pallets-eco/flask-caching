@@ -9,7 +9,8 @@
     :license: BSD, see LICENSE for more details
 """
 
-__version__ = '0.6.0'
+__version__ = '0.7.0'
+__versionfull__ = __version__
 
 import uuid
 import hashlib
@@ -17,6 +18,7 @@ import inspect
 import warnings
 import exceptions
 
+from types import NoneType
 from functools import wraps
 
 from werkzeug import import_string
@@ -45,8 +47,9 @@ class Cache(object):
     This class is used to control the cache objects.
     """
 
-    def __init__(self, app=None, with_jinja2_ext=True):
+    def __init__(self, app=None, with_jinja2_ext=True, config=None):
         self.with_jinja2_ext = with_jinja2_ext
+        self.config = config
 
         self.cache = None
 
@@ -57,17 +60,25 @@ class Cache(object):
 
         self._memoized = []
 
-    def init_app(self, app):
+    def init_app(self, app, config=None):
         "This is used to initialize cache with your app object"
 
-        app.config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
-        app.config.setdefault('CACHE_THRESHOLD', 500)
-        app.config.setdefault('CACHE_KEY_PREFIX', None)
-        app.config.setdefault('CACHE_MEMCACHED_SERVERS', None)
-        app.config.setdefault('CACHE_DIR', None)
-        app.config.setdefault('CACHE_OPTIONS', None)
-        app.config.setdefault('CACHE_ARGS', [])
-        app.config.setdefault('CACHE_TYPE', 'null')
+        if config is not None:
+            self.config = config
+        elif self.config is None:
+            self.config = app.config
+
+        if not isinstance(self.config, (NoneType, dict)):
+            raise ValueError("`config` must be an instance of dict or NoneType")
+
+        self.config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
+        self.config.setdefault('CACHE_THRESHOLD', 500)
+        self.config.setdefault('CACHE_KEY_PREFIX', None)
+        self.config.setdefault('CACHE_MEMCACHED_SERVERS', None)
+        self.config.setdefault('CACHE_DIR', None)
+        self.config.setdefault('CACHE_OPTIONS', None)
+        self.config.setdefault('CACHE_ARGS', [])
+        self.config.setdefault('CACHE_TYPE', 'null')
 
         if self.with_jinja2_ext:
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
@@ -79,20 +90,20 @@ class Cache(object):
         self._set_cache()
 
     def _set_cache(self):
-        import_me = self.app.config['CACHE_TYPE']
+        import_me = self.config['CACHE_TYPE']
         if '.' not in import_me:
             import_me = 'flaskext.cache.backends.' + \
                         import_me
 
         cache_obj = import_string(import_me)
-        cache_args = self.app.config['CACHE_ARGS'][:]
+        cache_args = self.config['CACHE_ARGS'][:]
         cache_options = dict(default_timeout= \
-                             self.app.config['CACHE_DEFAULT_TIMEOUT'])
+                             self.config['CACHE_DEFAULT_TIMEOUT'])
 
-        if self.app.config['CACHE_OPTIONS']:
-            cache_options.update(self.app.config['CACHE_OPTIONS'])
+        if self.config['CACHE_OPTIONS']:
+            cache_options.update(self.config['CACHE_OPTIONS'])
 
-        self.cache = cache_obj(self.app, cache_args, cache_options)
+        self.cache = cache_obj(self.app, self.config, cache_args, cache_options)
 
         if not isinstance(self.cache, BaseCache):
             raise TypeError("Cache object must subclass "

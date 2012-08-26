@@ -347,7 +347,6 @@ class CacheTestCase(unittest.TestCase):
             result_a = big_foo([5,3,2], [1], c=[3,3], d=[3,3])
             assert result_a != result_b
 
-
     def test_16_memoize_kwargs_to_args(self):
         with self.app.test_request_context():
             def big_foo(a, b, c=None, d=None):
@@ -365,6 +364,25 @@ class CacheTestCase(unittest.TestCase):
             assert (args == expected)
             args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, 1,2,d='bar',c='foo')
             assert (args == expected)
+
+    def test_17_dict_config(self):
+        cache = Cache(config={'CACHE_TYPE': 'simple'})
+        cache.init_app(self.app)
+
+        assert cache.config['CACHE_TYPE'] == 'simple'
+
+    def test_18_dict_config_initapp(self):
+        cache = Cache()
+        cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
+
+        assert cache.config['CACHE_TYPE'] == 'simple'
+
+    def test_19_dict_config_both(self):
+        cache = Cache(config={'CACHE_TYPE': 'null'})
+        cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
+
+        assert cache.config['CACHE_TYPE'] == 'simple'
+
 
 if __name__ == '__main__':
     unittest.main()
