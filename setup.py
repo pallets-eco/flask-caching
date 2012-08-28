@@ -6,13 +6,12 @@ Flask-Cache
 Adds cache support to your Flask application
 
 """
-from flaskext.cache import __version__
 
 from setuptools import setup
 
 setup(
     name='Flask-Cache',
-    version=__version__,
+    version='0.7.1',
     url='http://github.com/thadeusb/flask-cache',
     license='BSD',
     author='Thadeus Burgess',
