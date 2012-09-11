@@ -6,7 +6,7 @@ import time
 import random
 
 from flask import Flask
-from flaskext.cache import Cache
+from flask.ext.cache import Cache
 
 class CacheTestCase(unittest.TestCase):
 

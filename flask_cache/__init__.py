@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    flaskext.cache
+    flask.ext.cache
     ~~~~~~~~~~~~~~
 
     Adds cache support to your application.
@@ -26,8 +26,6 @@ from werkzeug.contrib.cache import BaseCache, NullCache
 from flask import request, current_app
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
-
-from flaskext.cache.jinja2ext import CacheExtension
 
 def function_namespace(f):
     """
@@ -83,6 +81,7 @@ class Cache(object):
         if self.with_jinja2_ext:
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
 
+            from flask.ext.cache.jinja2ext import CacheExtension
             app.jinja_env.add_extension(CacheExtension)
 
         self.app = app
@@ -92,7 +91,7 @@ class Cache(object):
     def _set_cache(self):
         import_me = self.config['CACHE_TYPE']
         if '.' not in import_me:
-            import_me = 'flaskext.cache.backends.' + \
+            import_me = 'flask.ext.cache.backends.' + \
                         import_me
 
         cache_obj = import_string(import_me)
