@@ -40,7 +40,7 @@ The following configuration values exist for Flask-Cache:
 
                                 * **null**: NullCache
                                 * **simple**: SimpleCache
-                                * **memcached**: MemcachedCache
+                                * **memcached**: MemcachedCache (pylibmc required)
                                 * **gaememcached**: GAEMemcachedCache
                                 * **redis**: RedisCache (Werkzeug 0.7 required)
                                 * **filesystem**: FileSystemCache
