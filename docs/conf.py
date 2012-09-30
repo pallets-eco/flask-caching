@@ -19,7 +19,7 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath('_themes'))
 
-from flask.ext.cache import __version__, __versionfull__
+from flask_cache import __version__, __versionfull__
 
 # -- General configuration -----------------------------------------------------
 
