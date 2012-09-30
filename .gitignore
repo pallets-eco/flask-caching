@@ -1,4 +1,5 @@
 *.py[co]
+.*.swp
 docs/_build/*
 Flask_Cache.egg-info/*
 build/*

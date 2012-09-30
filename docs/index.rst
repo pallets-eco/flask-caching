@@ -1,7 +1,7 @@
 Flask-Cache
 ================
 
-.. module:: flaskext.cache
+.. module:: flask.ext.cache
 
 Installation
 ------------
@@ -79,7 +79,7 @@ Set Up
 Cache is managed through a ``Cache`` instance::
 
     from flask import Flask
-    from flaskext.cache import Cache
+    from flask.ext.cache import Cache
 
     app = Flask(__name__)
     cache = Cache(app)

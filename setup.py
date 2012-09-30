@@ -19,10 +19,8 @@ setup(
     description='Adds cache support to your Flask application',
     long_description=__doc__,
     packages=[
-        'flaskext',
-        'flaskext.cache',
+        'flask_cache',
     ],
-    namespace_packages=['flaskext'],
     zip_safe=False,
     platforms='any',
     install_requires=[
