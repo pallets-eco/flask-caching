@@ -110,7 +110,10 @@ class Cache(object):
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        return self.cache.get(*args, **kwargs)
+        try:
+            return self.cache.get(*args, **kwargs)
+        except exceptions.Exception:
+            return None
 
     def set(self, *args, **kwargs):
         "Proxy function for internal cache object."
@@ -191,7 +194,7 @@ class Cache(object):
 
                 cache_key = decorated_function.make_cache_key(*args, **kwargs)
 
-                rv = self.cache.get(cache_key)
+                rv = self.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
                     self.cache.set(cache_key, rv,
@@ -229,7 +232,7 @@ class Cache(object):
         """
         def make_cache_key(f, *args, **kwargs):
             version_key = self._memvname(fname)
-            version_data = self.cache.get(version_key)
+            version_data = self.get(version_key)
 
             if version_data is None:
                 version_data = self.memoize_make_version_hash()
@@ -345,7 +348,7 @@ class Cache(object):
 
                 cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
 
-                rv = self.cache.get(cache_key)
+                rv = self.get(cache_key)
                 if rv is None:
                     rv = f(*args, **kwargs)
                     self.cache.set(cache_key, rv,
