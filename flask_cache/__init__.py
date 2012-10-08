@@ -110,10 +110,7 @@ class Cache(object):
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        try:
-            return self.cache.get(*args, **kwargs)
-        except exceptions.Exception:
-            return None
+        return self.cache.get(*args, **kwargs)
 
     def set(self, *args, **kwargs):
         "Proxy function for internal cache object."
