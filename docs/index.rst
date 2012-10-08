@@ -143,18 +143,22 @@ In memoization, the functions arguments are also included into the cache_key.
 	With functions that do not receive arguments, :meth:`~Cache.cached` and
 	:meth:`~Cache.memoize` are effectively the same.
 
-Memoize is also designed for instance objects, since it will take into account
-that functions `identity <http://docs.python.org/library/functions.html#id>`_.
-The theory here is that if you have a function you need
+Memoize is also designed for methods, since it will take into account
+the `identity <http://docs.python.org/library/functions.html#id>`_. of the
+'self' or 'cls' argument as part of the cache key.
+
+The theory behind memoization is that if you have a function you need
 to call several times in one request, it would only be calculated the first
 time that function is called with those arguments. For example, an sqlalchemy
 object that determines if a user has a role. You might need to call this
-function many times during a single request.::
+function many times during a single request. To keep from hitting the database
+every time this information is needed you might do something like the following::
 
     class Person(db.Model):
     	@cache.memoize(50)
     	def has_membership(self, role_id):
     		return Group.query.filter_by(user=self, role_id=role_id).count() >= 1
+
 
 .. warning::
 
