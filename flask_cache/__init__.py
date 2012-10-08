@@ -17,9 +17,9 @@ import hashlib
 import inspect
 import warnings
 import exceptions
+import functools
 
 from types import NoneType
-from functools import wraps
 
 from werkzeug import import_string
 from werkzeug.contrib.cache import BaseCache, NullCache
@@ -27,13 +27,22 @@ from flask import request, current_app
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
-def function_namespace(f):
+def function_namespace(f, args=None):
     """
     Attempts to returns unique namespace for function
     """
+    m_args = inspect.getargspec(f)[0]
+
+    if len(m_args) and args:
+        if m_args[0] == 'self':
+            return '%s.%s.%s' % (f.__module__, args[0].__class__.__name__, f.__name__)
+        elif m_args[0] == 'cls':
+            return '%s.%s.%s' % (f.__module__, args[0].__name__, f.__name__)
 
     if hasattr(f, 'im_func'):
         return '%s.%s.%s' % (f.__module__, f.im_class.__name__, f.__name__)
+    elif hasattr(f, '__class__'):
+        return '%s.%s.%s' % (f.__module__, f.__class__.__name__, f.__name__)
     else:
         return '%s.%s' % (f.__module__, f.__name__)
 
@@ -183,7 +192,7 @@ class Cache(object):
         """
 
         def decorator(f):
-            @wraps(f)
+            @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
                 if callable(unless) and unless() is True:
@@ -223,11 +232,13 @@ class Cache(object):
     def memoize_make_version_hash(self):
         return uuid.uuid4().bytes.encode('base64')[:6]
 
-    def memoize_make_cache_key(self, fname, make_name=None):
+    def memoize_make_cache_key(self, make_name=None):
         """
         Function used to create the cache_key for memoized functions.
         """
         def make_cache_key(f, *args, **kwargs):
+            fname = function_namespace(f, args)
+
             version_key = self._memvname(fname)
             version_data = self.cache.get(version_key)
 
@@ -270,13 +281,37 @@ class Cache(object):
 
         for i in range(len(m_args)):
             if i == 0 and m_args[i] in ('self', 'cls'):
-                continue
-
-            if m_args[i] in kwargs:
-                new_args.append(kwargs[m_args[i]])
-            elif arg_num < len(args):
-                new_args.append(args[arg_num])
+                #: use the id of the class instance
+                #: this supports instance methods for
+                #: the memoized functions.
+                arg = id(args[0])
                 arg_num += 1
+            elif m_args[i] in kwargs:
+                arg = kwargs[m_args[i]]
+            elif arg_num < len(args):
+                arg = args[arg_num]
+                arg_num += 1
+
+            #: Attempt to convert all arguments to a
+            #: hash/id or a representation?
+            #: Not sure if this is necessary, since
+            #: using objects as keys gets tricky quickly.
+            # if hasattr(arg, '__class__'):
+            #     try:
+            #         arg = hash(arg)
+            #     except:
+            #         arg = repr(arg)
+
+            #: Or what about a special __cacherepr__ function
+            #: on an object, this allows objects to act normal
+            #: upon inspection, yet they can define a representation
+            #: that can be used to make the object unique in the
+            #: cache key. Given that a case comes across that
+            #: an object "must" be used as a cache key
+            # if hasattr(arg, '__cacherepr__'):
+            #     arg = arg.__cacherepr__
+
+            new_args.append(arg)
 
         return tuple(new_args), {}
 
@@ -337,7 +372,7 @@ class Cache(object):
         """
 
         def memoize(f):
-            @wraps(f)
+            @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: bypass cache
                 if callable(unless) and unless() is True:
@@ -352,18 +387,15 @@ class Cache(object):
                                    timeout=decorated_function.cache_timeout)
                 return rv
 
-            fname = function_namespace(f)
-
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = self.memoize_make_cache_key(fname,
-                                                                            make_name)
+            decorated_function.make_cache_key = self.memoize_make_cache_key(make_name)
             decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
             return decorated_function
         return memoize
 
-    def delete_memoized(self, fname, *args, **kwargs):
+    def delete_memoized(self, f, *args, **kwargs):
         """
         Deletes the specified functions caches, based by given parameters.
         If parameters are given, only the functions that were memoized with them
@@ -430,24 +462,17 @@ class Cache(object):
             this function, so that when the version has is swapped, the old cached
             results would eventually be reclaimed by the caching backend.
         """
-        if callable(fname):
-            assert hasattr(fname, 'uncached')
-            f = fname.uncached
-            _fname = function_namespace(f)
-        else:
-            f = None
-            _fname = fname
-
-            #: print import_string(_fname)
-
+        if not callable(f):
             raise exceptions.DeprecationWarning("Deleting messages by relative name is no longer"
                           " reliable, please switch to a function reference"
                           " or use the full function import name")
+
+        _fname = function_namespace(f, args)
 
         if not args and not kwargs:
             version_key = self._memvname(_fname)
             version_data = self.memoize_make_version_hash()
             self.cache.set(version_key, version_data)
         else:
-            cache_key = fname.make_cache_key(f, *args, **kwargs)
+            cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
             self.cache.delete(cache_key)

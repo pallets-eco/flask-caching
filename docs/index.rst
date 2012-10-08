@@ -144,15 +144,33 @@ In memoization, the functions arguments are also included into the cache_key.
 	:meth:`~Cache.memoize` are effectively the same.
 
 Memoize is also designed for instance objects, since it will take into account
-that functions id. The theory here is that if you have a function you need
+that functions `identity <http://docs.python.org/library/functions.html#id>`_.
+The theory here is that if you have a function you need
 to call several times in one request, it would only be calculated the first
 time that function is called with those arguments. For example, an sqlalchemy
 object that determines if a user has a role. You might need to call this
 function many times during a single request.::
 
-	@cache.memoize(50)
-	def user_has_membership(user, role):
-		return Group.query.filter_by(user=user, role=role).count() >= 1
+    class Person(db.Model):
+    	@cache.memoize(50)
+    	def has_membership(self, role_id):
+    		return Group.query.filter_by(user=self, role_id=role_id).count() >= 1
+
+.. warning::
+
+    Using mutable objects (classes, etc) as part of the cache key can become
+    tricky. It is suggested to not pass in an object instance into a memoized
+    function. However, the memoize does perform a repr() on the passed in arguments
+    so that if the object has a __repr__ function that returns a uniquely
+    identifying string for that object, that will be used as part of the
+    cache key.
+
+    For example, an sqlalchemy person object that returns the database id as
+    part of the unique identifier.::
+
+    class Person(db.Model):
+        def __repr__(self):
+            return "%s(%s)" % (self.__class__.__name__, self.id)
 
 Deleting memoize cache
 ``````````````````````

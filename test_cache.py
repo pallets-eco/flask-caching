@@ -177,7 +177,6 @@ class CacheTestCase(unittest.TestCase):
 
             assert big_foo(5, 1) == result_a
             assert big_foo(5, 2) == result_b
-
             self.cache.delete_memoized(big_foo, 5, 2)
 
             assert big_foo(5, 1) == result_a
@@ -218,6 +217,49 @@ class CacheTestCase(unittest.TestCase):
 
             assert big_foo(1, dict(one=1,two=2)) != result_a
             assert big_foo(5, dict(three=3,four=4)) == result_b
+
+    def test_10b_classarg_memoize(self):
+
+        @self.cache.memoize()
+        def bar(a):
+            return a.value + random.random()
+
+        class Adder(object):
+            def __init__(self, value):
+                self.value = value
+
+        adder = Adder(15)
+        adder2 = Adder(20)
+
+        y = bar(adder)
+        z = bar(adder2)
+
+        assert y != z
+        assert bar(adder) == y
+        assert bar(adder) != z
+        adder.value = 14
+        assert bar(adder) == y
+        assert bar(adder) != z
+
+        assert bar(adder) != bar(adder2)
+        assert bar(adder2) == z
+
+    def test_10c_classfunc_memoize(self):
+        class Adder(object):
+            def __init__(self, initial):
+                self.initial = initial
+
+            @self.cache.memoize()
+            def add(self, b):
+                return self.initial + b
+
+        adder1 = Adder(1)
+        adder2 = Adder(2)
+
+        x = adder1.add(3)
+        assert adder1.add(3) == x
+        assert adder1.add(4) != x
+        assert adder1.add(3) != adder2.add(3)
 
     def test_11_cache_key_property(self):
         @self.app.route('/')
