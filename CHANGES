@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-Version 0.9.0
-`````````````
+Version 0.9.0 2012-10-14
+````````````````````````
 
 - Fixes memoization to work on methods.
 
