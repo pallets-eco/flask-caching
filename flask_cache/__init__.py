@@ -137,6 +137,14 @@ class Cache(object):
         "Proxy function for internal cache object."
         self.cache.delete_many(*args, **kwargs)
 
+    def get_many(self, *args, **kwargs):
+        "Proxy function for internal cache object."
+        self.cache.get_many(*args, **kwargs)
+
+    def set_many(self, *args, **kwargs):
+        "Proxy function for internal cache object."
+        self.cache.set_many(*args, **kwargs)
+
     def cached(self, timeout=None, key_prefix='view/%s', unless=None):
         """
         Decorator. Use this to cache a function. By default the cache key
