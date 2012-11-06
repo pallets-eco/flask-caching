@@ -113,10 +113,6 @@ class Cache(object):
 
         self.cache = cache_obj(self.app, self.config, cache_args, cache_options)
 
-        if not isinstance(self.cache, BaseCache):
-            raise TypeError("Cache object must subclass "
-                            "werkzeug.contrib.cache.BaseCache")
-
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
         return self.cache.get(*args, **kwargs)
