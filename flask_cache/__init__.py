@@ -135,7 +135,7 @@ class Cache(object):
 
     def get_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        self.cache.get_many(*args, **kwargs)
+        return self.cache.get_many(*args, **kwargs)
 
     def set_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
