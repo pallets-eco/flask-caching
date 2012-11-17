@@ -15,15 +15,13 @@ __versionfull__ = __version__
 import uuid
 import hashlib
 import inspect
-import warnings
 import exceptions
 import functools
 
 from types import NoneType
 
 from werkzeug import import_string
-from werkzeug.contrib.cache import BaseCache, NullCache
-from flask import request, current_app
+from flask import request
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
