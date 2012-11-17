@@ -218,6 +218,21 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(1, dict(one=1,two=2)) != result_a
             assert big_foo(5, dict(three=3,four=4)) == result_b
 
+    def test_10a_kwargonly_memoize(self):
+            @self.cache.memoize()
+            def big_foo(a=None):
+                if a is None:
+                    a = 0
+                return a+random.random()
+
+            result_a = big_foo()
+            result_b = big_foo(5)
+
+            assert big_foo() == result_a
+            assert big_foo() < 1
+            assert big_foo(5) == result_b
+            assert big_foo(5) >= 5 and big_foo(5) < 6
+
     def test_10b_classarg_memoize(self):
 
         @self.cache.memoize()

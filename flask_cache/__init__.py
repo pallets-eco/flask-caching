@@ -277,19 +277,22 @@ class Cache(object):
         #: 1, b=2 is equivilant to a=1, b=2, etc.
         new_args = []
         arg_num = 0
-        m_args = inspect.getargspec(f)[0]
+        argspec = inspect.getargspec(f)
 
-        for i in range(len(m_args)):
-            if i == 0 and m_args[i] in ('self', 'cls'):
+        for i in range(len(argspec.args)):
+            if i == 0 and argspec.args[i] in ('self', 'cls'):
                 #: use the id of the class instance
                 #: this supports instance methods for
                 #: the memoized functions.
                 arg = id(args[0])
                 arg_num += 1
-            elif m_args[i] in kwargs:
-                arg = kwargs[m_args[i]]
+            elif argspec.args[i] in kwargs:
+                arg = kwargs[argspec.args[i]]
             elif arg_num < len(args):
                 arg = args[arg_num]
+                arg_num += 1
+            else:
+                arg = argspec.defaults[i]
                 arg_num += 1
 
             #: Attempt to convert all arguments to a

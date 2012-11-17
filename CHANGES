@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+Version 0.9.1 2012-11-16
+````````````````````````
+
+- Fixes broken memoized on functions that use default kwargs
+
 Version 0.9.0 2012-10-14
 ````````````````````````
 
