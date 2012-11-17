@@ -113,10 +113,6 @@ class Cache(object):
 
         self.cache = cache_obj(self.app, self.config, cache_args, cache_options)
 
-        if not isinstance(self.cache, BaseCache):
-            raise TypeError("Cache object must subclass "
-                            "werkzeug.contrib.cache.BaseCache")
-
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
         return self.cache.get(*args, **kwargs)
@@ -136,6 +132,14 @@ class Cache(object):
     def delete_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
         self.cache.delete_many(*args, **kwargs)
+
+    def get_many(self, *args, **kwargs):
+        "Proxy function for internal cache object."
+        return self.cache.get_many(*args, **kwargs)
+
+    def set_many(self, *args, **kwargs):
+        "Proxy function for internal cache object."
+        self.cache.set_many(*args, **kwargs)
 
     def cached(self, timeout=None, key_prefix='view/%s', unless=None):
         """
