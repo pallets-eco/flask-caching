@@ -1,7 +1,6 @@
 from __future__ import with_statement
 
 import unittest
-import datetime
 import time
 import random
 
