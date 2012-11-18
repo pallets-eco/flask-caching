@@ -294,7 +294,7 @@ class Cache(object):
                 arg = args[arg_num]
                 arg_num += 1
             else:
-                arg = argspec.defaults[i]
+                arg = argspec.defaults[-i]
                 arg_num += 1
 
             #: Attempt to convert all arguments to a
