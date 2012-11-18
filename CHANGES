@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+Version 0.9.2 2012-11-18
+````````````````````````
+
+- Bugfix with default kwargs
+
 Version 0.9.1 2012-11-16
 ````````````````````````
 

@@ -232,6 +232,14 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5) == result_b
             assert big_foo(5) >= 5 and big_foo(5) < 6
 
+    def test_10a_arg_kwarg_memoize(self):
+        @self.cache.memoize()
+        def f(a, b=0):
+            pass
+
+        f(1)
+        f(1)
+
     def test_10b_classarg_memoize(self):
 
         @self.cache.memoize()
