@@ -14,66 +14,6 @@ or alternatively if you have pip installed::
 
     $ pip install Flask-Cache
 
-
-Configuring Flask-Cache
------------------------
-
-The following configuration values exist for Flask-Cache:
-
-.. tabularcolumns:: |p{6.5cm}|p{8.5cm}|
-
-=============================== ======================================================
-``CACHE_TYPE``                  Specifies which type of caching object to
-                                use. This is an import string that will
-                                be imported and instantiated. It is
-                                assumed that the import object is a
-                                function that will return a cache
-                                object that adheres to the werkzeug cache
-                                API.
-
-                                For werkzeug.contrib.cache objects, you
-                                do not need to specify the entire
-                                import string, just one of the following
-                                names.
-
-                                Built-in cache types:
-
-                                * **null**: NullCache
-                                * **simple**: SimpleCache
-                                * **memcached**: MemcachedCache (pylibmc required)
-                                * **gaememcached**: GAEMemcachedCache
-                                * **redis**: RedisCache (Werkzeug 0.7 required)
-                                * **filesystem**: FileSystemCache
-
-``CACHE_ARGS``                  Optional list to unpack and pass during
-                                the cache class instantiation.
-``CACHE_OPTIONS``               Optional dictionary to pass during the
-                                cache class instantiation.
-``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
-                                timeout is specified. Unit of time is
-                                seconds.
-``CACHE_THRESHOLD``             The maximum number of items the cache
-                                will store before it starts deleting
-                                some. Used only for SimpleCache and
-                                FileSystemCache
-``CACHE_KEY_PREFIX``            A prefix that is added before all keys.
-                                This makes it possible to use the same
-                                memcached server for different apps.
-                                Used only for MemcachedCache and
-                                GAEMemcachedCache.
-``CACHE_MEMCACHED_SERVERS``     A list or a tuple of server addresses.
-                                Used only for MemcachedCache
-``CACHE_REDIS_HOST``            A Redis server host. Used only for RedisCache.
-``CACHE_REDIS_PORT``            A Redis server port. Default is 6379.
-                                Used only for RedisCache.
-``CACHE_REDIS_PASSWORD``        A Redis password for server. Used only for RedisCache.
-``CACHE_DIR``                   Directory to store cache. Used only for
-                                FileSystemCache.
-=============================== ======================================================
-
-In addition the standard Flask ``TESTING`` configuration option is used. If this
-is True then **Flask-Cache** will use NullCache only.
-
 Set Up
 ------
 
@@ -202,37 +142,6 @@ You can do this with the :meth:`~Cache.delete_memoized` function.::
 
      cache.delete_memoized('user_has_membership', 'demo', 'user')
 
-
-Custom Cache Backends
----------------------
-
-You are able to easily add your own custom cache backends by exposing a function
-that can instantiate and return a cache object. ``CACHE_TYPE`` will be the
-import string to your custom function. It should expect to receive three
-arguments.
-
-* ``app``
-* ``args``
-* ``kwargs``
-
-Your custom cache object must also subclass the
-:class:`werkzeug.contrib.cache.BaseCache` class. Flask-Cache will make sure
-that ``threshold`` is already included in the kwargs options dictionary since
-it is common to all BaseCache classes.
-
-An example Redis cache implementation::
-
-	#: the_app/custom.py
-	class RedisCache(BaseCache):
-		def __init__(self, servers, default_timeout=500):
-			pass
-
-	def redis(app, args, kwargs):
-	   args.append(app.config['REDIS_SERVERS'])
-	   return RedisCache(*args, **kwargs)
-
-With this example, your ``CACHE_TYPE`` might be ``the_app.custom.redis``
-
 Caching Jinja2 Snippets
 -----------------------
 
@@ -260,6 +169,198 @@ Example::
         </form>
     </div>
     {% endcache %}
+
+Configuring Flask-Cache
+-----------------------
+
+The following configuration values exist for Flask-Cache:
+
+.. tabularcolumns:: |p{6.5cm}|p{8.5cm}|
+
+=============================== ======================================================
+``CACHE_TYPE``                  Specifies which type of caching object to
+                                use. This is an import string that will
+                                be imported and instantiated. It is
+                                assumed that the import object is a
+                                function that will return a cache
+                                object that adheres to the werkzeug cache
+                                API.
+
+                                For werkzeug.contrib.cache objects, you
+                                do not need to specify the entire
+                                import string, just one of the following
+                                names.
+
+                                Built-in cache types:
+
+                                * **null**: NullCache
+                                * **simple**: SimpleCache
+                                * **memcached**: MemcachedCache (pylibmc or memcache required)
+                                * **gaememcached**: GAEMemcachedCache
+                                * **redis**: RedisCache (Werkzeug 0.7 required)
+                                * **filesystem**: FileSystemCache
+                                * **saslmemcached**: SASLMemcachedCache (pylibmc required)
+
+``CACHE_ARGS``                  Optional list to unpack and pass during
+                                the cache class instantiation.
+``CACHE_OPTIONS``               Optional dictionary to pass during the
+                                cache class instantiation.
+``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
+                                timeout is specified. Unit of time is
+                                seconds.
+``CACHE_THRESHOLD``             The maximum number of items the cache
+                                will store before it starts deleting
+                                some. Used only for SimpleCache and
+                                FileSystemCache
+``CACHE_KEY_PREFIX``            A prefix that is added before all keys.
+                                This makes it possible to use the same
+                                memcached server for different apps.
+                                Used only for MemcachedCache and
+                                GAEMemcachedCache.
+``CACHE_MEMCACHED_SERVERS``     A list or a tuple of server addresses.
+                                Used only for MemcachedCache
+``CACHE_MEMCACHED_USERNAME``    Username for SASL authentication with memcached.
+                                Used only for SASLMemcachedCache
+``CACHE_MEMCACHED_PASSWORD``    Password for SASL authentication with memcached.
+                                Used only for SASLMemcachedCache
+``CACHE_REDIS_HOST``            A Redis server host. Used only for RedisCache.
+``CACHE_REDIS_PORT``            A Redis server port. Default is 6379.
+                                Used only for RedisCache.
+``CACHE_REDIS_PASSWORD``        A Redis password for server. Used only for RedisCache.
+``CACHE_DIR``                   Directory to store cache. Used only for
+                                FileSystemCache.
+=============================== ======================================================
+
+In addition the standard Flask ``TESTING`` configuration option is used. If this
+is True then **Flask-Cache** will use NullCache only.
+
+Built-in Cache Backends
+-----------------------
+
+NullCache -- null
+`````````````````
+
+Cache that doesn't cache
+
+- CACHE_ARGS
+- CACHE_OPTIONS
+
+
+SimpleCache -- simple
+`````````````````````
+
+Uses a local python dictionary for caching.
+
+Relevant configuration values
+
+- CACHE_DEFAULT_TIMEOUT
+- CACHE_THRESHOLD
+- CACHE_ARGS
+- CACHE_OPTIONS
+
+FileSystemCache -- filesystem
+`````````````````````````````
+
+Uses the filesystem to store cached values
+
+- CACHE_DEFAULT_TIMEOUT
+- CACHE_DIR
+- CACHE_THRESHOLD
+- CACHE_ARGS
+- CACHE_OPTIONS
+
+MemcachedCache -- memcached
+```````````````````````````
+
+Uses a memcached server as a backend. Supports either pylibmc or memcache or
+google app engine memcache library.
+
+Relevant configuration values
+
+- CACHE_DEFAULT_TIMEOUT
+- CACHE_KEY_PREFIX
+- CACHE_MEMCACHED_SERVERS
+- CACHE_ARGS
+- CACHE_OPTIONS
+
+GAEMemcachedCache -- gaememcached
+`````````````````````````````````
+
+Is MemcachedCache under a different name
+
+SASLMemcachedCache -- saslmemcached
+```````````````````````````````````
+
+Uses a memcached server as a backend. Intended to be used with a SASL enabled
+connection to the memcached server. pylibmc is required and SASL must be supported
+by libmemcached.
+
+Relevant configuration values
+
+- CACHE_DEFAULT_TIMEOUT
+- CACHE_KEY_PREFIX
+- CACHE_MEMCACHED_SERVERS
+- CACHE_MEMCACHED_USERNAME
+- CACHE_MEMCACHED_PASSWORD
+- CACHE_ARGS
+- CACHE_OPTIONS
+
+.. versionadded:: 0.10
+
+
+RedisCache -- redis
+```````````````````
+
+- CACHE_DEFAULT_TIMEOUT
+- CACHE_KEY_PREFIX
+- CACHE_REDIS_HOST
+- CACHE_REDIS_PORT
+- CACHE_REDIS_PASSWORD
+- CACHE_ARGS
+- CACHE_OPTIONS
+
+
+Custom Cache Backends
+---------------------
+
+You are able to easily add your own custom cache backends by exposing a function
+that can instantiate and return a cache object. ``CACHE_TYPE`` will be the
+import string to your custom function. It should expect to receive three
+arguments.
+
+* ``app``
+* ``args``
+* ``kwargs``
+
+Your custom cache object must also subclass the
+:class:`werkzeug.contrib.cache.BaseCache` class. Flask-Cache will make sure
+that ``threshold`` is already included in the kwargs options dictionary since
+it is common to all BaseCache classes.
+
+An example Redis cache implementation::
+
+    #: the_app/custom.py
+    class RedisCache(BaseCache):
+        def __init__(self, servers, default_timeout=500):
+            pass
+
+    def redis(app, config, args, kwargs):
+       args.append(app.config['REDIS_SERVERS'])
+       return RedisCache(*args, **kwargs)
+
+With this example, your ``CACHE_TYPE`` might be ``the_app.custom.redis``
+
+An example PylibMC cache implementation to change binary setting and provide
+username/password if SASL is enabled on the library::
+
+    #: the_app/custom.py
+    def pylibmccache(app, config, args, kwargs):
+        return pylibmc.Client(servers=config['CACHE_MEMCACHED_SERVERS'],
+                              username=config['CACHE_MEMCACHED_USERNAME'],
+                              password=config['CACHE_MEMCACHED_PASSWORD'],
+                              binary=True)
+
+With this example, your ``CACHE_TYPE`` might be ``the_app.custom.pylibmccache``
 
 API
 ---
