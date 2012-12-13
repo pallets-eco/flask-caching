@@ -21,7 +21,7 @@ import functools
 from types import NoneType
 
 from werkzeug import import_string
-from flask import request
+from flask import request, current_app
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
@@ -100,7 +100,14 @@ class Cache(object):
         if config['CACHE_OPTIONS']:
             cache_options.update(config['CACHE_OPTIONS'])
 
-        self.cache = cache_obj(app, config, cache_args, cache_options)
+        if not hasattr(app, 'extensions'):
+            app.extensions = {}
+        app.extensions['cache'] = cache_obj(
+                app, config, cache_args, cache_options)
+
+    @property
+    def cache(self):
+        return current_app.extensions['cache']
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
