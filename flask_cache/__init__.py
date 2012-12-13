@@ -60,10 +60,6 @@ class Cache(object):
 
         if app is not None:
             self.init_app(app)
-        else:
-            self.app = None
-
-        self._memoized = []
 
     def init_app(self, app, config=None):
         "This is used to initialize cache with your app object"
@@ -91,11 +87,9 @@ class Cache(object):
             from flask.ext.cache.jinja2ext import CacheExtension
             app.jinja_env.add_extension(CacheExtension)
 
-        self.app = app
+        self._set_cache(app)
 
-        self._set_cache()
-
-    def _set_cache(self):
+    def _set_cache(self, app):
         import_me = self.config['CACHE_TYPE']
         if '.' not in import_me:
             import_me = 'flask.ext.cache.backends.' + \
@@ -109,7 +103,7 @@ class Cache(object):
         if self.config['CACHE_OPTIONS']:
             cache_options.update(self.config['CACHE_OPTIONS'])
 
-        self.cache = cache_obj(self.app, self.config, cache_args, cache_options)
+        self.cache = cache_obj(app, self.config, cache_args, cache_options)
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
