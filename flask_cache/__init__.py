@@ -56,6 +56,7 @@ class Cache(object):
         self.with_jinja2_ext = with_jinja2_ext
         self.config = config
 
+        self.app = app
         if app is not None:
             self.init_app(app, config)
 
@@ -107,7 +108,8 @@ class Cache(object):
 
     @property
     def cache(self):
-        return current_app.extensions['cache']
+        app = self.app or current_app
+        return app.extensions['cache']
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
