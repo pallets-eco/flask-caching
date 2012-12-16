@@ -172,9 +172,9 @@ every time this information is needed you might do something like the following:
     For example, an sqlalchemy person object that returns the database id as
     part of the unique identifier.::
 
-    class Person(db.Model):
-        def __repr__(self):
-            return "%s(%s)" % (self.__class__.__name__, self.id)
+        class Person(db.Model):
+            def __repr__(self):
+                return "%s(%s)" % (self.__class__.__name__, self.id)
 
 Deleting memoize cache
 ``````````````````````
@@ -265,6 +265,8 @@ API
 ---
 
 .. autoclass:: Cache
-   :members: get, set, add, delete, cached, memoize, delete_memoized
+   :members: init_app,
+             get, set, add, delete, get_many, set_many, delete_many,
+             cached, memoize, delete_memoized
 
 .. include:: ../CHANGES

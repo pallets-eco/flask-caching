@@ -404,7 +404,7 @@ class Cache(object):
         """
         Deletes the specified functions caches, based by given parameters.
         If parameters are given, only the functions that were memoized with them
-        will be erased. Otherwise all the versions of the caches will be deleted.
+        will be erased. Otherwise all versions of the caches will be forgotten.
 
         Example::
 
