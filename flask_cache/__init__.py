@@ -21,7 +21,7 @@ import functools
 from types import NoneType
 
 from werkzeug import import_string
-from flask import request
+from flask import request, current_app
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
@@ -56,34 +56,28 @@ class Cache(object):
         self.with_jinja2_ext = with_jinja2_ext
         self.config = config
 
-        self.cache = None
-
+        self.app = app
         if app is not None:
-            self.init_app(app)
-        else:
-            self.app = None
-
-        self._memoized = []
+            self.init_app(app, config)
 
     def init_app(self, app, config=None):
         "This is used to initialize cache with your app object"
-
-        if config is not None:
-            self.config = config
-        elif self.config is None:
-            self.config = app.config
-
-        if not isinstance(self.config, (NoneType, dict)):
+        if not isinstance(config, (NoneType, dict)):
             raise ValueError("`config` must be an instance of dict or NoneType")
 
-        self.config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
-        self.config.setdefault('CACHE_THRESHOLD', 500)
-        self.config.setdefault('CACHE_KEY_PREFIX', None)
-        self.config.setdefault('CACHE_MEMCACHED_SERVERS', None)
-        self.config.setdefault('CACHE_DIR', None)
-        self.config.setdefault('CACHE_OPTIONS', None)
-        self.config.setdefault('CACHE_ARGS', [])
-        self.config.setdefault('CACHE_TYPE', 'null')
+        if config is None:
+            config = self.config
+        if config is None:
+            config = app.config
+
+        config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
+        config.setdefault('CACHE_THRESHOLD', 500)
+        config.setdefault('CACHE_KEY_PREFIX', None)
+        config.setdefault('CACHE_MEMCACHED_SERVERS', None)
+        config.setdefault('CACHE_DIR', None)
+        config.setdefault('CACHE_OPTIONS', None)
+        config.setdefault('CACHE_ARGS', [])
+        config.setdefault('CACHE_TYPE', 'null')
 
         if self.with_jinja2_ext:
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
@@ -91,25 +85,31 @@ class Cache(object):
             from flask.ext.cache.jinja2ext import CacheExtension
             app.jinja_env.add_extension(CacheExtension)
 
-        self.app = app
+        self._set_cache(app, config)
 
-        self._set_cache()
-
-    def _set_cache(self):
-        import_me = self.config['CACHE_TYPE']
+    def _set_cache(self, app, config):
+        import_me = config['CACHE_TYPE']
         if '.' not in import_me:
             import_me = 'flask.ext.cache.backends.' + \
                         import_me
 
         cache_obj = import_string(import_me)
-        cache_args = self.config['CACHE_ARGS'][:]
+        cache_args = config['CACHE_ARGS'][:]
         cache_options = dict(default_timeout= \
-                             self.config['CACHE_DEFAULT_TIMEOUT'])
+                             config['CACHE_DEFAULT_TIMEOUT'])
 
-        if self.config['CACHE_OPTIONS']:
-            cache_options.update(self.config['CACHE_OPTIONS'])
+        if config['CACHE_OPTIONS']:
+            cache_options.update(config['CACHE_OPTIONS'])
 
-        self.cache = cache_obj(self.app, self.config, cache_args, cache_options)
+        if not hasattr(app, 'extensions'):
+            app.extensions = {}
+        app.extensions['cache'] = cache_obj(
+                app, config, cache_args, cache_options)
+
+    @property
+    def cache(self):
+        app = self.app or current_app
+        return app.extensions['cache']
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."

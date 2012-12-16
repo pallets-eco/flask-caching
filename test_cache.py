@@ -15,8 +15,7 @@ class CacheTestCase(unittest.TestCase):
         app.debug = False
         app.config['CACHE_TYPE'] = 'simple'
 
-        self.cache = Cache()
-        self.cache.init_app(app)
+        self.cache = Cache(app)
 
         self.app = app
 
@@ -438,14 +437,14 @@ class CacheTestCase(unittest.TestCase):
     def test_18_dict_config_initapp(self):
         cache = Cache()
         cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
-
-        assert cache.config['CACHE_TYPE'] == 'simple'
+        from werkzeug.contrib.cache import SimpleCache
+        assert isinstance(self.app.extensions['cache'], SimpleCache)
 
     def test_19_dict_config_both(self):
         cache = Cache(config={'CACHE_TYPE': 'null'})
         cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
-
-        assert cache.config['CACHE_TYPE'] == 'simple'
+        from werkzeug.contrib.cache import SimpleCache
+        assert isinstance(self.app.extensions['cache'], SimpleCache)
 
 
 if __name__ == '__main__':
