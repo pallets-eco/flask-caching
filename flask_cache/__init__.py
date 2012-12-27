@@ -17,6 +17,7 @@ import hashlib
 import inspect
 import exceptions
 import functools
+import logging
 
 from types import NoneType
 
@@ -24,6 +25,9 @@ from werkzeug import import_string
 from flask import request, current_app
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
+
+logger = logging.getLogger(__name__)
+
 
 def function_namespace(f, args=None):
     """
@@ -202,12 +206,16 @@ class Cache(object):
 
                 cache_key = decorated_function.make_cache_key(*args, **kwargs)
 
-                rv = self.get(cache_key)
-                if rv is None:
-                    rv = f(*args, **kwargs)
-                    self.cache.set(cache_key, rv,
+                try:
+                    rv = self.get(cache_key)
+                    if rv is None:
+                        rv = f(*args, **kwargs)
+                        self.cache.set(cache_key, rv,
                                    timeout=decorated_function.cache_timeout)
-                return rv
+                    return rv
+                except Exception as e:
+                    logger.exception("Exception possibly due to cache backend.")
+                    return f(*args, **kwargs)
 
             def make_cache_key(*args, **kwargs):
                 if callable(key_prefix):
@@ -385,12 +393,16 @@ class Cache(object):
 
                 cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
 
-                rv = self.get(cache_key)
-                if rv is None:
-                    rv = f(*args, **kwargs)
-                    self.cache.set(cache_key, rv,
+                try:
+                    rv = self.get(cache_key)
+                    if rv is None:
+                        rv = f(*args, **kwargs)
+                        self.cache.set(cache_key, rv,
                                    timeout=decorated_function.cache_timeout)
-                return rv
+                    return rv
+                except Exception as e:
+                    logger.exception("Exception possibly due to cache backend.")
+                    return f(*args, **kwargs)
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
