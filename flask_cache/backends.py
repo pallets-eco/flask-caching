@@ -1,5 +1,23 @@
-from werkzeug.contrib.cache import (NullCache, SimpleCache, MemcachedCache,
+from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache)
+
+class SASLMemcachedCache(MemcachedCache):
+
+    def __init__(self, servers=None, default_timeout=300, key_prefix=None,
+                 username=None, password=None):
+        BaseCache.__init__(self, default_timeout)
+
+        if servers is None:
+            servers = ['127.0.0.1:11211']
+
+        import pylibmc
+        self._client = pylibmc.Client(servers,
+                                      username=username,
+                                      password=password,
+                                      binary=True)
+
+        self.key_prefix = key_prefix
+
 
 def null(app, config, args, kwargs):
     return NullCache()
@@ -12,6 +30,12 @@ def memcached(app, config, args, kwargs):
     args.append(config['CACHE_MEMCACHED_SERVERS'])
     kwargs.update(dict(key_prefix=config['CACHE_KEY_PREFIX']))
     return MemcachedCache(*args, **kwargs)
+
+def saslmemcached(app, config, args, kwargs):
+    args.append(config['CACHE_MEMCACHED_SERVERS'])
+    kwargs.update(dict(username=config['CACHE_MEMCACHED_USERNAME'],
+                       password=config['CACHE_MEMCACHED_PASSWORD']))
+    return SASLMemcachedCache(*args, **kwargs)
 
 def gaememcached(app, config, args, kwargs):
     kwargs.update(dict(key_prefix=config['CACHE_KEY_PREFIX']))

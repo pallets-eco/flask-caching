@@ -9,7 +9,7 @@
     :license: BSD, see LICENSE for more details
 """
 
-__version__ = '0.9.2'
+__version__ = '0.10.0'
 __versionfull__ = __version__
 
 import uuid
