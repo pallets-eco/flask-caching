@@ -23,8 +23,6 @@ from types import NoneType
 from werkzeug import import_string
 from flask import request, current_app
 
-JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
-
 def function_namespace(f, args=None):
     """
     Attempts to returns unique namespace for function
@@ -80,9 +78,10 @@ class Cache(object):
         config.setdefault('CACHE_TYPE', 'null')
 
         if self.with_jinja2_ext:
-            setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
+            from flask.ext.cache.jinja2ext import CacheExtension, \
+                                                  JINJA_CACHE_ATTR_NAME
 
-            from flask.ext.cache.jinja2ext import CacheExtension
+            setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
             app.jinja_env.add_extension(CacheExtension)
 
         self._set_cache(app, config)

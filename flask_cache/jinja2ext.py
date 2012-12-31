@@ -30,7 +30,8 @@ Example:
 
 from jinja2 import nodes
 from jinja2.ext import Extension
-from flask.ext.cache import JINJA_CACHE_ATTR_NAME
+
+JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
 class CacheExtension(Extension):
     tags = set(['cache'])
