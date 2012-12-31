@@ -34,7 +34,8 @@ def memcached(app, config, args, kwargs):
 def saslmemcached(app, config, args, kwargs):
     args.append(config['CACHE_MEMCACHED_SERVERS'])
     kwargs.update(dict(username=config['CACHE_MEMCACHED_USERNAME'],
-                       password=config['CACHE_MEMCACHED_PASSWORD']))
+                       password=config['CACHE_MEMCACHED_PASSWORD'],
+                       key_prefix=config['CACHE_KEY_PREFIX']))
     return SASLMemcachedCache(*args, **kwargs)
 
 def gaememcached(app, config, args, kwargs):
