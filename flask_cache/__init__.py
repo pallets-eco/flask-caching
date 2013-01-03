@@ -281,6 +281,7 @@ class Cache(object):
         arg_num = 0
         argspec = inspect.getargspec(f)
 
+        args_len = len(argspec.args)
         for i in range(len(argspec.args)):
             if i == 0 and argspec.args[i] in ('self', 'cls'):
                 #: use the id of the class instance
@@ -294,7 +295,7 @@ class Cache(object):
                 arg = args[arg_num]
                 arg_num += 1
             else:
-                arg = argspec.defaults[-i]
+                arg = argspec.defaults[i-args_len]
                 arg_num += 1
 
             #: Attempt to convert all arguments to a
