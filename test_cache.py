@@ -236,7 +236,12 @@ class CacheTestCase(unittest.TestCase):
         def f(a, b, c=1):
             return a+b+c+random.randrange(0, 100000)
 
+        assert f(1,2) == f(1,2,c=1)
         assert f(1,2) == f(1,2,1)
+        assert f(1,2) == f(1,2)
+        assert f(1,2,3) != f(1,2)
+        with self.assertRaises(TypeError):
+            f(1)
 
     def test_10b_classarg_memoize(self):
 
