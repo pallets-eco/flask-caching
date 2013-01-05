@@ -9,7 +9,7 @@
     :license: BSD, see LICENSE for more details
 """
 
-__version__ = '0.10.0'
+__version__ = '0.10.1'
 __versionfull__ = __version__
 
 import uuid
@@ -17,6 +17,7 @@ import hashlib
 import inspect
 import exceptions
 import functools
+import warnings
 
 from types import NoneType
 
@@ -78,6 +79,10 @@ class Cache(object):
         config.setdefault('CACHE_OPTIONS', None)
         config.setdefault('CACHE_ARGS', [])
         config.setdefault('CACHE_TYPE', 'null')
+
+        if config['CACHE_TYPE'] == 'null':
+            warnings.warn("Flask-Cache: CACHE_TYPE is set to null, "
+                          "caching is effectively disabled.")
 
         if self.with_jinja2_ext:
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)

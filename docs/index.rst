@@ -194,7 +194,7 @@ The following configuration values exist for Flask-Cache:
 
                                 Built-in cache types:
 
-                                * **null**: NullCache
+                                * **null**: NullCache (default)
                                 * **simple**: SimpleCache
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
                                 * **gaememcached**: GAEMemcachedCache
@@ -251,7 +251,7 @@ Cache that doesn't cache
 SimpleCache -- simple
 `````````````````````
 
-Uses a local python dictionary for caching.
+Uses a local python dictionary for caching. This is not really thread safe.
 
 Relevant configuration values
 

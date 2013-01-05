@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.10.1
+``````````````
+
+- Added warning message when using cache type of 'null'
+
+
 Version 0.10.0 2013-01-05
 `````````````````````````
 
