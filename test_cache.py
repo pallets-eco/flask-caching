@@ -233,11 +233,10 @@ class CacheTestCase(unittest.TestCase):
 
     def test_10a_arg_kwarg_memoize(self):
         @self.cache.memoize()
-        def f(a, b=0):
-            pass
+        def f(a, b, c=1):
+            return a+b+c+random.randrange(0, 100000)
 
-        f(1)
-        f(1)
+        assert f(1,2) == f(1,2,1)
 
     def test_10b_classarg_memoize(self):
 
