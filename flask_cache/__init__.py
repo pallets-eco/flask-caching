@@ -83,8 +83,7 @@ class Cache(object):
                           "caching is effectively disabled.")
 
         if self.with_jinja2_ext:
-            from flask.ext.cache.jinja2ext import CacheExtension, \
-                                                  JINJA_CACHE_ATTR_NAME
+            from .jinja2ext import CacheExtension, JINJA_CACHE_ATTR_NAME
 
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
             app.jinja_env.add_extension(CacheExtension)
