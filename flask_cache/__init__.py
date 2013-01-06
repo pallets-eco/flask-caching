@@ -93,10 +93,16 @@ class Cache(object):
     def _set_cache(self, app, config):
         import_me = config['CACHE_TYPE']
         if '.' not in import_me:
-            import_me = 'flask.ext.cache.backends.' + \
-                        import_me
+            import backends
 
-        cache_obj = import_string(import_me)
+            try:
+                cache_obj = getattr(backends, import_me)
+            except AttributeError:
+                raise ImportError("%s is not a valid FlaskCache backend" % (
+                                  import_me))
+        else:
+            cache_obj = import_string(import_me)
+
         cache_args = config['CACHE_ARGS'][:]
         cache_options = dict(default_timeout= \
                              config['CACHE_DEFAULT_TIMEOUT'])
