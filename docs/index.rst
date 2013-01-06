@@ -177,7 +177,8 @@ The following configuration values exist for Flask-Cache:
 
 .. tabularcolumns:: |p{6.5cm}|p{8.5cm}|
 
-=============================== ======================================================
+
+=============================== ==================================================================
 ``CACHE_TYPE``                  Specifies which type of caching object to
                                 use. This is an import string that will
                                 be imported and instantiated. It is
@@ -193,7 +194,7 @@ The following configuration values exist for Flask-Cache:
 
                                 Built-in cache types:
 
-                                * **null**: NullCache
+                                * **null**: NullCache (default)
                                 * **simple**: SimpleCache
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
                                 * **gaememcached**: GAEMemcachedCache
@@ -229,7 +230,8 @@ The following configuration values exist for Flask-Cache:
 ``CACHE_REDIS_PASSWORD``        A Redis password for server. Used only for RedisCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
-=============================== ======================================================
+=============================== ==================================================================
+
 
 In addition the standard Flask ``TESTING`` configuration option is used. If this
 is True then **Flask-Cache** will use NullCache only.
@@ -249,7 +251,7 @@ Cache that doesn't cache
 SimpleCache -- simple
 `````````````````````
 
-Uses a local python dictionary for caching.
+Uses a local python dictionary for caching. This is not really thread safe.
 
 Relevant configuration values
 

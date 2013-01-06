@@ -1,6 +1,18 @@
 Changelog
 ---------
 
+Version 0.10.1
+``````````````
+
+- Added warning message when using cache type of 'null'
+
+
+Version 0.10.0 2013-01-05
+`````````````````````````
+
+- Added `saslmemcached` backend to support Memcached behind SASL authentication.
+- Fixes a bug with memoize when the number of args != number of kwargs
+
 Version 0.9.2 2012-11-18
 ````````````````````````
 

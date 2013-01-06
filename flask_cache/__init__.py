@@ -9,7 +9,7 @@
     :license: BSD, see LICENSE for more details
 """
 
-__version__ = '0.10.0'
+__version__ = '0.10.1'
 __versionfull__ = __version__
 
 import uuid
@@ -17,6 +17,7 @@ import hashlib
 import inspect
 import exceptions
 import functools
+import warnings
 
 from types import NoneType
 
@@ -76,6 +77,10 @@ class Cache(object):
         config.setdefault('CACHE_OPTIONS', None)
         config.setdefault('CACHE_ARGS', [])
         config.setdefault('CACHE_TYPE', 'null')
+
+        if config['CACHE_TYPE'] == 'null':
+            warnings.warn("Flask-Cache: CACHE_TYPE is set to null, "
+                          "caching is effectively disabled.")
 
         if self.with_jinja2_ext:
             from flask.ext.cache.jinja2ext import CacheExtension, \
@@ -257,12 +262,16 @@ class Cache(object):
                 altfname = fname
 
             if callable(f):
-                args, kwargs = self.memoize_kwargs_to_args(f, *args, **kwargs)
+                keyargs, keykwargs = self.memoize_kwargs_to_args(f,
+                                                                 *args,
+                                                                 **kwargs)
+            else:
+                keyargs, keykwargs = args, kwargs
 
             try:
-                updated = "{0}{1}{2}".format(altfname, args, kwargs)
+                updated = "{0}{1}{2}".format(altfname, keyargs, keykwargs)
             except AttributeError:
-                updated = "%s%s%s" % (altfname, args, kwargs)
+                updated = "%s%s%s" % (altfname, keyargs, keykwargs)
 
             cache_key.update(updated)
             cache_key = cache_key.digest().encode('base64')[:16]
@@ -280,7 +289,8 @@ class Cache(object):
         arg_num = 0
         argspec = inspect.getargspec(f)
 
-        for i in range(len(argspec.args)):
+        args_len = len(argspec.args)
+        for i in range(args_len):
             if i == 0 and argspec.args[i] in ('self', 'cls'):
                 #: use the id of the class instance
                 #: this supports instance methods for
@@ -292,8 +302,11 @@ class Cache(object):
             elif arg_num < len(args):
                 arg = args[arg_num]
                 arg_num += 1
+            elif abs(i-args_len) <= len(argspec.defaults):
+                arg = argspec.defaults[i-args_len]
+                arg_num += 1
             else:
-                arg = argspec.defaults[-i]
+                arg = None
                 arg_num += 1
 
             #: Attempt to convert all arguments to a
