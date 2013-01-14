@@ -1,12 +1,11 @@
 Changelog
 ---------
 
-Version 0.10.1
-``````````````
+Version 0.10.1 2013-01-13
+`````````````````````````
 
 - Added warning message when using cache type of 'null'
 - Changed imports to relative instead of absolute for AppEngine compatibility
-
 
 Version 0.10.0 2013-01-05
 `````````````````````````
