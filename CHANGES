@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+Version 0.10.2
+``````````````
+
+- Fail gracefully in production if cache backend raises an exception.
+
 Version 0.10.1 2013-01-13
 `````````````````````````
 
