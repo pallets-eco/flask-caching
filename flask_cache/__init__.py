@@ -218,17 +218,24 @@ class Cache(object):
                 cache_key = decorated_function.make_cache_key(*args, **kwargs)
 
                 try:
-                    rv = self.get(cache_key)
-                    if rv is None:
-                        rv = f(*args, **kwargs)
-                        self.cache.set(cache_key, rv,
-                                   timeout=decorated_function.cache_timeout)
-                    return rv
+                    rv = self.cache.get(cache_key)
                 except Exception as e:
                     if current_app.debug:
                         raise e
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
+                    
+                if rv is None:
+                    rv = f(*args, **kwargs)
+                    try:
+                        self.cache.set(cache_key, rv,
+                                   timeout=decorated_function.cache_timeout)
+                    except Exception as e:
+                        if current_app.debug:
+                            raise e
+                        logger.exception("Exception possibly due to cache backend.")
+                        return f(*args, **kwargs)
+                return rv
 
             def make_cache_key(*args, **kwargs):
                 if callable(key_prefix):
@@ -263,7 +270,7 @@ class Cache(object):
             fname = function_namespace(f, args)
 
             version_key = self._memvname(fname)
-            version_data = self.get(version_key)
+            version_data = self.cache.get(version_key)
 
             if version_data is None:
                 version_data = self.memoize_make_version_hash()
@@ -415,17 +422,24 @@ class Cache(object):
                 cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
 
                 try:
-                    rv = self.get(cache_key)
-                    if rv is None:
-                        rv = f(*args, **kwargs)
-                        self.cache.set(cache_key, rv,
-                                   timeout=decorated_function.cache_timeout)
-                    return rv
+                    rv = self.cache.get(cache_key)
                 except Exception as e:
                     if current_app.debug:
                         raise e
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
+                    
+                if rv is None:
+                    rv = f(*args, **kwargs)
+                    try:
+                        self.cache.set(cache_key, rv,
+                                   timeout=decorated_function.cache_timeout)
+                    except Exception as e:
+                        if current_app.debug:
+                            raise e
+                        logger.exception("Exception possibly due to cache backend.")
+                        return f(*args, **kwargs)
+                return rv
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout

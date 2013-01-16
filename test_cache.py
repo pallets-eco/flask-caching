@@ -12,7 +12,7 @@ class CacheTestCase(unittest.TestCase):
     def setUp(self):
         app = Flask(__name__)
 
-        app.debug = False
+        app.debug = True
         app.config['CACHE_TYPE'] = 'simple'
 
         self.cache = Cache(app)
@@ -217,6 +217,8 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, dict(three=3,four=4)) == result_b
 
     def test_10a_kwargonly_memoize(self):
+
+        with self.app.test_request_context():
             @self.cache.memoize()
             def big_foo(a=None):
                 if a is None:
@@ -231,17 +233,18 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5) == result_b
             assert big_foo(5) >= 5 and big_foo(5) < 6
 
-    def test_10a_arg_kwarg_memoize(self):
-        @self.cache.memoize()
-        def f(a, b, c=1):
-            return a+b+c+random.randrange(0, 100000)
+    def test_10a_arg_kwarg_memoize(self):    
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def f(a, b, c=1):
+                return a+b+c+random.randrange(0, 100000)
 
-        assert f(1,2) == f(1,2,c=1)
-        assert f(1,2) == f(1,2,1)
-        assert f(1,2) == f(1,2)
-        assert f(1,2,3) != f(1,2)
-        with self.assertRaises(TypeError):
-            f(1)
+            assert f(1,2) == f(1,2,c=1)
+            assert f(1,2) == f(1,2,1)
+            assert f(1,2) == f(1,2)
+            assert f(1,2,3) != f(1,2)
+            with self.assertRaises(TypeError):
+                f(1)
 
     def test_10b_classarg_memoize(self):
 
