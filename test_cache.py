@@ -1,11 +1,17 @@
-from __future__ import with_statement
+import sys
 
-import unittest
 import time
 import random
 
+from __future__ import with_statement
+
 from flask import Flask
 from flask.ext.cache import Cache
+
+if sys.version_info < (2,7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 class CacheTestCase(unittest.TestCase):
 
