@@ -1,9 +1,9 @@
+from __future__ import with_statement
+
 import sys
 import os
 import time
 import random
-
-from __future__ import with_statement
 
 from flask import Flask
 from flask.ext.cache import Cache
