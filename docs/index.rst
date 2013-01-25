@@ -228,6 +228,8 @@ The following configuration values exist for Flask-Cache:
 ``CACHE_REDIS_PORT``            A Redis server port. Default is 6379.
                                 Used only for RedisCache.
 ``CACHE_REDIS_PASSWORD``        A Redis password for server. Used only for RedisCache.
+``CACHE_REDIS_DB``              A Redis db (zero-based number index). Default is 0.
+                                Used only for RedisCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
 =============================== ==================================================================
@@ -318,6 +320,7 @@ RedisCache -- redis
 - CACHE_REDIS_HOST
 - CACHE_REDIS_PORT
 - CACHE_REDIS_PASSWORD
+- CACHE_REDIS_DB
 - CACHE_ARGS
 - CACHE_OPTIONS
 
