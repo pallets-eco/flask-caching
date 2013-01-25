@@ -5,6 +5,7 @@ python:
 install:
  - pip install . --use-mirrors
  - pip install coverage
+ - pip install redis pylibmc
 script: nosetests --with-coverage --cover-package=flask_cache
 services:
  - memcached
