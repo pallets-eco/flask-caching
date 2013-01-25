@@ -69,4 +69,5 @@ else:
         db_number = config.get('CACHE_REDIS_DB')
         if db_number:
             kwargs['db'] = db_number
+
         return RedisCache(*args, **kwargs)

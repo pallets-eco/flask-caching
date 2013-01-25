@@ -1,5 +1,5 @@
 import sys
-
+import os
 import time
 import random
 
@@ -13,13 +13,17 @@ if sys.version_info < (2,7):
 else:
     import unittest
 
+
 class CacheTestCase(unittest.TestCase):
+
+    def _set_app_config(self, app):
+        app.config['CACHE_TYPE'] = 'simple'
 
     def setUp(self):
         app = Flask(__name__)
 
         app.debug = True
-        app.config['CACHE_TYPE'] = 'simple'
+        self._set_app_config(app)
 
         self.cache = Cache(app)
 
@@ -458,6 +462,23 @@ class CacheTestCase(unittest.TestCase):
         cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
         from werkzeug.contrib.cache import SimpleCache
         assert isinstance(self.app.extensions['cache'], SimpleCache)
+
+
+if 'TRAVIS' in os.environ:
+    class CacheMemcachedTestCase(CacheTestCase):
+        def _set_app_config(self, app):
+            app.config['CACHE_TYPE'] = 'memcached'
+
+
+    class CacheRedisTestCase(CacheTestCase):
+        def _set_app_config(self, app):
+            app.config['CACHE_TYPE'] = 'redis'
+
+
+    class CacheFilesystemTestCase(CacheTestCase):
+        def _set_app_config(self, app):
+            app.config['CACHE_TYPE'] = 'filesystem'
+            app.config['CACHE_DIR'] = '/tmp'
 
 
 if __name__ == '__main__':
