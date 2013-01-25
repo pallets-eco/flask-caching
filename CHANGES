@@ -5,6 +5,7 @@ Version 0.10.2
 ``````````````
 
 - Fail gracefully in production if cache backend raises an exception.
+- Support for redis DB number
 
 Version 0.10.1 2013-01-13
 `````````````````````````
