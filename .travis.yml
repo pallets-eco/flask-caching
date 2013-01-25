@@ -4,8 +4,8 @@ python:
  - "2.7"
 install:
  - pip install . --use-mirrors
- - pip install coverage
- - pip install redis pylibmc
+ - pip install coverage unittest2 --use-mirrors
+ - pip install redis pylibmc --use-mirrors
 script: nosetests --with-coverage --cover-package=flask_cache
 services:
  - memcached
