@@ -118,13 +118,14 @@ class Cache(object):
 
         if not hasattr(app, 'extensions'):
             app.extensions = {}
-        app.extensions['cache'] = cache_obj(
+        app.extensions.setdefault('cache', {})
+        app.extensions['cache'][self] = cache_obj(
                 app, config, cache_args, cache_options)
 
     @property
     def cache(self):
         app = self.app or current_app
-        return app.extensions['cache']
+        return app.extensions['cache'][self]
 
     def get(self, *args, **kwargs):
         "Proxy function for internal cache object."
