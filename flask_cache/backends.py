@@ -84,13 +84,18 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
     """
 
 
-    def __init__(self, chunksize=950000, maxchunk=32, *args, **kwargs):
+    def __init__(self,  *args, **kwargs):
         """
         chunksize : (int) max size in bytes of chunk stored in memcached
         """
-        self.chunksize = chunksize
-        self.maxchunk = maxchunk
+        self.chunksize = kwargs.get('chunksize', 950000)
+        self.maxchunk = kwargs.get('maxchunk', 32)
         super(SpreadSASLMemcachedCache, self).__init__(*args, **kwargs)
+
+    def delete(self, key):
+        for skey in self._genkeys(key):
+            super(SpreadSASLMemcachedCache, self).delete(skey)
+
 
     def set(self, key, value, timeout=None, chunk=True):
         """set a value in cache, potentially spreding it across multiple key.
@@ -128,11 +133,14 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if chunk :
             return self._get(key)
         else :
-            return super(MemcachedMultipart, self).get(key)
+            return super(SpreadSASLMemcachedCache, self).get(key)
+
+    def _genkeys(self, key):
+        return ['%s.%s' % (key, i) for i in xrange(self.maxchunk)]
 
     def _get(self, key):
         to_get = ['%s.%s' % (key, i) for i in xrange(self.maxchunk)]
-        result = super(MemcachedMultipart, self).get_many( *to_get)
+        result = super(SpreadSASLMemcachedCache, self).get_many( *to_get)
         serialized = ''.join([v for v in result if v is not None])
         if not serialized:
             return None
@@ -142,6 +150,7 @@ def spreadsaslmemcachedcache(app, config, args, kwargs):
 
     args.append(config['CACHE_MEMCACHED_SERVERS'])
     kwargs.update(dict(username=config.get('CACHE_MEMCACHED_USERNAME'),
-                      password=config.get('CACHE_MEMCACHED_PASSWORD'),
-                      key_prefix=config['CACHE_KEY_PREFIX']))
+                       password=config.get('CACHE_MEMCACHED_PASSWORD'),
+                     key_prefix=config.get('CACHE_KEY_PREFIX')
+                  ))
     return SpreadSASLMemcachedCache(*args, **kwargs)
