@@ -219,9 +219,9 @@ class Cache(object):
 
                 try:
                     rv = self.cache.get(cache_key)
-                except Exception as e:
+                except Exception:
                     if current_app.debug:
-                        raise e
+                        raise
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
                     
@@ -230,9 +230,9 @@ class Cache(object):
                     try:
                         self.cache.set(cache_key, rv,
                                    timeout=decorated_function.cache_timeout)
-                    except Exception as e:
+                    except Exception:
                         if current_app.debug:
-                            raise e
+                            raise
                         logger.exception("Exception possibly due to cache backend.")
                         return f(*args, **kwargs)
                 return rv
@@ -423,9 +423,9 @@ class Cache(object):
 
                 try:
                     rv = self.cache.get(cache_key)
-                except Exception as e:
+                except Exception:
                     if current_app.debug:
-                        raise e
+                        raise
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
                     
@@ -434,9 +434,9 @@ class Cache(object):
                     try:
                         self.cache.set(cache_key, rv,
                                    timeout=decorated_function.cache_timeout)
-                    except Exception as e:
+                    except Exception:
                         if current_app.debug:
-                            raise e
+                            raise
                         logger.exception("Exception possibly due to cache backend.")
                         return f(*args, **kwargs)
                 return rv
