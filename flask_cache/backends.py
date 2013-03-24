@@ -1,3 +1,4 @@
+import pickle
 from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache)
 
@@ -71,3 +72,85 @@ else:
             kwargs['db'] = db_number
 
         return RedisCache(*args, **kwargs)
+
+
+class SpreadSASLMemcachedCache(SASLMemcachedCache):
+    """
+    Simple Subclass of SASLMemcached client that spread value across multiple
+    key is they are bigger than a given treshhold.
+
+    Spreading require using pickle to store the value, wich can significantly
+    impact the performances.
+    """
+
+
+    def __init__(self,  *args, **kwargs):
+        """
+        chunksize : (int) max size in bytes of chunk stored in memcached
+        """
+        self.chunksize = kwargs.get('chunksize', 950000)
+        self.maxchunk = kwargs.get('maxchunk', 32)
+        super(SpreadSASLMemcachedCache, self).__init__(*args, **kwargs)
+
+    def delete(self, key):
+        for skey in self._genkeys(key):
+            super(SpreadSASLMemcachedCache, self).delete(skey)
+
+
+    def set(self, key, value, timeout=None, chunk=True):
+        """set a value in cache, potentially spreding it across multiple key.
+
+        chunk : (Bool) if set to false, does not try to spread across multiple key.
+                this can be faster, but will fail if value is bigger than chunks,
+                and require you to get back the object by specifying that it is not spread.
+
+        """
+        if chunk:
+            return self._set(key, value, timeout=timeout)
+        else:
+            return super(SpreadSASLMemcachedCache, self).set(key, value, timeout=timeout)
+
+    def _set(self, key, value, timeout=None):
+        # pickling/unpickling add an overhed,
+        # I didn't found a good way to avoid pickling/unpickling if
+        # key is smaller than chunksize, because in case or <werkzeug.requests>
+        # getting the length consume the data iterator.
+        serialized = pickle.dumps(value, 2)
+        values = {}
+        len_ser = len(serialized)
+        chks = xrange(0, len_ser, self.chunksize)
+        if len(chks) > self.maxchunk:
+            raise ValueError('Cannot store value in less than %s keys'%(self.maxchunk))
+        for i in chks:
+            values['%s.%s' % (key, i//self.chunksize)] = serialized[i : i+self.chunksize]
+        super(SpreadSASLMemcachedCache, self).set_many(values, timeout)
+
+    def get(self, key, chunk=True):
+        """get a value in cache, potentially spreded it across multiple key.
+
+        chunk : (Bool) if set to false, get a value set with set(..., chunk=False)
+        """
+        if chunk :
+            return self._get(key)
+        else :
+            return super(SpreadSASLMemcachedCache, self).get(key)
+
+    def _genkeys(self, key):
+        return ['%s.%s' % (key, i) for i in xrange(self.maxchunk)]
+
+    def _get(self, key):
+        to_get = ['%s.%s' % (key, i) for i in xrange(self.maxchunk)]
+        result = super(SpreadSASLMemcachedCache, self).get_many( *to_get)
+        serialized = ''.join([v for v in result if v is not None])
+        if not serialized:
+            return None
+        return pickle.loads(serialized)
+
+def spreadsaslmemcachedcache(app, config, args, kwargs):
+
+    args.append(config['CACHE_MEMCACHED_SERVERS'])
+    kwargs.update(dict(username=config.get('CACHE_MEMCACHED_USERNAME'),
+                       password=config.get('CACHE_MEMCACHED_PASSWORD'),
+                     key_prefix=config.get('CACHE_KEY_PREFIX')
+                  ))
+    return SpreadSASLMemcachedCache(*args, **kwargs)

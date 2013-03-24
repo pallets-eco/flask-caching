@@ -190,6 +190,11 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, 1) == result_a
             assert big_foo(5, 2) != result_b
 
+            ## Cleanup bigfoo 5,1 5,2 or it might conflict with
+            ## following run if it also uses memecache
+            self.cache.delete_memoized(big_foo, 5, 2)
+            self.cache.delete_memoized(big_foo, 5, 1)
+
     def test_09_args_memoize(self):
 
         with self.app.test_request_context():
@@ -207,6 +212,11 @@ class CacheTestCase(unittest.TestCase):
 
             assert big_foo([5,3,2], [1]) != result_a
             assert big_foo([3,3], [3,1]) == result_b
+
+            ## Cleanup bigfoo 5,1 5,2 or it might conflict with
+            ## following run if it also uses memecache
+            self.cache.delete_memoized(big_foo, [5,3,2], [1])
+            self.cache.delete_memoized(big_foo, [3,3], [1])
 
     def test_10_kwargs_memoize(self):
 
@@ -468,6 +478,11 @@ if 'TRAVIS' in os.environ:
     class CacheMemcachedTestCase(CacheTestCase):
         def _set_app_config(self, app):
             app.config['CACHE_TYPE'] = 'memcached'
+
+
+    class SpreadCacheMemcachedTestCase(CacheTestCase):
+        def _set_app_config(self, app):
+            app.config['CACHE_TYPE'] = 'spreadsaslmemcachedcache'
 
 
     class CacheRedisTestCase(CacheTestCase):
