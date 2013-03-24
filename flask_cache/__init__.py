@@ -529,9 +529,9 @@ class Cache(object):
             else:
                 cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
                 self.cache.delete(cache_key)
-        except Exception as e:
+        except Exception:
             if current_app.debug:
-                raise e
+                raise
             logger.exception("Exception possibly due to cache backend.")
 
     def delete_memoized_verhash(self, f, *args):
@@ -555,7 +555,7 @@ class Cache(object):
         try:
             version_key = self._memvname(_fname)
             self.cache.delete(version_key)
-        except Exception as e:
+        except Exception:
             if current_app.debug:
-                raise e
+                raise
             logger.exception("Exception possibly due to cache backend.")
