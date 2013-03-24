@@ -232,6 +232,9 @@ The following configuration values exist for Flask-Cache:
                                 Used only for RedisCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
+``CACHE_REDIS_URL``             URL to connect to Redis server.
+                                Example ``redis://user:password@localhost:6379/2``.
+                                Used only for RedisCache.
 =============================== ==================================================================
 
 
@@ -331,6 +334,7 @@ RedisCache -- redis
 - CACHE_REDIS_DB
 - CACHE_ARGS
 - CACHE_OPTIONS
+- CACHE_REDIS_URL
 
 
 Custom Cache Backends

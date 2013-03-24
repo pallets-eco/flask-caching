@@ -51,6 +51,7 @@ def filesystem(app, config, args, kwargs):
 # RedisCache is supported since Werkzeug 0.7.
 try:
     from werkzeug.contrib.cache import RedisCache
+    from redis import from_url as redis_from_url
 except ImportError:
     pass
 else:
@@ -70,6 +71,13 @@ else:
         db_number = config.get('CACHE_REDIS_DB')
         if db_number:
             kwargs['db'] = db_number
+
+        redis_url = config.get('CACHE_REDIS_URL')
+        if redis_url:
+            kwargs['host'] = redis_from_url(
+                                redis_url,
+                                db=kwargs.pop('db', None),
+                            )
 
         return RedisCache(*args, **kwargs)
 
