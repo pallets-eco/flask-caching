@@ -534,7 +534,7 @@ class Cache(object):
                 raise e
             logger.exception("Exception possibly due to cache backend.")
 
-    def delete_memoized_verhash(self, f):
+    def delete_memoized_verhash(self, f, *args):
         """
         Delete the version hash associated with the function.
 
@@ -550,5 +550,12 @@ class Cache(object):
             raise exceptions.DeprecationWarning("Deleting messages by relative name is no longer"
                           " reliable, please use a function reference")
 
-        cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
-        self.cache.delete(cache_key)
+        _fname = function_namespace(f, args)
+
+        try:
+            version_key = self._memvname(_fname)
+            self.cache.delete(version_key)
+        except Exception as e:
+            if current_app.debug:
+                raise e
+            logger.exception("Exception possibly due to cache backend.")

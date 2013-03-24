@@ -172,6 +172,26 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, 2) != result
             assert big_foo(5, 3) != result2
 
+    def test_07b_delete_memoized_verhash(self):
+        with self.app.test_request_context():
+            @self.cache.memoize(5)
+            def big_foo(a, b):
+                return a+b+random.randrange(0, 100000)
+
+            result = big_foo(5, 2)
+            result2 = big_foo(5, 3)
+
+            time.sleep(1)
+
+            assert big_foo(5, 2) == result
+            assert big_foo(5, 2) == result
+            assert big_foo(5, 3) != result
+            assert big_foo(5, 3) == result2
+
+            self.cache.delete_memoized_verhash(big_foo)
+
+            assert big_foo(5, 2) != result
+            assert big_foo(5, 3) != result2
 
     def test_08_delete_memoize(self):
 
