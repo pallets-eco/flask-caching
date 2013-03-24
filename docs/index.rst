@@ -373,6 +373,6 @@ API
 .. autoclass:: Cache
    :members: init_app,
              get, set, add, delete, get_many, set_many, delete_many,
-             cached, memoize, delete_memoized
+             cached, memoize, delete_memoized, delete_memoized_verhash
 
 .. include:: ../CHANGES

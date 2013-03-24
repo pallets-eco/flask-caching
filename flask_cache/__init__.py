@@ -517,8 +517,7 @@ class Cache(object):
         """
         if not callable(f):
             raise exceptions.DeprecationWarning("Deleting messages by relative name is no longer"
-                          " reliable, please switch to a function reference"
-                          " or use the full function import name")
+                          " reliable, please switch to a function reference")
 
         _fname = function_namespace(f, args)
 
@@ -529,3 +528,22 @@ class Cache(object):
         else:
             cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
             self.cache.delete(cache_key)
+
+    def delete_memoized_verhash(self, f):
+        """
+        Delete the version hash associated with the function.
+
+        ..warning::
+
+            Performing this operation could leave keys behind that have
+            been created with this version hash. It is up to the application
+            to make sure that all keys that may have been created with this
+            version hash at least have timeouts so they will not sit orphaned
+            in the cache backend.
+        """
+        if not callable(f):
+            raise exceptions.DeprecationWarning("Deleting messages by relative name is no longer"
+                          " reliable, please use a function reference")
+
+        cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
+        self.cache.delete(cache_key)
