@@ -6,7 +6,7 @@ import time
 import random
 
 from flask import Flask
-from flask.ext.cache import Cache
+from flask.ext.cache import Cache, function_namespace
 
 if sys.version_info < (2,7):
     import unittest2 as unittest
@@ -197,8 +197,16 @@ class CacheTestCase(unittest.TestCase):
 
             self.cache.delete_memoized_verhash(big_foo)
 
+            _fname = function_namespace(big_foo)
+            version_key = self.cache._memvname(_fname)
+            assert self.cache.get(version_key) is None
+
             assert big_foo(5, 2) != result
             assert big_foo(5, 3) != result2
+
+            assert self.cache.get(version_key) is not None
+            version_key = self.cache._memvname(_fname)
+            assert self.cache.get(version_key) is None
 
     def test_08_delete_memoize(self):
 
