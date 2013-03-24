@@ -390,11 +390,11 @@ class CacheTestCase(unittest.TestCase):
         assert cached_view2.cache_timeout == 10
 
         # test that this is a read-write property
-        cached_view1.cache_timeout = 2
-        cached_view2.cache_timeout = 3
+        cached_view1.cache_timeout = 15
+        cached_view2.cache_timeout = 30
 
-        assert cached_view1.cache_timeout == 2
-        assert cached_view2.cache_timeout == 3
+        assert cached_view1.cache_timeout == 15
+        assert cached_view2.cache_timeout == 30
 
         tc = self.app.test_client()
 
@@ -407,15 +407,15 @@ class CacheTestCase(unittest.TestCase):
         # VIEW1
         # it's been 1 second, cache is still active
         assert time1 == tc.get('/').data
-        time.sleep(2)
-        # it's been 3 seconds, cache is not still active
+        time.sleep(16)
+        # it's been >15 seconds, cache is not still active
         assert time1 != tc.get('/').data
 
         # VIEW2
-        # it's been 2 seconds, cache is still active
+        # it's been >17 seconds, cache is still active
         assert time2 == tc.get('/a/b').data
-        time.sleep(2)
-        # it's been 4 seconds, cache is not still active
+        time.sleep(30)
+        # it's been >30 seconds, cache is not still active
         assert time2 != tc.get('/a/b').data
 
     def test_14_memoized_multiple_arg_kwarg_calls(self):
