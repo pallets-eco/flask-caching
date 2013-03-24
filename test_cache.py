@@ -455,13 +455,13 @@ class CacheTestCase(unittest.TestCase):
         cache = Cache()
         cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
         from werkzeug.contrib.cache import SimpleCache
-        assert isinstance(self.app.extensions['cache'], SimpleCache)
+        assert isinstance(self.app.extensions['cache'][cache], SimpleCache)
 
     def test_19_dict_config_both(self):
         cache = Cache(config={'CACHE_TYPE': 'null'})
         cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
         from werkzeug.contrib.cache import SimpleCache
-        assert isinstance(self.app.extensions['cache'], SimpleCache)
+        assert isinstance(self.app.extensions['cache'][cache], SimpleCache)
 
 
 if 'TRAVIS' in os.environ:
