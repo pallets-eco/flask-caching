@@ -311,6 +311,14 @@ Relevant configuration values
 
 .. versionadded:: 0.10
 
+SpreadSASLMemcachedCache -- spreadsaslmemcachedcache
+````````````````````````````````````````````````````
+
+Same as SASLMemcachedCache however, it has the ablity to spread value across
+multiple keys if it is bigger than the memcached treshold which by
+default is 1M. Uses pickle.
+
+.. versionadded:: 0.11
 
 RedisCache -- redis
 ```````````````````

@@ -8,6 +8,10 @@ Version 0.11
 - Support for redis DB number
 - Jinja2 templatetag cache now concats all args together into a single key
   instead of treating each arg as a separate key name.
+- Added delete memcache version hash function
+- Support for multiple cache objects on a single app again.
+- Added SpreadSASLMemcached, if a value is greater than the memcached threshold
+  which defaults to 1MB, this splits the value across multiple keys.
 
 Version 0.10.1 2013-01-13
 `````````````````````````
