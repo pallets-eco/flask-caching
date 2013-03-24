@@ -205,8 +205,6 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, 3) != result2
 
             assert self.cache.get(version_key) is not None
-            version_key = self.cache._memvname(_fname)
-            assert self.cache.get(version_key) is None
 
     def test_08_delete_memoize(self):
 
