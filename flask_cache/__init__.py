@@ -216,9 +216,8 @@ class Cache(object):
                 if callable(unless) and unless() is True:
                     return f(*args, **kwargs)
 
-                cache_key = decorated_function.make_cache_key(*args, **kwargs)
-
                 try:
+                    cache_key = decorated_function.make_cache_key(*args, **kwargs)
                     rv = self.cache.get(cache_key)
                 except Exception as e:
                     if current_app.debug:
@@ -420,9 +419,8 @@ class Cache(object):
                 if callable(unless) and unless() is True:
                     return f(*args, **kwargs)
 
-                cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
-
                 try:
+                    cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
                     rv = self.cache.get(cache_key)
                 except Exception as e:
                     if current_app.debug:
@@ -523,13 +521,18 @@ class Cache(object):
 
         _fname = function_namespace(f, args)
 
-        if not args and not kwargs:
-            version_key = self._memvname(_fname)
-            version_data = self.memoize_make_version_hash()
-            self.cache.set(version_key, version_data)
-        else:
-            cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
-            self.cache.delete(cache_key)
+        try:
+            if not args and not kwargs:
+                version_key = self._memvname(_fname)
+                version_data = self.memoize_make_version_hash()
+                self.cache.set(version_key, version_data)
+            else:
+                cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
+                self.cache.delete(cache_key)
+        except Exception as e:
+            if current_app.debug:
+                raise e
+            logger.exception("Exception possibly due to cache backend.")
 
     def delete_memoized_verhash(self, f):
         """
