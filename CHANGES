@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-Version 0.11
-````````````
+Version 0.11 2013-03-23
+```````````````````````
 
 - Fail gracefully in production if cache backend raises an exception.
 - Support for redis DB number
