@@ -1,11 +1,13 @@
 Changelog
 ---------
 
-Version 0.10.2
-``````````````
+Version 0.11
+````````````
 
 - Fail gracefully in production if cache backend raises an exception.
 - Support for redis DB number
+- Jinja2 templatetag cache now concats all args together into a single key
+  instead of treating each arg as a separate key name.
 
 Version 0.10.1 2013-01-13
 `````````````````````````

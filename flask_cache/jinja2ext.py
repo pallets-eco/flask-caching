@@ -9,7 +9,7 @@ Usage:
     {% endcache %}
 
     By default the value of "path to template file" + "block start line" is used as cache key.
-    Also one or multiple key names can be set manually
+    Also key name can be set manually. Keys are concated together into a single string.
     that can be used to avoid the same block evaluating in different templates.
 
     Set timeout to "del" to delete cached value:
@@ -38,7 +38,7 @@ class CacheExtension(Extension):
 
     def parse(self, parser):
         lineno = parser.stream.next().lineno
-        #cache key name is "template file path" + "line no"
+        #cache key name is "template file path"  "line no"
         default_cache_key_name = u"%s%s" % (parser.filename, lineno)
         default_cache_key_name.encode('utf-8')
 
@@ -49,7 +49,7 @@ class CacheExtension(Extension):
             while parser.stream.skip_if('comma'):
                 keyname = parser.parse_expression()
                 if isinstance(keyname, nodes.Name):
-                    keyname = nodes.Const(keyname.name)
+                    keyname = nodes.Name(keyname.name, 'load')
                 cache_key_names.append(keyname)
         else:
             timeout = nodes.Const(None)
@@ -58,8 +58,8 @@ class CacheExtension(Extension):
 
         body = parser.parse_statements(['name:endcache'], drop_needle=True)
 
-        return nodes.CallBlock(self.call_method('_cache', args),
-            [], [], body).set_lineno(lineno)
+        block = nodes.CallBlock(self.call_method('_cache', args), [], [], body)
+        return block.set_lineno(lineno)
 
     def _cache(self, keys_list, timeout, caller):
         try:
@@ -71,12 +71,12 @@ class CacheExtension(Extension):
             cache.delete_many(*keys_list)
             return caller()
 
-        rv = cache.get(keys_list[0])
+        key = '_'.join(keys_list)
+        rv = cache.get(key)
 
         if rv is None:
             rv = caller()
 
-            for key in keys_list:
-                cache.set(key, rv, timeout)
+            cache.set(key, rv, timeout)
 
         return rv

@@ -110,16 +110,15 @@ class Cache(object):
             cache_obj = import_string(import_me)
 
         cache_args = config['CACHE_ARGS'][:]
-        cache_options = dict(default_timeout= \
-                             config['CACHE_DEFAULT_TIMEOUT'])
+        cache_options = {'default_timeout': config['CACHE_DEFAULT_TIMEOUT']}
 
         if config['CACHE_OPTIONS']:
             cache_options.update(config['CACHE_OPTIONS'])
 
         if not hasattr(app, 'extensions'):
             app.extensions = {}
-        app.extensions['cache'] = cache_obj(
-                app, config, cache_args, cache_options)
+        app.extensions['cache'] = cache_obj(app, config,
+                                            cache_args, cache_options)
 
     @property
     def cache(self):
@@ -224,7 +223,7 @@ class Cache(object):
                         raise e
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
-                    
+
                 if rv is None:
                     rv = f(*args, **kwargs)
                     try:
@@ -428,7 +427,7 @@ class Cache(object):
                         raise e
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
-                    
+
                 if rv is None:
                     rv = f(*args, **kwargs)
                     try:

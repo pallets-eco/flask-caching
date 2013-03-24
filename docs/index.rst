@@ -152,7 +152,7 @@ Usage::
     {% endcache %}
 
     By default the value of "path to template file" + "block start line" is used as cache key.
-    Also one or multiple key names can be set manually
+    Also key name can be set manually. Keys are concated together into a single string.
     that can be used to avoid the same block evaluating in different templates.
 
     Set timeout to "del" to delete cached value:
