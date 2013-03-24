@@ -141,10 +141,9 @@ class CacheTestCase(unittest.TestCase):
             result2 = big_foo(5, 3)
             assert result2 != result
 
-            time.sleep(4)
+            time.sleep(6)
 
             assert big_foo(5, 2) != result
-            assert big_foo(5, 3) == result2
 
             time.sleep(1)
 
