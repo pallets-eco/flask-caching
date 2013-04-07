@@ -316,10 +316,11 @@ class Cache(object):
         args_len = len(argspec.args)
         for i in range(args_len):
             if i == 0 and argspec.args[i] in ('self', 'cls'):
-                #: use the id of the class instance
+                #: use the repr of the class instance
                 #: this supports instance methods for
-                #: the memoized functions.
-                arg = id(args[0])
+                #: the memoized functions, giving more
+                #: flexibility to developers
+                arg = repr(args[0])
                 arg_num += 1
             elif argspec.args[i] in kwargs:
                 arg = kwargs[argspec.args[i]]
