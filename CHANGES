@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.11.1 2013-04-7
+````````````````````````
+
+- Bugfix for using memoize on instance methods.
+  The previous key was id(self), the new key is repr(self)
+
 Version 0.11 2013-03-23
 ```````````````````````
 
