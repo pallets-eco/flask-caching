@@ -216,7 +216,7 @@ The following configuration values exist for Flask-Cache:
 ``CACHE_KEY_PREFIX``            A prefix that is added before all keys.
                                 This makes it possible to use the same
                                 memcached server for different apps.
-                                Used only for MemcachedCache and
+                                Used only for RedisCache, MemcachedCache and
                                 GAEMemcachedCache.
 ``CACHE_MEMCACHED_SERVERS``     A list or a tuple of server addresses.
                                 Used only for MemcachedCache

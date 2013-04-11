@@ -77,7 +77,7 @@ class Cache(object):
 
         config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
         config.setdefault('CACHE_THRESHOLD', 500)
-        config.setdefault('CACHE_KEY_PREFIX', None)
+        config.setdefault('CACHE_KEY_PREFIX', 'flask_cache_')
         config.setdefault('CACHE_MEMCACHED_SERVERS', None)
         config.setdefault('CACHE_DIR', None)
         config.setdefault('CACHE_OPTIONS', None)
