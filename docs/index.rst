@@ -170,6 +170,39 @@ Example::
     </div>
     {% endcache %}
 
+Clearing Cache
+--------------
+
+See :meth:`~Cache.clear`.
+
+Here's an example script to empty your application's cache:
+
+.. code-block:: python
+
+    from flask.ext.cache import Cache
+
+    from yourapp import app, your_cache_config
+
+    cache = Cache()
+
+
+    def main():
+        cache.init_app(app, config=your_cache_config)
+
+        with app.app_context():
+            cache.clear()
+
+    if __name__ == '__main__':
+        main()
+
+
+.. warning::
+
+    Some backend implementation do not support completely clearing the case.
+    Also, if you're not using key prefix, some implementation (e.g. Redis)
+    will flush the whole database. Make sure you're not storing any other
+    data in your caching database.
+
 Configuring Flask-Cache
 -----------------------
 
@@ -384,7 +417,7 @@ API
 
 .. autoclass:: Cache
    :members: init_app,
-             get, set, add, delete, get_many, set_many, delete_many,
+             get, set, add, delete, get_many, set_many, delete_many, clear,
              cached, memoize, delete_memoized, delete_memoized_verhash
 
 .. include:: ../CHANGES

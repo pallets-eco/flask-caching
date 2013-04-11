@@ -147,6 +147,10 @@ class Cache(object):
         "Proxy function for internal cache object."
         self.cache.delete_many(*args, **kwargs)
 
+    def clear(self):
+        "Proxy function for internal cache object."
+        self.cache.clear()
+
     def get_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
         return self.cache.get_many(*args, **kwargs)
