@@ -202,6 +202,8 @@ The following configuration values exist for Flask-Cache:
                                 * **filesystem**: FileSystemCache
                                 * **saslmemcached**: SASLMemcachedCache (pylibmc required)
 
+``CACHE_NO_NULL_WARNING``       Silents the warning message when using
+                                cache type of 'null'.
 ``CACHE_ARGS``                  Optional list to unpack and pass during
                                 the cache class instantiation.
 ``CACHE_OPTIONS``               Optional dictionary to pass during the

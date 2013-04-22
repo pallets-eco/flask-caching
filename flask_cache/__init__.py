@@ -83,8 +83,9 @@ class Cache(object):
         config.setdefault('CACHE_OPTIONS', None)
         config.setdefault('CACHE_ARGS', [])
         config.setdefault('CACHE_TYPE', 'null')
+        config.setdefault('CACHE_NO_NULL_WARNING', False)
 
-        if config['CACHE_TYPE'] == 'null':
+        if config['CACHE_TYPE'] == 'null' and not config['CACHE_NO_NULL_WARNING']:
             warnings.warn("Flask-Cache: CACHE_TYPE is set to null, "
                           "caching is effectively disabled.")
 
