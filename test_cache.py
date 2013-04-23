@@ -6,8 +6,8 @@ import time
 import random
 import string
 
-from flask import Flask, render_template
-from flask.ext.cache import Cache, function_namespace
+from flask import Flask, render_template, render_template_string
+from flask.ext.cache import Cache, function_namespace, make_template_fragment_key
 
 if sys.version_info < (2,7):
     import unittest2 as unittest
@@ -500,24 +500,34 @@ class CacheTestCase(unittest.TestCase):
 
     def test_20_jinja2ext_cache(self):
         somevar = ''.join([random.choice(string.ascii_letters) for x in range(6)])
-        filename = self.app.jinja_env.get_template("test_template.html").filename
 
         testkeys = [
-            "%s1" % filename,
-            "%s2_key1" % filename,
-            "%s3_key1_%s" % (filename, somevar)
+            make_template_fragment_key("fragment1"),
+            make_template_fragment_key("fragment1", vary_on=["key1"]),
+            make_template_fragment_key("fragment1", vary_on=["key1", somevar])
         ]
-        delkey = "%s4_key2" % filename
+        delkey = make_template_fragment_key("fragment2")
 
         with self.app.test_request_context():
+            # Test if elements are cached
             render_template("test_template.html", somevar=somevar, timeout=60)
             for k in testkeys:
                 assert self.cache.get(k) == somevar
             assert self.cache.get(delkey) == somevar
+
+            # Test timeout=del to delete key
             render_template("test_template.html", somevar=somevar, timeout="del")
             for k in testkeys:
                 assert self.cache.get(k) == somevar
             assert self.cache.get(delkey) is None
+
+            # Test rendering templates from strings
+            output = render_template_string(
+                """{% cache 60 "fragment3" %}{{somevar}}{% endcache %}""",
+                somevar=somevar
+            )
+            assert self.cache.get(make_template_fragment_key("fragment3")) == somevar
+            assert output == somevar
 
 
 if 'TRAVIS' in os.environ:

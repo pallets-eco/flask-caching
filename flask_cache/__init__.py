@@ -28,6 +28,8 @@ from flask import request, current_app
 
 logger = logging.getLogger(__name__)
 
+TEMPLATE_FRAGMENT_KEY_TEMPLATE = '_template_fragment_cache_%s%s'
+
 
 def function_namespace(f, args=None):
     """
@@ -47,6 +49,15 @@ def function_namespace(f, args=None):
         return '%s.%s.%s' % (f.__module__, f.__class__.__name__, f.__name__)
     else:
         return '%s.%s' % (f.__module__, f.__name__)
+
+
+def make_template_fragment_key(fragment_name, vary_on=[]):
+    """
+    Make a cache key for a specific fragment name
+    """
+    if vary_on:
+        fragment_name = "%s_" % fragment_name
+    return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
 
 #: Cache Object
