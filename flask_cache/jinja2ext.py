@@ -67,11 +67,12 @@ class CacheExtension(Extension):
         except AttributeError, e:
             raise e
 
+        key = '_'.join(keys_list)
+
         if timeout == "del":
-            cache.delete_many(*keys_list)
+            cache.delete(key)
             return caller()
 
-        key = '_'.join(keys_list)
         rv = cache.get(key)
 
         if rv is None:

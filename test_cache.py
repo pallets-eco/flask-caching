@@ -4,8 +4,9 @@ import sys
 import os
 import time
 import random
+import string
 
-from flask import Flask
+from flask import Flask, render_template
 from flask.ext.cache import Cache, function_namespace
 
 if sys.version_info < (2,7):
@@ -19,7 +20,7 @@ class CacheTestCase(unittest.TestCase):
         app.config['CACHE_TYPE'] = 'simple'
 
     def setUp(self):
-        app = Flask(__name__)
+        app = Flask(__name__, template_folder=os.path.dirname(__file__))
 
         app.debug = True
         self._set_app_config(app)
@@ -496,6 +497,28 @@ class CacheTestCase(unittest.TestCase):
         cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
         from werkzeug.contrib.cache import SimpleCache
         assert isinstance(self.app.extensions['cache'][cache], SimpleCache)
+
+    def test_20_jinja2ext_cache(self):
+        somevar = ''.join([random.choice(string.ascii_letters) for x in range(6)])
+        filename = self.app.jinja_env.get_template("test_template.html").filename
+
+        testkeys = [
+            "%s1" % filename,
+            "%s2_key1" % filename,
+            "%s3_key1_%s" % (filename, somevar)
+        ]
+        delkey = "%s4_key2" % filename
+
+        with self.app.test_request_context():
+            render_template("test_template.html", somevar=somevar, timeout=60)
+            for k in testkeys:
+                assert self.cache.get(k) == somevar
+            assert self.cache.get(delkey) == somevar
+            render_template("test_template.html", somevar=somevar, timeout="del")
+            for k in testkeys:
+                assert self.cache.get(k) == somevar
+            assert self.cache.get(delkey) is None
+
 
 if 'TRAVIS' in os.environ:
     try:

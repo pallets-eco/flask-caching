@@ -1,4 +1,5 @@
 include LICENSE CHANGES *.py
+include test_template.html
 recursive-include docs *
 recursive-exclude docs *.pyc
 recursive-exclude docs *.pyo
