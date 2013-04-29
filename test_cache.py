@@ -539,7 +539,8 @@ class CacheTestCase(unittest.TestCase):
             output = render_template_string(
                 """{% cache 30, "fragment4", "fragment5"%}{{somevar}}{% endcache %}""",
                 somevar=somevar)
-            assert self.cache.get(make_template_fragment_key("None1")) == somevar
+            k = make_template_fragment_key("fragment4", vary_on=["fragment5"])
+            assert self.cache.get(k) == somevar
             assert output == somevar
 
 
