@@ -4,9 +4,10 @@ import sys
 import os
 import time
 import random
+import string
 
-from flask import Flask
-from flask.ext.cache import Cache, function_namespace
+from flask import Flask, render_template, render_template_string
+from flask.ext.cache import Cache, function_namespace, make_template_fragment_key
 
 if sys.version_info < (2,7):
     import unittest2 as unittest
@@ -19,7 +20,7 @@ class CacheTestCase(unittest.TestCase):
         app.config['CACHE_TYPE'] = 'simple'
 
     def setUp(self):
-        app = Flask(__name__)
+        app = Flask(__name__, template_folder=os.path.dirname(__file__))
 
         app.debug = True
         self._set_app_config(app)
@@ -496,6 +497,38 @@ class CacheTestCase(unittest.TestCase):
         cache.init_app(self.app, config={'CACHE_TYPE': 'simple'})
         from werkzeug.contrib.cache import SimpleCache
         assert isinstance(self.app.extensions['cache'][cache], SimpleCache)
+
+    def test_20_jinja2ext_cache(self):
+        somevar = ''.join([random.choice(string.ascii_letters) for x in range(6)])
+
+        testkeys = [
+            make_template_fragment_key("fragment1"),
+            make_template_fragment_key("fragment1", vary_on=["key1"]),
+            make_template_fragment_key("fragment1", vary_on=["key1", somevar])
+        ]
+        delkey = make_template_fragment_key("fragment2")
+
+        with self.app.test_request_context():
+            # Test if elements are cached
+            render_template("test_template.html", somevar=somevar, timeout=60)
+            for k in testkeys:
+                assert self.cache.get(k) == somevar
+            assert self.cache.get(delkey) == somevar
+
+            # Test timeout=del to delete key
+            render_template("test_template.html", somevar=somevar, timeout="del")
+            for k in testkeys:
+                assert self.cache.get(k) == somevar
+            assert self.cache.get(delkey) is None
+
+            # Test rendering templates from strings
+            output = render_template_string(
+                """{% cache 60 "fragment3" %}{{somevar}}{% endcache %}""",
+                somevar=somevar
+            )
+            assert self.cache.get(make_template_fragment_key("fragment3")) == somevar
+            assert output == somevar
+
 
 if 'TRAVIS' in os.environ:
     try:
