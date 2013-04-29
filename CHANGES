@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-Version 0.12
-````````````
+Version 0.12 2013-04-29
+```````````````````````
 
 - Changes jinja2 cache templates to use stable predictable keys. Previously
   the key for a cache tag included the line number of the template, which made
