@@ -41,14 +41,19 @@ class CacheExtension(Extension):
     def parse(self, parser):
         lineno = parser.stream.next().lineno
 
-        # Parse timeout
+        #: Parse timeout
         args = [parser.parse_expression()]
 
-        # Parse fragment name
-        parser.stream.skip_if('comma')
-        args.append(parser.parse_expression())
+        #: Parse fragment name
+        #: Grab the fragment name if it exists
+        #: otherwise, default to the old method of using the templates
+        #: lineno to maintain backwards compatibility.
+        if parser.stream.skip_if('comma'):
+            args.append(parser.parse_expression())
+        else:
+            args.append(nodes.Const("%s%s" % (parser.filename, lineno)))
 
-        # Parse vary_on parameters
+        #: Parse vary_on parameters
         vary_on = []
         while parser.stream.skip_if('comma'):
             vary_on.append(parser.parse_expression())
@@ -70,7 +75,7 @@ class CacheExtension(Extension):
 
         key = make_template_fragment_key(fragment_name, vary_on=vary_on)
 
-        # Delete key if timeout is 'del'
+        #: Delete key if timeout is 'del'
         if timeout == "del":
             cache.delete(key)
             return caller()

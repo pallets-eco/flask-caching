@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+Version 0.12
+````````````
+
+- Changes jinja2 cache templates to use stable predictable keys. Previously
+  the key for a cache tag included the line number of the template, which made
+  it difficult to predict what the key would be outside of the application.
+- Adds config variable `CACHE_NO_NULL_WARNING` to silence warning messages
+  when using 'null' cache as part of testing.
+- Adds passthrough to clear entire cache backend.
+
 Version 0.11.1 2013-04-7
 ````````````````````````
 

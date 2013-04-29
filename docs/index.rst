@@ -151,12 +151,20 @@ Usage::
     ...
     {% endcache %}
 
-    By default the value of "path to template file" + "block start line" is used as cache key.
-    Also key name can be set manually. Keys are concated together into a single string.
-    that can be used to avoid the same block evaluating in different templates.
+By default the value of "path to template file" + "block start line" is used as cache key.
+Also key name can be set manually. Keys are concated together into a single string.
+that can be used to avoid the same block evaluating in different templates.
 
-    Set timeout to "del" to delete cached value:
+Set timeout to "del" to delete cached value::
+
     {% cache 'del' %}...
+
+If keys are provided, you may easily generate the tempalte fragment key and
+delete it from outside of the template context::
+
+    from flask.ext.cache import make_template_fragment_key
+    key = make_template_fragment_key("key1", vary_on=["key2", "key3"])
+    cache.delete(key)
 
 Example::
 

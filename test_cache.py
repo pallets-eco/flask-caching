@@ -504,29 +504,42 @@ class CacheTestCase(unittest.TestCase):
         testkeys = [
             make_template_fragment_key("fragment1"),
             make_template_fragment_key("fragment1", vary_on=["key1"]),
-            make_template_fragment_key("fragment1", vary_on=["key1", somevar])
+            make_template_fragment_key("fragment1", vary_on=["key1", somevar]),
         ]
         delkey = make_template_fragment_key("fragment2")
 
         with self.app.test_request_context():
-            # Test if elements are cached
+            #: Test if elements are cached
             render_template("test_template.html", somevar=somevar, timeout=60)
             for k in testkeys:
                 assert self.cache.get(k) == somevar
             assert self.cache.get(delkey) == somevar
 
-            # Test timeout=del to delete key
+            #: Test timeout=del to delete key
             render_template("test_template.html", somevar=somevar, timeout="del")
             for k in testkeys:
                 assert self.cache.get(k) == somevar
             assert self.cache.get(delkey) is None
 
-            # Test rendering templates from strings
+            #: Test rendering templates from strings
             output = render_template_string(
-                """{% cache 60 "fragment3" %}{{somevar}}{% endcache %}""",
+                """{% cache 60, "fragment3" %}{{somevar}}{% endcache %}""",
                 somevar=somevar
             )
             assert self.cache.get(make_template_fragment_key("fragment3")) == somevar
+            assert output == somevar
+
+            #: Test backwards compatibility
+            output = render_template_string(
+                """{% cache 30 %}{{somevar}}{% endcache %}""",
+                somevar=somevar)
+            assert self.cache.get(make_template_fragment_key("None1")) == somevar
+            assert output == somevar
+
+            output = render_template_string(
+                """{% cache 30, "fragment4", "fragment5"%}{{somevar}}{% endcache %}""",
+                somevar=somevar)
+            assert self.cache.get(make_template_fragment_key("None1")) == somevar
             assert output == somevar
 
 
