@@ -70,7 +70,7 @@ class CacheExtension(Extension):
     def _cache(self, timeout, fragment_name, vary_on,  caller):
         try:
             cache = getattr(self.environment, JINJA_CACHE_ATTR_NAME)
-        except AttributeError, e:
+        except AttributeError as e:
             raise e
 
         key = make_template_fragment_key(fragment_name, vary_on=vary_on)

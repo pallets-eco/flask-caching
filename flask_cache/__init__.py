@@ -15,12 +15,9 @@ __versionfull__ = __version__
 import uuid
 import hashlib
 import inspect
-import exceptions
 import functools
 import warnings
 import logging
-
-from types import NoneType
 
 from werkzeug import import_string
 from flask import request, current_app
@@ -43,8 +40,8 @@ def function_namespace(f, args=None):
         elif m_args[0] == 'cls':
             return '%s.%s.%s' % (f.__module__, args[0].__name__, f.__name__)
 
-    if hasattr(f, 'im_func'):
-        return '%s.%s.%s' % (f.__module__, f.im_class.__name__, f.__name__)
+    if hasattr(f, '__func__'):
+        return '%s.%s.%s' % (f.__module__, f.__self__.__class__.__name__, f.__name__)
     elif hasattr(f, '__class__'):
         return '%s.%s.%s' % (f.__module__, f.__class__.__name__, f.__name__)
     else:
@@ -78,8 +75,8 @@ class Cache(object):
 
     def init_app(self, app, config=None):
         "This is used to initialize cache with your app object"
-        if not isinstance(config, (NoneType, dict)):
-            raise ValueError("`config` must be an instance of dict or NoneType")
+        if not (config is None or isinstance(config, dict)):
+            raise ValueError("`config` must be an instance of dict or None")
 
         if config is None:
             config = self.config
@@ -111,7 +108,7 @@ class Cache(object):
     def _set_cache(self, app, config):
         import_me = config['CACHE_TYPE']
         if '.' not in import_me:
-            import backends
+            from . import backends
 
             try:
                 cache_obj = getattr(backends, import_me)
@@ -533,7 +530,7 @@ class Cache(object):
             results would eventually be reclaimed by the caching backend.
         """
         if not callable(f):
-            raise exceptions.DeprecationWarning("Deleting messages by relative name is no longer"
+            raise DeprecationWarning("Deleting messages by relative name is no longer"
                           " reliable, please switch to a function reference")
 
         _fname = function_namespace(f, args)
@@ -564,7 +561,7 @@ class Cache(object):
             in the cache backend.
         """
         if not callable(f):
-            raise exceptions.DeprecationWarning("Deleting messages by relative name is no longer"
+            raise DeprecationWarning("Deleting messages by relative name is no longer"
                           " reliable, please use a function reference")
 
         _fname = function_namespace(f, args)
