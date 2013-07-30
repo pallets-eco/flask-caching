@@ -274,7 +274,7 @@ class Cache(object):
         return funcname + '_memver'
 
     def memoize_make_version_hash(self):
-        return base64.b64encode(uuid.uuid4().bytes)[:6]
+        return base64.b64encode(uuid.uuid4().bytes)[:6].decode('utf-8')
 
     def memoize_make_cache_key(self, make_name=None):
         """
