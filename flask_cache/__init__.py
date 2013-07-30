@@ -313,6 +313,7 @@ class Cache(object):
 
             cache_key.update(updated.encode('utf-8'))
             cache_key = base64.b64encode(cache_key.digest())[:16]
+            cache_key = cache_key.decode('utf-8')
             cache_key += version_data
 
             return cache_key
