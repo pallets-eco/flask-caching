@@ -5,7 +5,8 @@ python:
  - "3.3"
 install:
  - pip install . --use-mirrors
- - pip install coverage unittest2 --use-mirrors
+ - pip install coverage --use-mirrors
+ - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2 --use-mirrors; fi"
  - pip install redis pylibmc --use-mirrors
 script: nosetests --with-coverage --cover-package=flask_cache
 services:
