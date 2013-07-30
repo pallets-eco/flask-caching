@@ -39,7 +39,7 @@ class CacheExtension(Extension):
     tags = set(['cache'])
 
     def parse(self, parser):
-        lineno = parser.stream.next().lineno
+        lineno = next(parser.stream).lineno
 
         #: Parse timeout
         args = [parser.parse_expression()]
