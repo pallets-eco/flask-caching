@@ -311,7 +311,7 @@ class Cache(object):
             except AttributeError:
                 updated = "%s%s%s" % (altfname, keyargs, keykwargs)
 
-            cache_key.update(updated)
+            cache_key.update(updated.encode('utf-8'))
             cache_key = base64.b64encode(cache_key.digest())[:16]
             cache_key += version_data
 
