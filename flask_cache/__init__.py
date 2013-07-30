@@ -12,6 +12,7 @@
 __version__ = '0.12'
 __versionfull__ = __version__
 
+import base64
 import uuid
 import hashlib
 import inspect
@@ -273,7 +274,7 @@ class Cache(object):
         return funcname + '_memver'
 
     def memoize_make_version_hash(self):
-        return uuid.uuid4().bytes.encode('base64')[:6]
+        return base64.b64encode(uuid.uuid4().bytes)[:6]
 
     def memoize_make_cache_key(self, make_name=None):
         """
@@ -311,7 +312,7 @@ class Cache(object):
                 updated = "%s%s%s" % (altfname, keyargs, keykwargs)
 
             cache_key.update(updated)
-            cache_key = cache_key.digest().encode('base64')[:16]
+            cache_key = base64.b64encode(cache_key.digest())[:16]
             cache_key += version_data
 
             return cache_key
