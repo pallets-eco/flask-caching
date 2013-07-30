@@ -556,9 +556,11 @@ if 'TRAVIS' in os.environ:
             app.config['CACHE_TYPE'] = 'memcached'
 
 
-    class SpreadCacheMemcachedTestCase(CacheTestCase):
-        def _set_app_config(self, app):
-            app.config['CACHE_TYPE'] = 'spreadsaslmemcachedcache'
+    if sys.version_info <= (2,7):
+
+        class SpreadCacheMemcachedTestCase(CacheTestCase):
+            def _set_app_config(self, app):
+                app.config['CACHE_TYPE'] = 'spreadsaslmemcachedcache'
 
 
     class CacheRedisTestCase(CacheTestCase):
