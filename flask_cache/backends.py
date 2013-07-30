@@ -1,6 +1,8 @@
 import pickle
 from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache)
+from ._compat import range_type
+
 
 class SASLMemcachedCache(MemcachedCache):
 
@@ -126,7 +128,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         serialized = pickle.dumps(value, 2)
         values = {}
         len_ser = len(serialized)
-        chks = xrange(0, len_ser, self.chunksize)
+        chks = range_type(0, len_ser, self.chunksize)
         if len(chks) > self.maxchunk:
             raise ValueError('Cannot store value in less than %s keys'%(self.maxchunk))
         for i in chks:
@@ -144,10 +146,10 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
             return super(SpreadSASLMemcachedCache, self).get(key)
 
     def _genkeys(self, key):
-        return ['%s.%s' % (key, i) for i in xrange(self.maxchunk)]
+        return ['%s.%s' % (key, i) for i in range_type(self.maxchunk)]
 
     def _get(self, key):
-        to_get = ['%s.%s' % (key, i) for i in xrange(self.maxchunk)]
+        to_get = ['%s.%s' % (key, i) for i in range_type(self.maxchunk)]
         result = super(SpreadSASLMemcachedCache, self).get_many( *to_get)
         serialized = ''.join([v for v in result if v is not None])
         if not serialized:
