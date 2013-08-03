@@ -23,6 +23,7 @@ Cache is managed through a ``Cache`` instance::
     from flask.ext.cache import Cache
 
     app = Flask(__name__)
+    # Check Configuring Flask-Cache section for more details
     cache = Cache(app,config={'CACHE_TYPE': 'simple'})
 
 You may also set up your ``Cache`` instance later at configuration time using
