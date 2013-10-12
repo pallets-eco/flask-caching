@@ -207,8 +207,8 @@ Here's an example script to empty your application's cache:
 
 .. warning::
 
-    Some backend implementation do not support completely clearing the case.
-    Also, if you're not using key prefix, some implementation (e.g. Redis)
+    Some backend implementations do not support completely clearing the cache.
+    Also, if you're not using a key prefix, some implementations (e.g. Redis)
     will flush the whole database. Make sure you're not storing any other
     data in your caching database.
 
