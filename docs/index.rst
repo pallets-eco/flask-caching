@@ -160,7 +160,7 @@ Set timeout to "del" to delete cached value::
 
     {% cache 'del' %}...
 
-If keys are provided, you may easily generate the tempalte fragment key and
+If keys are provided, you may easily generate the template fragment key and
 delete it from outside of the template context::
 
     from flask.ext.cache import make_template_fragment_key
