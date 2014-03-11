@@ -276,7 +276,7 @@ class Cache(object):
     def memoize_make_version_hash(self):
         return base64.b64encode(uuid.uuid4().bytes)[:6].decode('utf-8')
 
-    def memoize_make_cache_key(self, make_name=None):
+    def memoize_make_cache_key(self, make_name=None, timeout=None):
         """
         Function used to create the cache_key for memoized functions.
         """
@@ -288,7 +288,7 @@ class Cache(object):
 
             if version_data is None:
                 version_data = self.memoize_make_version_hash()
-                self.cache.set(version_key, version_data)
+                self.cache.set(version_key, version_data, timeout=timeout)
 
             cache_key = hashlib.md5()
 
@@ -458,7 +458,8 @@ class Cache(object):
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = self.memoize_make_cache_key(make_name)
+            decorated_function.make_cache_key = self.memoize_make_cache_key(
+                                                make_name, timeout)
             decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
             return decorated_function
