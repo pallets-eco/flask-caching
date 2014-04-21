@@ -346,7 +346,7 @@ class CacheTestCase(unittest.TestCase):
         tc = self.app.test_client()
 
         rv = tc.get('/')
-        the_time = rv.data
+        the_time = rv.data.decode('utf-8')
 
         with self.app.test_request_context():
             cache_data = self.cache.get(cached_view.make_cache_key())
@@ -364,7 +364,7 @@ class CacheTestCase(unittest.TestCase):
         tc = self.app.test_client()
 
         rv = tc.get('/a/b')
-        the_time = rv.data
+        the_time = rv.data.decode('utf-8')
 
         cache_key = cached_view.make_cache_key(cached_view.uncached, foo=u"a", bar=u"b")
         cache_data = self.cache.get(cache_key)

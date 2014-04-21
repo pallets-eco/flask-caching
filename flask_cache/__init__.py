@@ -259,8 +259,6 @@ class Cache(object):
                 else:
                     cache_key = key_prefix
 
-                cache_key = cache_key.encode('utf-8')
-
                 return cache_key
 
             decorated_function.uncached = f
