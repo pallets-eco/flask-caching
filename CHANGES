@@ -1,12 +1,13 @@
 Changelog
 ---------
 
-Version 0.xx 2013-xx-xx
+Version 0.13 2014-04-21
 ```````````````````````
 
 - Port to Python >= 3.3 (requiring Python 2.6/2.7 for 2.x).
-  Use same method as in Flask, reusing code from flask._compat module.
 - Fixed bug with using per-memoize timeouts greater than the default timeout
+- Added better support for per-instance memoization.
+- Various bug fixes
 
 Version 0.12 2013-04-29
 ```````````````````````

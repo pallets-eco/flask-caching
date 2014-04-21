@@ -350,42 +350,65 @@ class CacheTestCase(unittest.TestCase):
         assert adder1.add(3) != adder2.add(3)
 
     def test_10d_classfunc_memoize_delete(self):
-        class Adder(object):
-            def __init__(self, initial):
-                self.initial = initial
+        with self.app.test_request_context():
+            class Adder(object):
+                def __init__(self, initial):
+                    self.initial = initial
 
-            @self.cache.memoize()
-            def add(self, b):
-                return self.initial + b + random.random()
+                @self.cache.memoize()
+                def add(self, b):
+                    return self.initial + b + random.random()
 
-        adder1 = Adder(1)
-        adder2 = Adder(2)
+            adder1 = Adder(1)
+            adder2 = Adder(2)
 
-        a1 = adder1.add(3)
-        a2 = adder2.add(3)
+            a1 = adder1.add(3)
+            a2 = adder2.add(3)
 
-        assert a1 != a2
-        assert adder1.add(3) == a1
-        assert adder2.add(3) == a2
+            assert a1 != a2
+            assert adder1.add(3) == a1
+            assert adder2.add(3) == a2
 
-        self.cache.delete_memoized(adder1.add)
+            self.cache.delete_memoized(adder1.add)
 
-        a3 = adder1.add(3)
-        a4 = adder2.add(3)
+            a3 = adder1.add(3)
+            a4 = adder2.add(3)
 
-        self.assertNotEqual(a1, a3)
-        assert a1 != a3
-        self.assertEqual(a2, a4)
+            self.assertNotEqual(a1, a3)
+            assert a1 != a3
+            self.assertEqual(a2, a4)
 
-        self.cache.delete_memoized(Adder.add)
+            self.cache.delete_memoized(Adder.add)
 
-        a5 = adder1.add(3)
-        a6 = adder2.add(3)
+            a5 = adder1.add(3)
+            a6 = adder2.add(3)
 
-        self.assertNotEqual(a5, a6)
-        self.assertNotEqual(a3, a5)
-        self.assertNotEqual(a4, a6)
+            self.assertNotEqual(a5, a6)
+            self.assertNotEqual(a3, a5)
+            self.assertNotEqual(a4, a6)
 
+    def test_10e_delete_memoize_classmethod(self):
+        with self.app.test_request_context():
+            class Mock(object):
+                @classmethod
+                @self.cache.memoize(5)
+                def big_foo(cls, a, b):
+                    return a+b+random.randrange(0, 100000)
+
+            result = Mock.big_foo(5, 2)
+            result2 = Mock.big_foo(5, 3)
+
+            time.sleep(1)
+
+            assert Mock.big_foo(5, 2) == result
+            assert Mock.big_foo(5, 2) == result
+            assert Mock.big_foo(5, 3) != result
+            assert Mock.big_foo(5, 3) == result2
+
+            self.cache.delete_memoized(Mock.big_foo)
+
+            assert Mock.big_foo(5, 2) != result
+            assert Mock.big_foo(5, 3) != result2
 
     def test_11_cache_key_property(self):
         @self.app.route('/')

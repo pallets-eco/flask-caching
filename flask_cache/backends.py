@@ -46,7 +46,7 @@ def gaememcached(app, config, args, kwargs):
     return GAEMemcachedCache(*args, **kwargs)
 
 def filesystem(app, config, args, kwargs):
-    args.append(config['CACHE_DIR'])
+    args.insert(0, config['CACHE_DIR'])
     kwargs.update(dict(threshold=config['CACHE_THRESHOLD']))
     return FileSystemCache(*args, **kwargs)
 

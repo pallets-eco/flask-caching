@@ -45,7 +45,10 @@ def function_namespace(f, args=None):
     m_args = inspect.getargspec(f)[0]
     instance_token = None
 
-    if getattr(f, '__self__', None):
+    instance_self = getattr(f, '__self__', None)
+
+    if instance_self \
+    and not inspect.isclass(instance_self):
         instance_token = repr(f.__self__)
     elif m_args \
     and m_args[0] == 'self' \
@@ -57,7 +60,14 @@ def function_namespace(f, args=None):
     if hasattr(f, '__qualname__'):
         name = f.__qualname__
     else:
-        klass = getattr(f, 'im_class', getattr(f, '__self__', None))
+        klass = getattr(f, '__self__', None)
+
+        if klass \
+        and not inspect.isclass(klass):
+            klass = klass.__class__
+
+        if not klass:
+            klass = getattr(f, 'im_class', None)
 
         if not klass:
             if m_args and args:
