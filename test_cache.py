@@ -149,6 +149,21 @@ class CacheTestCase(unittest.TestCase):
 
             assert big_foo(5, 3) != result2
 
+    def test_06a_memoize(self):
+        self.app.config['CACHE_DEFAULT_TIMEOUT'] = 1
+        self.cache = Cache(self.app)
+
+        with self.app.test_request_context():
+            @self.cache.memoize(50)
+            def big_foo(a, b):
+                return a+b+random.randrange(0, 100000)
+
+            result = big_foo(5, 2)
+
+            time.sleep(2)
+
+            assert big_foo(5, 2) == result
+
     def test_07_delete_memoize(self):
 
         with self.app.test_request_context():
