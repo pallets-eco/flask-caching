@@ -9,7 +9,7 @@
     :license: BSD, see LICENSE for more details
 """
 
-__version__ = '0.12'
+__version__ = '0.13'
 __versionfull__ = __version__
 
 import base64
