@@ -79,10 +79,12 @@ class Cache(object):
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
 
-        if config is None:
-            config = self.config
-        if config is None:
-            config = app.config
+        base_config = app.config.copy()
+        if self.config:
+            base_config.update(self.config)
+        if config:
+            base_config.update(config)
+        config = base_config
 
         config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
         config.setdefault('CACHE_THRESHOLD', 500)
