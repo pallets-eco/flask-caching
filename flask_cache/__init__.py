@@ -13,41 +13,74 @@ __version__ = '0.12'
 __versionfull__ = __version__
 
 import base64
-import uuid
+import functools
 import hashlib
 import inspect
-import functools
-import warnings
 import logging
+import string
+import uuid
+import warnings
 
 from werkzeug import import_string
 from flask import request, current_app
 
+from ._compat import PY2
 
 logger = logging.getLogger(__name__)
 
 TEMPLATE_FRAGMENT_KEY_TEMPLATE = '_template_fragment_cache_%s%s'
 
+# Used to remove control characters and whitespace from cache keys.
+valid_chars = set(string.ascii_letters + string.digits + '_.')
+delchars = ''.join(c for c in map(chr, range(256)) if c not in valid_chars)
+if PY2:
+    null_control = (None, delchars)
+else:
+    null_control = (dict((k,None) for k in delchars),)
 
 def function_namespace(f, args=None):
     """
     Attempts to returns unique namespace for function
     """
     m_args = inspect.getargspec(f)[0]
+    instance_token = None
 
-    if len(m_args) and args:
-        if m_args[0] == 'self':
-            return '%s.%s.%s' % (f.__module__, args[0].__class__.__name__, f.__name__)
-        elif m_args[0] == 'cls':
-            return '%s.%s.%s' % (f.__module__, args[0].__name__, f.__name__)
+    if getattr(f, '__self__', None):
+        instance_token = repr(f.__self__)
+    elif m_args \
+    and m_args[0] == 'self' \
+    and args:
+        instance_token = repr(args[0])
 
-    if hasattr(f, '__func__'):
-        return '%s.%s.%s' % (f.__module__, f.__self__.__class__.__name__, f.__name__)
-    elif hasattr(f, '__class__'):
-        return '%s.%s.%s' % (f.__module__, f.__class__.__name__, f.__name__)
+    module = f.__module__
+
+    if hasattr(f, '__qualname__'):
+        name = f.__qualname__
     else:
-        return '%s.%s' % (f.__module__, f.__name__)
+        klass = getattr(f, 'im_class', getattr(f, '__self__', None))
 
+        if not klass:
+            if m_args and args:
+                if m_args[0] == 'self':
+                    klass = args[0].__class__
+                elif m_args[0] == 'cls':
+                    klass = args[0]
+
+        if klass:
+            name = klass.__name__ + '.' + f.__name__
+        else:
+            name = f.__name__
+
+    ns = '.'.join((module, name))
+    ns = ns.translate(*null_control)
+
+    if instance_token:
+        ins = '.'.join((module, name, instance_token))
+        ins = ins.translate(*null_control)
+    else:
+        ins = None
+
+    return ns, ins
 
 def make_template_fragment_key(fragment_name, vary_on=[]):
     """
@@ -282,24 +315,60 @@ class Cache(object):
     def _memvname(self, funcname):
         return funcname + '_memver'
 
-    def memoize_make_version_hash(self):
+    def _memoize_make_version_hash(self):
         return base64.b64encode(uuid.uuid4().bytes)[:6].decode('utf-8')
 
-    def memoize_make_cache_key(self, make_name=None, timeout=None):
+    def _memoize_version(self, f, args=None,
+                         reset=False, delete=False, timeout=None):
+        """
+        Updates the hash version associated with a memoized function or method.
+        """
+        fname, instance_fname = function_namespace(f, args=args)
+        version_key = self._memvname(fname)
+        fetch_keys = [version_key]
+
+        if instance_fname:
+            instance_version_key = self._memvname(instance_fname)
+            fetch_keys.append(instance_version_key)
+
+        # Only delete the per-instance version key or per-function version
+        # key but not both.
+        if delete:
+            self.cache.delete_many(fetch_keys[-1])
+            return fname, None
+
+        version_data_list = list(self.cache.get_many(*fetch_keys))
+        dirty = False
+
+        if version_data_list[0] is None:
+            version_data_list[0] = self._memoize_make_version_hash()
+            dirty = True
+
+        if instance_fname and version_data_list[1] is None:
+            version_data_list[1] = self._memoize_make_version_hash()
+            dirty = True
+
+        # Only reset the per-instance version or the per-function version
+        # but not both.
+        if reset:
+            fetch_keys = fetch_keys[-1:]
+            version_data_list = [self._memoize_make_version_hash()]
+            dirty = True
+
+        if dirty:
+            self.cache.set_many(dict(zip(fetch_keys, version_data_list)),
+                                timeout=timeout)
+
+        return fname, ''.join(version_data_list)
+
+    def _memoize_make_cache_key(self, make_name=None, timeout=None):
         """
         Function used to create the cache_key for memoized functions.
         """
         def make_cache_key(f, *args, **kwargs):
-            fname = function_namespace(f, args)
-
-            version_key = self._memvname(fname)
-            version_data = self.cache.get(version_key)
-
-            if version_data is None:
-                version_data = self.memoize_make_version_hash()
-                self.cache.set(version_key, version_data, timeout=timeout)
-
-            cache_key = hashlib.md5()
+            _timeout = getattr(timeout, 'cache_timeout', timeout)
+            fname, version_data = self._memoize_version(f, args=args,
+                                                        timeout=_timeout)
 
             #: this should have to be after version_data, so that it
             #: does not break the delete_memoized functionality.
@@ -309,7 +378,7 @@ class Cache(object):
                 altfname = fname
 
             if callable(f):
-                keyargs, keykwargs = self.memoize_kwargs_to_args(f,
+                keyargs, keykwargs = self._memoize_kwargs_to_args(f,
                                                                  *args,
                                                                  **kwargs)
             else:
@@ -320,6 +389,7 @@ class Cache(object):
             except AttributeError:
                 updated = "%s%s%s" % (altfname, keyargs, keykwargs)
 
+            cache_key = hashlib.md5()
             cache_key.update(updated.encode('utf-8'))
             cache_key = base64.b64encode(cache_key.digest())[:16]
             cache_key = cache_key.decode('utf-8')
@@ -328,7 +398,7 @@ class Cache(object):
             return cache_key
         return make_cache_key
 
-    def memoize_kwargs_to_args(self, f, *args, **kwargs):
+    def _memoize_kwargs_to_args(self, f, *args, **kwargs):
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
@@ -466,8 +536,8 @@ class Cache(object):
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = self.memoize_make_cache_key(
-                                                make_name, timeout)
+            decorated_function.make_cache_key = self._memoize_make_cache_key(
+                                                make_name, decorated_function)
             decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
             return decorated_function
@@ -510,6 +580,40 @@ class Cache(object):
             >>> param_func(2, 2)
             47
 
+        Delete memoized is also smart about instance methods vs class methods.
+
+        When passing a instancemethod, it will only clear the cache related
+        to that instance of that object. (object uniqueness can be overridden
+            by defining the __repr__ method, such as user id).
+
+        When passing a classmethod, it will clear all caches related across
+        all instances of that class.
+
+        Example::
+
+            class Adder(object):
+                @cache.memoize()
+                def add(self, b):
+                    return b + random.random()
+
+        .. code-block:: pycon
+
+            >>> adder1 = Adder()
+            >>> adder2 = Adder()
+            >>> adder1.add(3)
+            3.23214234
+            >>> adder2.add(3)
+            3.60898509
+            >>> cache.delete_memoized(adder.add)
+            >>> adder1.add(3)
+            3.01348673
+            >>> adder2.add(3)
+            3.60898509
+            >>> cache.delete_memoized(Adder.add)
+            >>> adder1.add(3)
+            3.53235667
+            >>> adder2.add(3)
+            3.72341788
 
         :param fname: Name of the memoized function, or a reference to the function.
         :param \*args: A list of positional parameters used with memoized function.
@@ -544,13 +648,10 @@ class Cache(object):
             raise DeprecationWarning("Deleting messages by relative name is no longer"
                           " reliable, please switch to a function reference")
 
-        _fname = function_namespace(f, args)
 
         try:
             if not args and not kwargs:
-                version_key = self._memvname(_fname)
-                version_data = self.memoize_make_version_hash()
-                self.cache.set(version_key, version_data)
+                self._memoize_version(f, reset=True)
             else:
                 cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
                 self.cache.delete(cache_key)
@@ -575,11 +676,8 @@ class Cache(object):
             raise DeprecationWarning("Deleting messages by relative name is no longer"
                           " reliable, please use a function reference")
 
-        _fname = function_namespace(f, args)
-
         try:
-            version_key = self._memvname(_fname)
-            self.cache.delete(version_key)
+            self._memoize_version(f, delete=True)
         except Exception:
             if current_app.debug:
                 raise

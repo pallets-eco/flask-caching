@@ -65,18 +65,18 @@ class CacheTestCase(unittest.TestCase):
         tc = self.app.test_client()
 
         rv = tc.get('/')
-        the_time = rv.data
+        the_time = rv.data.decode('utf-8')
 
         time.sleep(2)
 
         rv = tc.get('/')
 
-        assert the_time == rv.data
+        assert the_time == rv.data.decode('utf-8')
 
         time.sleep(5)
 
         rv = tc.get('/')
-        assert the_time != rv.data
+        assert the_time != rv.data.decode('utf-8')
 
     def test_04_cached_view_unless(self):
         @self.app.route('/a')
@@ -92,20 +92,20 @@ class CacheTestCase(unittest.TestCase):
         tc = self.app.test_client()
 
         rv = tc.get('/a')
-        the_time = rv.data
+        the_time = rv.data.decode('utf-8')
 
         time.sleep(1)
 
         rv = tc.get('/a')
-        assert the_time != rv.data
+        assert the_time != rv.data.decode('utf-8')
 
         rv = tc.get('/b')
-        the_time = rv.data
+        the_time = rv.data.decode('utf-8')
 
         time.sleep(1)
         rv = tc.get('/b')
 
-        assert the_time == rv.data
+        assert the_time == rv.data.decode('utf-8')
 
     def test_05_cached_function(self):
 
@@ -204,7 +204,7 @@ class CacheTestCase(unittest.TestCase):
 
             self.cache.delete_memoized_verhash(big_foo)
 
-            _fname = function_namespace(big_foo)
+            _fname, _fname_instance = function_namespace(big_foo)
             version_key = self.cache._memvname(_fname)
             assert self.cache.get(version_key) is None
 
@@ -349,6 +349,44 @@ class CacheTestCase(unittest.TestCase):
         assert adder1.add(4) != x
         assert adder1.add(3) != adder2.add(3)
 
+    def test_10d_classfunc_memoize_delete(self):
+        class Adder(object):
+            def __init__(self, initial):
+                self.initial = initial
+
+            @self.cache.memoize()
+            def add(self, b):
+                return self.initial + b + random.random()
+
+        adder1 = Adder(1)
+        adder2 = Adder(2)
+
+        a1 = adder1.add(3)
+        a2 = adder2.add(3)
+
+        assert a1 != a2
+        assert adder1.add(3) == a1
+        assert adder2.add(3) == a2
+
+        self.cache.delete_memoized(adder1.add)
+
+        a3 = adder1.add(3)
+        a4 = adder2.add(3)
+
+        self.assertNotEqual(a1, a3)
+        assert a1 != a3
+        self.assertEqual(a2, a4)
+
+        self.cache.delete_memoized(Adder.add)
+
+        a5 = adder1.add(3)
+        a6 = adder2.add(3)
+
+        self.assertNotEqual(a5, a6)
+        self.assertNotEqual(a3, a5)
+        self.assertNotEqual(a4, a6)
+
+
     def test_11_cache_key_property(self):
         @self.app.route('/')
         @self.cache.cached(5)
@@ -415,24 +453,24 @@ class CacheTestCase(unittest.TestCase):
         tc = self.app.test_client()
 
         rv1 = tc.get('/')
-        time1 = rv1.data
+        time1 = rv1.data.decode('utf-8')
         time.sleep(1)
         rv2 = tc.get('/a/b')
-        time2 = rv2.data
+        time2 = rv2.data.decode('utf-8')
 
         # VIEW1
         # it's been 1 second, cache is still active
-        assert time1 == tc.get('/').data
+        assert time1 == tc.get('/').data.decode('utf-8')
         time.sleep(16)
         # it's been >15 seconds, cache is not still active
-        assert time1 != tc.get('/').data
+        assert time1 != tc.get('/').data.decode('utf-8')
 
         # VIEW2
         # it's been >17 seconds, cache is still active
-        assert time2 == tc.get('/a/b').data
+        self.assertEqual(time2, tc.get('/a/b').data.decode('utf-8'))
         time.sleep(30)
         # it's been >30 seconds, cache is not still active
-        assert time2 != tc.get('/a/b').data
+        assert time2 != tc.get('/a/b').data.decode('utf-8')
 
     def test_14_memoized_multiple_arg_kwarg_calls(self):
         with self.app.test_request_context():
@@ -484,15 +522,15 @@ class CacheTestCase(unittest.TestCase):
 
             expected = (1,2,'foo','bar')
 
-            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, 1,2,'foo','bar')
+            args, kwargs = self.cache._memoize_kwargs_to_args(big_foo, 1,2,'foo','bar')
             assert (args == expected)
-            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, 2,'foo','bar',a=1)
+            args, kwargs = self.cache._memoize_kwargs_to_args(big_foo, 2,'foo','bar',a=1)
             assert (args == expected)
-            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, a=1,b=2,c='foo',d='bar')
+            args, kwargs = self.cache._memoize_kwargs_to_args(big_foo, a=1,b=2,c='foo',d='bar')
             assert (args == expected)
-            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, d='bar',b=2,a=1,c='foo')
+            args, kwargs = self.cache._memoize_kwargs_to_args(big_foo, d='bar',b=2,a=1,c='foo')
             assert (args == expected)
-            args, kwargs = self.cache.memoize_kwargs_to_args(big_foo, 1,2,d='bar',c='foo')
+            args, kwargs = self.cache._memoize_kwargs_to_args(big_foo, 1,2,d='bar',c='foo')
             assert (args == expected)
 
     def test_17_dict_config(self):
