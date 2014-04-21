@@ -551,12 +551,11 @@ if 'TRAVIS' in os.environ:
     except ImportError:
         has_redis = False
 
-    class CacheMemcachedTestCase(CacheTestCase):
-        def _set_app_config(self, app):
-            app.config['CACHE_TYPE'] = 'memcached'
-
-
     if sys.version_info <= (2,7):
+
+        class CacheMemcachedTestCase(CacheTestCase):
+            def _set_app_config(self, app):
+                app.config['CACHE_TYPE'] = 'memcached'
 
         class SpreadCacheMemcachedTestCase(CacheTestCase):
             def _set_app_config(self, app):
