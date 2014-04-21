@@ -67,6 +67,9 @@ class Cache(object):
     """
 
     def __init__(self, app=None, with_jinja2_ext=True, config=None):
+        if not (config is None or isinstance(config, dict)):
+            raise ValueError("`config` must be an instance of dict or None")
+
         self.with_jinja2_ext = with_jinja2_ext
         self.config = config
 
@@ -78,6 +81,12 @@ class Cache(object):
         "This is used to initialize cache with your app object"
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
+
+        #: Ref PR #44.
+        #: Do not set self.app in the case a single instance of the Cache
+        #: object is being used for multiple app instances.
+        #: Example use case would be Cache shipped as part of a blueprint
+        #: or utility library.
 
         base_config = app.config.copy()
         if self.config:
