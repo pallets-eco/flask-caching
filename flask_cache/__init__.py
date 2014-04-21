@@ -513,7 +513,7 @@ class Cache(object):
             instead of the function name, Flask-Cache will be able to place
             the args/kwargs in the proper order, and delete the positional cache.
 
-            However, if ``delete_memozied`` is just called with the name of the
+            However, if ``delete_memoized`` is just called with the name of the
             function, be sure to pass in potential arguments in the same order
             as defined in your function as args only, otherwise Flask-Cache
             will not be able to compute the same cache key.
