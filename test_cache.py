@@ -672,7 +672,7 @@ if 'TRAVIS' in os.environ:
         def test_22_redis_url_explicit_db_arg(self):
             config = {
                 'CACHE_TYPE': 'redis',
-                'CACHE_REDIS_URL': 'redis://localhost:6379/2',
+                'CACHE_REDIS_URL': 'redis://localhost:6379',
                 'CACHE_REDIS_DB': 1,
             }
             cache = Cache()
