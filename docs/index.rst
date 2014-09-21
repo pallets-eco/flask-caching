@@ -156,6 +156,10 @@ By default the value of "path to template file" + "block start line" is used as 
 Also key name can be set manually. Keys are concated together into a single string.
 that can be used to avoid the same block evaluating in different templates.
 
+Set the timeout to None for no timeout, but with custom keys::
+
+    {% cache None "key" %}...
+
 Set timeout to "del" to delete cached value::
 
     {% cache 'del' %}...
