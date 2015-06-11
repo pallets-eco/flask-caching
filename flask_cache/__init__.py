@@ -222,6 +222,10 @@ class Cache(object):
     def set_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
         self.cache.set_many(*args, **kwargs)
+    
+    def get_dict(self, *args, **kwargs):
+        "Proxy function for internal cache object."
+        self.cache.get_dict(*args, **kwargs)
 
     def cached(self, timeout=None, key_prefix='view/%s', unless=None):
         """
