@@ -619,6 +619,64 @@ class CacheTestCase(unittest.TestCase):
             assert self.cache.get(k) == somevar
             assert output == somevar
 
+    def test_21_cached_view_forced_update(self):
+        forced_update = False
+        def forced_update_fn():
+            return forced_update
+
+        @self.app.route('/a')
+        @self.cache.cached(5, forced_update=lambda: forced_update)
+        def view():
+            return str(time.time())
+
+        tc = self.app.test_client()
+
+        rv = tc.get('/a')
+        the_time = rv.data.decode('utf-8')
+
+        time.sleep(1)
+
+        rv = tc.get('/a')
+        assert the_time == rv.data.decode('utf-8')
+
+        forced_update = True
+
+        rv = tc.get('/a')
+        new_time = rv.data.decode('utf-8')
+
+        assert new_time != the_time
+
+        forced_update = False
+
+        time.sleep(1)
+
+        rv = tc.get('/a')
+        assert new_time == rv.data.decode('utf-8')
+
+    def test_22_memoize_forced_update(self):
+        with self.app.test_request_context():
+            forced_update = False
+            @self.cache.memoize(5, forced_update=lambda: forced_update)
+            def big_foo(a, b):
+                return a+b+random.randrange(0, 100000)
+
+            result = big_foo(5, 2)
+
+            time.sleep(1)
+
+            assert big_foo(5, 2) == result
+
+            forced_update = True
+
+            new_result = big_foo(5, 2)
+
+            assert new_result != result
+
+            forced_update = False
+
+            time.sleep(1)
+
+            assert big_foo(5, 2) == new_result
 
 if 'TRAVIS' in os.environ:
     try:
