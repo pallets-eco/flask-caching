@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 from __future__ import with_statement
 
 import sys
@@ -178,6 +179,21 @@ class CacheTestCase(unittest.TestCase):
 
                 assert big_foo_annotated(5, 2) == result
 
+    def test_06c_memoize_utf8_arguments(self):
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def big_foo(a, b):
+                return "{}-{}".format(a, b)
+
+            big_foo("æøå", "chars")
+
+    def test_06d_memoize_unicode_arguments(self):
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def big_foo(a, b):
+                return u"{}-{}".format(a, b)
+
+            big_foo(u"æøå", "chars")
 
     def test_07_delete_memoize(self):
 

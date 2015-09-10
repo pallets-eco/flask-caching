@@ -453,9 +453,9 @@ class Cache(object):
                 keyargs, keykwargs = args, kwargs
 
             try:
-                updated = "{0}{1}{2}".format(altfname, keyargs, keykwargs)
+                updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
             except AttributeError:
-                updated = "%s%s%s" % (altfname, keyargs, keykwargs)
+                updated = u"%s%s%s" % (altfname, keyargs, keykwargs)
 
             cache_key = hashlib.md5()
             cache_key.update(updated.encode('utf-8'))
