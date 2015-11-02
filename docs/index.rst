@@ -127,7 +127,7 @@ example, lets say you change the users permissions and assign them to a role,
 but now you need to re-calculate if they have certain memberships or not.
 You can do this with the :meth:`~Cache.delete_memoized` function.::
 
-	cache.delete_memoized('user_has_membership')
+	cache.delete_memoized(user_has_membership)
 
 .. note::
 
@@ -141,7 +141,7 @@ You can do this with the :meth:`~Cache.delete_memoized` function.::
      user_has_membership('demo', 'admin')
      user_has_membership('demo', 'user')
 
-     cache.delete_memoized('user_has_membership', 'demo', 'user')
+     cache.delete_memoized(user_has_membership, 'demo', 'user')
 
 Caching Jinja2 Snippets
 -----------------------
