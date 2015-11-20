@@ -38,11 +38,53 @@ if PY2:
 else:
     null_control = (dict((k,None) for k in delchars),)
 
+def get_arg_names(f):
+    """
+    Return arguments of function
+
+    :param f:
+    :return: String list of arguments
+    """
+    try:
+        # Python >= 3.3
+        sig = inspect.signature(f)
+        return [parameter.name
+                  for parameter
+                  in sig.parameters.values()
+                  if parameter.kind == parameter.POSITIONAL_OR_KEYWORD]
+    except AttributeError:
+        try:
+            # Python >= 3.0
+            return inspect.getfullargspec(f).args
+        except AttributeError:
+            return inspect.getargspec(f).args
+
+def get_arg_default(f, position):
+    try:
+        # Python >= 3.3
+        sig = inspect.signature(f)
+        arg = list(sig.parameters.values())[position]
+        arg_def = arg.default
+        return arg_def if arg_def != inspect.Parameter.empty else None
+    except AttributeError:
+        try:
+            spec = inspect.getfullargspec(f)
+        except AttributeError:
+            spec = inspect.getargspec(f)
+
+        args_len = len(spec.args)
+        if spec.defaults and abs(position - args_len) <= len(spec.defaults):
+            return spec.defaults[position - args_len]
+        else:
+            return None
+
 def function_namespace(f, args=None):
     """
     Attempts to returns unique namespace for function
     """
-    m_args = inspect.getargspec(f)[0]
+
+    m_args = get_arg_names(f)
+
     instance_token = None
 
     instance_self = getattr(f, '__self__', None)
@@ -415,24 +457,27 @@ class Cache(object):
         #: 1, b=2 is equivilant to a=1, b=2, etc.
         new_args = []
         arg_num = 0
-        argspec = inspect.getargspec(f)
+        argspec = get_arg_names(f)
 
-        args_len = len(argspec.args)
+        arg_names = get_arg_names(f)
+        args_len = len(arg_names)
+
         for i in range(args_len):
-            if i == 0 and argspec.args[i] in ('self', 'cls'):
+            arg_default = get_arg_default(f, i)
+            if i == 0 and arg_names[i] in ('self', 'cls'):
                 #: use the repr of the class instance
                 #: this supports instance methods for
                 #: the memoized functions, giving more
                 #: flexibility to developers
                 arg = repr(args[0])
                 arg_num += 1
-            elif argspec.args[i] in kwargs:
-                arg = kwargs[argspec.args[i]]
+            elif arg_names[i] in kwargs:
+                arg = kwargs[arg_names[i]]
             elif arg_num < len(args):
                 arg = args[arg_num]
                 arg_num += 1
-            elif abs(i-args_len) <= len(argspec.defaults):
-                arg = argspec.defaults[i-args_len]
+            elif arg_default:
+                arg = arg_default
                 arg_num += 1
             else:
                 arg = None
