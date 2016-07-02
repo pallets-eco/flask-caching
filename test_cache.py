@@ -619,6 +619,11 @@ class CacheTestCase(unittest.TestCase):
             assert self.cache.get(k) == somevar
             assert output == somevar
 
+    def test_21_init_app_sets_app_attribute(self):
+        cache = Cache()
+        cache.init_app(self.app)
+        assert cache.app == self.app
+
 
 if 'TRAVIS' in os.environ:
     try:
