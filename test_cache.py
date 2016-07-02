@@ -164,6 +164,21 @@ class CacheTestCase(unittest.TestCase):
 
             assert big_foo(5, 2) == result
 
+    def test_06b_memoize_annotated(self):
+        if sys.version_info >= (3, 0):
+            with self.app.test_request_context():
+                @self.cache.memoize(50)
+                def big_foo_annotated(a, b):
+                    return a+b+random.randrange(0, 100000)
+                big_foo_annotated.__annotations__ = {'a': int, 'b': int, 'return': int}
+
+                result = big_foo_annotated(5, 2)
+
+                time.sleep(2)
+
+                assert big_foo_annotated(5, 2) == result
+
+
     def test_07_delete_memoize(self):
 
         with self.app.test_request_context():
@@ -212,6 +227,37 @@ class CacheTestCase(unittest.TestCase):
             assert big_foo(5, 3) != result2
 
             assert self.cache.get(version_key) is not None
+
+
+
+    def test_07c_delete_memoized_annotated(self):
+            with self.app.test_request_context():
+                @self.cache.memoize(5)
+                def big_foo_annotated(a, b):
+                    return a+b+random.randrange(0, 100000)
+
+                big_foo_annotated.__annotations__ = {'a': int, 'b': int, 'return': int}
+
+                result = big_foo_annotated(5, 2)
+                result2 = big_foo_annotated(5, 3)
+
+                time.sleep(1)
+
+                assert big_foo_annotated(5, 2) == result
+                assert big_foo_annotated(5, 2) == result
+                assert big_foo_annotated(5, 3) != result
+                assert big_foo_annotated(5, 3) == result2
+
+                self.cache.delete_memoized_verhash(big_foo_annotated)
+
+                _fname, _fname_instance = function_namespace(big_foo_annotated)
+                version_key = self.cache._memvname(_fname)
+                assert self.cache.get(version_key) is None
+
+                assert big_foo_annotated(5, 2) != result
+                assert big_foo_annotated(5, 3) != result2
+
+                assert self.cache.get(version_key) is not None
 
     def test_08_delete_memoize(self):
 
