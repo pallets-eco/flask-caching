@@ -1,33 +1,39 @@
 # -*- coding: utf-8 -*-
 """
+    flask_cache.jinja2ext
+    ~~~~~~~~~~~~~~~~~~~~~
 
-Jinja2 extension that adds support for caching template fragments.
+    Jinja2 extension that adds support for caching template fragments.
 
-Usage:
-    {% cache timeout key1[, [key2, ...]] %}
-    ...
-    {% endcache %}
+    Usage::
 
-    By default the value of "path to template file" + "block start line" is used as cache key.
-    Also key name can be set manually. Keys are concated together into a single string.
-    that can be used to avoid the same block evaluating in different templates.
+        {% cache timeout key1[, [key2, ...]] %}
+        ...
+        {% endcache %}
 
-    Set timeout to "del" to delete cached value:
-    {% cache 'del' key1 %}...
+        By default the value of "path to template file" + "block start line"
+        is used as cache key. Also key name can be set manually.
+        Keys are concated together into a single string. Tthat can be used
+        to avoid the same block evaluating in different templates.
 
-Example:
-    Considering we have render_form_field and render_submit macros.
-    {% cache 60*5 'myform' %}
-    <div>
-        <form>
-        {% render_form_field form.username %}
-        {% render_submit %}
-        </form>
-    </div>
-    {% endcache %}
+        Set timeout to "del" to delete cached value:
+        {% cache 'del' key1 %}...
 
+    Example::
+
+        Considering we have render_form_field and render_submit macros.
+        {% cache 60*5 'myform' %}
+        <div>
+            <form>
+            {% render_form_field form.username %}
+            {% render_submit %}
+            </form>
+        </div>
+        {% endcache %}
+
+    :copyright: (c) 2010 by Thadeus Burgess.
+    :license: BSD, see LICENSE for more details
 """
-
 from jinja2 import nodes
 from jinja2.ext import Extension
 from flask.ext.cache import make_template_fragment_key
@@ -67,7 +73,7 @@ class CacheExtension(Extension):
         return nodes.CallBlock(self.call_method('_cache', args),
                                [], [], body).set_lineno(lineno)
 
-    def _cache(self, timeout, fragment_name, vary_on,  caller):
+    def _cache(self, timeout, fragment_name, vary_on, caller):
         try:
             cache = getattr(self.environment, JINJA_CACHE_ATTR_NAME)
         except AttributeError as e:

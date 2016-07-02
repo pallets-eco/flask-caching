@@ -8,10 +8,6 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details
 """
-
-__version__ = '0.13'
-__versionfull__ = __version__
-
 import base64
 import functools
 import hashlib
@@ -26,6 +22,9 @@ from flask import request, current_app
 
 from ._compat import PY2
 
+__version__ = '0.13'
+__versionfull__ = __version__
+
 logger = logging.getLogger(__name__)
 
 TEMPLATE_FRAGMENT_KEY_TEMPLATE = '_template_fragment_cache_%s%s'
@@ -36,11 +35,11 @@ delchars = ''.join(c for c in map(chr, range(256)) if c not in valid_chars)
 if PY2:
     null_control = (None, delchars)
 else:
-    null_control = (dict((k,None) for k in delchars),)
+    null_control = (dict((k, None) for k in delchars),)
+
 
 def get_arg_names(f):
-    """
-    Return arguments of function
+    """Return arguments of function
 
     :param f:
     :return: String list of arguments
@@ -48,16 +47,15 @@ def get_arg_names(f):
     try:
         # Python >= 3.3
         sig = inspect.signature(f)
-        return [parameter.name
-                  for parameter
-                  in sig.parameters.values()
-                  if parameter.kind == parameter.POSITIONAL_OR_KEYWORD]
+        return [parameter.name for parameter in sig.parameters.values()
+                if parameter.kind == parameter.POSITIONAL_OR_KEYWORD]
     except AttributeError:
         try:
             # Python >= 3.0
             return inspect.getfullargspec(f).args
         except AttributeError:
             return inspect.getargspec(f).args
+
 
 def get_arg_default(f, position):
     try:
@@ -78,23 +76,18 @@ def get_arg_default(f, position):
         else:
             return None
 
-def function_namespace(f, args=None):
-    """
-    Attempts to returns unique namespace for function
-    """
 
+def function_namespace(f, args=None):
+    """Attempts to returns unique namespace for function"""
     m_args = get_arg_names(f)
 
     instance_token = None
 
     instance_self = getattr(f, '__self__', None)
 
-    if instance_self \
-    and not inspect.isclass(instance_self):
+    if instance_self and not inspect.isclass(instance_self):
         instance_token = repr(f.__self__)
-    elif m_args \
-    and m_args[0] == 'self' \
-    and args:
+    elif m_args and m_args[0] == 'self' and args:
         instance_token = repr(args[0])
 
     module = f.__module__
@@ -104,8 +97,7 @@ def function_namespace(f, args=None):
     else:
         klass = getattr(f, '__self__', None)
 
-        if klass \
-        and not inspect.isclass(klass):
+        if klass and not inspect.isclass(klass):
             klass = klass.__class__
 
         if not klass:
@@ -134,10 +126,9 @@ def function_namespace(f, args=None):
 
     return ns, ins
 
+
 def make_template_fragment_key(fragment_name, vary_on=[]):
-    """
-    Make a cache key for a specific fragment name
-    """
+    """Make a cache key for a specific fragment name."""
     if vary_on:
         fragment_name = "%s_" % fragment_name
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
@@ -147,9 +138,7 @@ def make_template_fragment_key(fragment_name, vary_on=[]):
 ################
 
 class Cache(object):
-    """
-    This class is used to control the cache objects.
-    """
+    """This class is used to control the cache objects."""
 
     def __init__(self, app=None, with_jinja2_ext=True, config=None):
         if not (config is None or isinstance(config, dict)):
@@ -189,7 +178,8 @@ class Cache(object):
         config.setdefault('CACHE_TYPE', 'null')
         config.setdefault('CACHE_NO_NULL_WARNING', False)
 
-        if config['CACHE_TYPE'] == 'null' and not config['CACHE_NO_NULL_WARNING']:
+        if config['CACHE_TYPE'] == 'null' and \
+                not config['CACHE_NO_NULL_WARNING']:
             warnings.warn("Flask-Cache: CACHE_TYPE is set to null, "
                           "caching is effectively disabled.")
 
@@ -224,8 +214,8 @@ class Cache(object):
             app.extensions = {}
 
         app.extensions.setdefault('cache', {})
-        app.extensions['cache'][self] = cache_obj(
-                app, config, cache_args, cache_options)
+        app.extensions['cache'][self] = cache_obj(app, config, cache_args,
+                                                  cache_options)
         self.app = app
 
     @property
@@ -269,9 +259,9 @@ class Cache(object):
         "Proxy function for internal cache object."
         self.cache.get_dict(*args, **kwargs)
 
-    def cached(self, timeout=None, key_prefix='view/%s', unless=None, forced_update=None):
-        """
-        Decorator. Use this to cache a function. By default the cache key
+    def cached(self, timeout=None, key_prefix='view/%s', unless=None,
+               forced_update=None):
+        """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
         within the `key_prefix` then it will replace that with `request.path`
@@ -303,8 +293,9 @@ class Cache(object):
                     The original undecorated function
 
                 **cache_timeout**
-                    The cache timeout value for this function. For a custom value
-                    to take affect, this must be set before the function is called.
+                    The cache timeout value for this function. For a
+                    custom value to take affect, this must be set before the
+                    function is called.
 
                 **make_cache_key**
                     A function used in generating the cache_key used.
@@ -315,16 +306,18 @@ class Cache(object):
                            use for the cache key.
 
                            .. versionadded:: 0.3.4
-                               Can optionally be a callable which takes no arguments
-                               but returns a string that will be used as the cache_key.
+                               Can optionally be a callable which takes
+                               no arguments but returns a string that will
+                               be used as the cache_key.
 
         :param unless: Default None. Cache will *always* execute the caching
                        facilities unless this callable is true.
                        This will bypass the caching entirely.
 
-        :param forced_update: Default None. If this callable is true, cache value will be updated
-                              regardless cache is expired or not.
-                              Useful for background renewal of cached functions.
+        :param forced_update: Default None. If this callable is true,
+                              cache value will be updated regardless cache
+                              is expired or not. Useful for background
+                              renewal of cached functions.
         """
 
         def decorator(f):
@@ -335,7 +328,9 @@ class Cache(object):
                     return f(*args, **kwargs)
 
                 try:
-                    cache_key = decorated_function.make_cache_key(*args, **kwargs)
+                    cache_key = decorated_function.make_cache_key(
+                        *args, **kwargs
+                    )
 
                     if callable(forced_update) and forced_update() is True:
                         rv = None
@@ -344,18 +339,22 @@ class Cache(object):
                 except Exception:
                     if current_app.debug:
                         raise
-                    logger.exception("Exception possibly due to cache backend.")
+                    logger.exception("Exception possibly due to "
+                                     "cache backend.")
                     return f(*args, **kwargs)
 
                 if rv is None:
                     rv = f(*args, **kwargs)
                     try:
-                        self.cache.set(cache_key, rv,
-                                   timeout=decorated_function.cache_timeout)
+                        self.cache.set(
+                            cache_key, rv,
+                            timeout=decorated_function.cache_timeout
+                        )
                     except Exception:
                         if current_app.debug:
                             raise
-                        logger.exception("Exception possibly due to cache backend.")
+                        logger.exception("Exception possibly due to "
+                                         "cache backend.")
                 return rv
 
             def make_cache_key(*args, **kwargs):
@@ -381,10 +380,10 @@ class Cache(object):
     def _memoize_make_version_hash(self):
         return base64.b64encode(uuid.uuid4().bytes)[:6].decode('utf-8')
 
-    def _memoize_version(self, f, args=None,
-                         reset=False, delete=False, timeout=None, forced_update=False):
-        """
-        Updates the hash version associated with a memoized function or method.
+    def _memoize_version(self, f, args=None, reset=False, delete=False,
+                         timeout=None, forced_update=False):
+        """Updates the hash version associated with a memoized function or
+        method.
         """
         fname, instance_fname = function_namespace(f, args=args)
         version_key = self._memvname(fname)
@@ -428,15 +427,15 @@ class Cache(object):
 
         return fname, ''.join(version_data_list)
 
-    def _memoize_make_cache_key(self, make_name=None, timeout=None, forced_update=False):
-        """
-        Function used to create the cache_key for memoized functions.
-        """
+    def _memoize_make_cache_key(self, make_name=None, timeout=None,
+                                forced_update=False):
+        """Function used to create the cache_key for memoized functions."""
+
         def make_cache_key(f, *args, **kwargs):
             _timeout = getattr(timeout, 'cache_timeout', timeout)
-            fname, version_data = self._memoize_version(f, args=args,
-                                                        timeout=_timeout,
-                                                        forced_update=forced_update)
+            fname, version_data = self._memoize_version(
+                f, args=args, timeout=_timeout, forced_update=forced_update
+            )
 
             #: this should have to be after version_data, so that it
             #: does not break the delete_memoized functionality.
@@ -446,9 +445,9 @@ class Cache(object):
                 altfname = fname
 
             if callable(f):
-                keyargs, keykwargs = self._memoize_kwargs_to_args(f,
-                                                                 *args,
-                                                                 **kwargs)
+                keyargs, keykwargs = self._memoize_kwargs_to_args(
+                    f, *args, **kwargs
+                )
             else:
                 keyargs, keykwargs = args, kwargs
 
@@ -473,7 +472,6 @@ class Cache(object):
         #: 1, b=2 is equivilant to a=1, b=2, etc.
         new_args = []
         arg_num = 0
-        argspec = get_arg_names(f)
 
         arg_names = get_arg_names(f)
         args_len = len(arg_names)
@@ -523,9 +521,9 @@ class Cache(object):
         return tuple(new_args), {}
 
     def _bypass_cache(self, unless, f, *args, **kwargs):
-        """
-        Determines whether or not to bypass the cache by calling unless(). Supports both unless()
-        that takes in arguments and unless() that doesn't.
+        """Determines whether or not to bypass the cache by calling unless().
+        Supports both unless() that takes in arguments and unless()
+        that doesn't.
         """
         bypass_cache = False
 
@@ -541,10 +539,10 @@ class Cache(object):
 
         return bypass_cache
 
-    def memoize(self, timeout=None, make_name=None, unless=None, forced_update=None):
-        """
-        Use this to cache the result of a function, taking its arguments into
-        account in the cache key.
+    def memoize(self, timeout=None, make_name=None, unless=None,
+                forced_update=None):
+        """Use this to cache the result of a function, taking its arguments
+        into account in the cache key.
 
         Information on
         `Memoization <http://en.wikipedia.org/wiki/Memoization>`_.
@@ -572,8 +570,9 @@ class Cache(object):
                     The original undecorated function. readable only
 
                 **cache_timeout**
-                    The cache timeout value for this function. For a custom value
-                    to take affect, this must be set before the function is called.
+                    The cache timeout value for this function.
+                    For a custom value to take affect, this must be
+                    set before the function is called.
 
                     readable and writable
 
@@ -587,14 +586,15 @@ class Cache(object):
                         amount of time. Unit of time is in seconds.
         :param make_name: Default None. If set this is a function that accepts
                           a single argument, the function name, and returns a
-                          new string to be used as the function name. If not set
-                          then the function name is used.
+                          new string to be used as the function name.
+                          If not set then the function name is used.
         :param unless: Default None. Cache will *always* execute the caching
                        facilities unelss this callable is true.
                        This will bypass the caching entirely.
-        :param forced_update: Default None. If this callable is true, cache value will be updated
-                              regardless cache is expired or not.
-                              Useful for background renewal of cached functions.
+        :param forced_update: Default None. If this callable is true,
+                              cache value will be updated regardless cache
+                              is expired or not. Useful for background
+                              renewal of cached functions.
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """
@@ -607,7 +607,9 @@ class Cache(object):
                     return f(*args, **kwargs)
 
                 try:
-                    cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
+                    cache_key = decorated_function.make_cache_key(
+                        f, *args, **kwargs
+                    )
                     if callable(forced_update) and forced_update() is True:
                         rv = None
                     else:
@@ -615,34 +617,40 @@ class Cache(object):
                 except Exception:
                     if current_app.debug:
                         raise
-                    logger.exception("Exception possibly due to cache backend.")
+                    logger.exception("Exception possibly due to "
+                                     "cache backend.")
                     return f(*args, **kwargs)
 
                 if rv is None:
                     rv = f(*args, **kwargs)
                     try:
-                        self.cache.set(cache_key, rv,
-                                   timeout=decorated_function.cache_timeout)
+                        self.cache.set(
+                            cache_key, rv,
+                            timeout=decorated_function.cache_timeout
+                        )
                     except Exception:
                         if current_app.debug:
                             raise
-                        logger.exception("Exception possibly due to cache backend.")
+                        logger.exception("Exception possibly due to "
+                                         "cache backend.")
                 return rv
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
             decorated_function.make_cache_key = self._memoize_make_cache_key(
-                                                make_name, decorated_function, forced_update)
-            decorated_function.delete_memoized = lambda: self.delete_memoized(f)
+                make_name, decorated_function, forced_update
+            )
+            decorated_function.delete_memoized = \
+                lambda: self.delete_memoized(f)
 
             return decorated_function
         return memoize
 
     def delete_memoized(self, f, *args, **kwargs):
-        """
-        Deletes the specified functions caches, based by given parameters.
-        If parameters are given, only the functions that were memoized with them
-        will be erased. Otherwise all versions of the caches will be forgotten.
+        """Deletes the specified functions caches, based by given parameters.
+        If parameters are given, only the functions that were memoized
+        with them will be erased. Otherwise all versions of the caches
+        will be forgotten.
 
         Example::
 
@@ -710,16 +718,20 @@ class Cache(object):
             >>> adder2.add(3)
             3.72341788
 
-        :param fname: Name of the memoized function, or a reference to the function.
-        :param \*args: A list of positional parameters used with memoized function.
-        :param \**kwargs: A dict of named parameters used with memoized function.
+        :param fname: Name of the memoized function, or a reference to
+                      the function.
+        :param \*args: A list of positional parameters used with
+                       memoized function.
+        :param \**kwargs: A dict of named parameters used with
+                          memoized function.
 
         .. note::
 
             Flask-Cache uses inspect to order kwargs into positional args when
-            the function is memoized. If you pass a function reference into ``fname``
-            instead of the function name, Flask-Cache will be able to place
-            the args/kwargs in the proper order, and delete the positional cache.
+            the function is memoized. If you pass a function reference into
+            ``fname`` instead of the function name, Flask-Cache will be able
+            to place the args/kwargs in the proper order, and delete the
+            positional cache.
 
             However, if ``delete_memoized`` is just called with the name of the
             function, be sure to pass in potential arguments in the same order
@@ -728,21 +740,23 @@ class Cache(object):
 
         .. note::
 
-            Flask-Cache maintains an internal random version hash for the function.
-            Using delete_memoized will only swap out the version hash, causing
-            the memoize function to recompute results and put them into another key.
+            Flask-Cache maintains an internal random version hash for
+            the function. Using delete_memoized will only swap out
+            the version hash, causing the memoize function to recompute
+            results and put them into another key.
 
-            This leaves any computed caches for this memoized function within the
-            caching backend.
+            This leaves any computed caches for this memoized function within
+            the caching backend.
 
             It is recommended to use a very high timeout with memoize if using
-            this function, so that when the version hash is swapped, the old cached
-            results would eventually be reclaimed by the caching backend.
+            this function, so that when the version hash is swapped, the old
+            cached results would eventually be reclaimed by the caching
+            backend.
         """
         if not callable(f):
-            raise DeprecationWarning("Deleting messages by relative name is no longer"
-                          " reliable, please switch to a function reference")
-
+            raise DeprecationWarning("Deleting messages by relative name is "
+                                     "no longer reliable, please switch to a "
+                                     "function reference.")
 
         try:
             if not args and not kwargs:
@@ -756,8 +770,7 @@ class Cache(object):
             logger.exception("Exception possibly due to cache backend.")
 
     def delete_memoized_verhash(self, f, *args):
-        """
-        Delete the version hash associated with the function.
+        """Delete the version hash associated with the function.
 
         ..warning::
 
@@ -768,8 +781,9 @@ class Cache(object):
             in the cache backend.
         """
         if not callable(f):
-            raise DeprecationWarning("Deleting messages by relative name is no longer"
-                          " reliable, please use a function reference")
+            raise DeprecationWarning("Deleting messages by relative name is "
+                                     "no longer reliable, please use a "
+                                     "function reference.")
 
         try:
             self._memoize_version(f, delete=True)
