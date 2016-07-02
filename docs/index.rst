@@ -50,6 +50,7 @@ Caching View Functions
 To cache view functions you will use the :meth:`~Cache.cached` decorator.
 This decorator will use request.path by default for the cache_key.::
 
+    @app.route("/")
     @cache.cached(timeout=50)
     def index():
         return render_template('index.html')
