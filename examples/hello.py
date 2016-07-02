@@ -2,7 +2,7 @@ import random
 from datetime import datetime
 
 from flask import Flask, jsonify
-from flask.ext.cache import Cache
+from flask_cache import Cache
 
 
 app = Flask(__name__)
