@@ -1,2 +1,3 @@
-git+git://github.com/mitsuhiko/werkzeug.git#egg=werkzeug
-git+git://github.com/mitsuhiko/flask.git#egg=flask
+Flask
+redis
+coverage

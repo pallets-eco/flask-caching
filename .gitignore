@@ -2,6 +2,6 @@
 .*.swp
 .tox
 docs/_build/*
-Flask_Cache.egg-info/*
+*.egg-info
 build/*
 dist/
