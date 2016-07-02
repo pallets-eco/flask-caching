@@ -632,7 +632,7 @@ class Cache(object):
             3.23214234
             >>> adder2.add(3)
             3.60898509
-            >>> cache.delete_memoized(adder.add)
+            >>> cache.delete_memoized(adder1.add)
             >>> adder1.add(3)
             3.01348673
             >>> adder2.add(3)
@@ -669,7 +669,7 @@ class Cache(object):
             caching backend.
 
             It is recommended to use a very high timeout with memoize if using
-            this function, so that when the version has is swapped, the old cached
+            this function, so that when the version hash is swapped, the old cached
             results would eventually be reclaimed by the caching backend.
         """
         if not callable(f):
