@@ -222,12 +222,12 @@ class Cache(object):
     def set_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
         self.cache.set_many(*args, **kwargs)
-    
+
     def get_dict(self, *args, **kwargs):
         "Proxy function for internal cache object."
         self.cache.get_dict(*args, **kwargs)
 
-    def cached(self, timeout=None, key_prefix='view/%s', unless=None):
+    def cached(self, timeout=None, key_prefix='view/%s', unless=None, forced_update=None):
         """
         Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -279,6 +279,10 @@ class Cache(object):
         :param unless: Default None. Cache will *always* execute the caching
                        facilities unless this callable is true.
                        This will bypass the caching entirely.
+
+        :param forced_update: Default None. If this callable is true, cache value will be updated
+                              regardless cache is expired or not.
+                              Useful for background renewal of cached functions.
         """
 
         def decorator(f):
@@ -290,7 +294,11 @@ class Cache(object):
 
                 try:
                     cache_key = decorated_function.make_cache_key(*args, **kwargs)
-                    rv = self.cache.get(cache_key)
+
+                    if callable(forced_update) and forced_update() is True:
+                        rv = None
+                    else:
+                        rv = self.cache.get(cache_key)
                 except Exception:
                     if current_app.debug:
                         raise
@@ -332,7 +340,7 @@ class Cache(object):
         return base64.b64encode(uuid.uuid4().bytes)[:6].decode('utf-8')
 
     def _memoize_version(self, f, args=None,
-                         reset=False, delete=False, timeout=None):
+                         reset=False, delete=False, timeout=None, forced_update=False):
         """
         Updates the hash version associated with a memoized function or method.
         """
@@ -352,6 +360,10 @@ class Cache(object):
 
         version_data_list = list(self.cache.get_many(*fetch_keys))
         dirty = False
+
+        if callable(forced_update) and forced_update() is True:
+            # Mark key as dirty to update its TTL
+            dirty = True
 
         if version_data_list[0] is None:
             version_data_list[0] = self._memoize_make_version_hash()
@@ -374,14 +386,15 @@ class Cache(object):
 
         return fname, ''.join(version_data_list)
 
-    def _memoize_make_cache_key(self, make_name=None, timeout=None):
+    def _memoize_make_cache_key(self, make_name=None, timeout=None, forced_update=False):
         """
         Function used to create the cache_key for memoized functions.
         """
         def make_cache_key(f, *args, **kwargs):
             _timeout = getattr(timeout, 'cache_timeout', timeout)
             fname, version_data = self._memoize_version(f, args=args,
-                                                        timeout=_timeout)
+                                                        timeout=_timeout,
+                                                        forced_update=forced_update)
 
             #: this should have to be after version_data, so that it
             #: does not break the delete_memoized functionality.
@@ -483,7 +496,7 @@ class Cache(object):
 
         return bypass_cache
 
-    def memoize(self, timeout=None, make_name=None, unless=None):
+    def memoize(self, timeout=None, make_name=None, unless=None, forced_update=None):
         """
         Use this to cache the result of a function, taking its arguments into
         account in the cache key.
@@ -534,7 +547,9 @@ class Cache(object):
         :param unless: Default None. Cache will *always* execute the caching
                        facilities unelss this callable is true.
                        This will bypass the caching entirely.
-
+        :param forced_update: Default None. If this callable is true, cache value will be updated
+                              regardless cache is expired or not.
+                              Useful for background renewal of cached functions.
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """
@@ -548,7 +563,10 @@ class Cache(object):
 
                 try:
                     cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
-                    rv = self.cache.get(cache_key)
+                    if callable(forced_update) and forced_update() is True:
+                        rv = None
+                    else:
+                        rv = self.cache.get(cache_key)
                 except Exception:
                     if current_app.debug:
                         raise
@@ -569,7 +587,7 @@ class Cache(object):
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
             decorated_function.make_cache_key = self._memoize_make_cache_key(
-                                                make_name, decorated_function)
+                                                make_name, decorated_function, forced_update)
             decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
             return decorated_function
