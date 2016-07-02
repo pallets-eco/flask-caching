@@ -1,7 +1,7 @@
 Flask-Cache
-================
+===========
 
-.. module:: flask.ext.cache
+.. module:: flask_cache
 
 Installation
 ------------
@@ -20,7 +20,7 @@ Set Up
 Cache is managed through a ``Cache`` instance::
 
     from flask import Flask
-    from flask.ext.cache import Cache
+    from flask_cache import Cache
 
     app = Flask(__name__)
     # Check Configuring Flask-Cache section for more details
@@ -95,8 +95,8 @@ In memoization, the functions arguments are also included into the cache_key.
 
 .. note::
 
-	With functions that do not receive arguments, :meth:`~Cache.cached` and
-	:meth:`~Cache.memoize` are effectively the same.
+    With functions that do not receive arguments, :meth:`~Cache.cached` and
+    :meth:`~Cache.memoize` are effectively the same.
 
 Memoize is also designed for methods, since it will take into account
 the `identity <http://docs.python.org/library/functions.html#id>`_. of the
@@ -110,9 +110,9 @@ function many times during a single request. To keep from hitting the database
 every time this information is needed you might do something like the following::
 
     class Person(db.Model):
-    	@cache.memoize(50)
-    	def has_membership(self, role_id):
-    		return Group.query.filter_by(user=self, role_id=role_id).count() >= 1
+        @cache.memoize(50)
+        def has_membership(self, role_id):
+            return Group.query.filter_by(user=self, role_id=role_id).count() >= 1
 
 
 .. warning::
@@ -141,7 +141,7 @@ example, lets say you change the users permissions and assign them to a role,
 but now you need to re-calculate if they have certain memberships or not.
 You can do this with the :meth:`~Cache.delete_memoized` function.::
 
-	cache.delete_memoized(user_has_membership)
+    cache.delete_memoized(user_has_membership)
 
 .. note::
 
