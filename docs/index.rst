@@ -24,7 +24,7 @@ Cache is managed through a ``Cache`` instance::
 
     app = Flask(__name__)
     # Check Configuring Flask-Cache section for more details
-    cache = Cache(app,config={'CACHE_TYPE': 'simple'})
+    cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 You may also set up your ``Cache`` instance later at configuration time using
 **init_app** method::
