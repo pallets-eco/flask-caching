@@ -281,7 +281,7 @@ class Cache(object):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
-                if callable(unless) and unless() is True:
+                if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
 
                 try:
@@ -461,6 +461,25 @@ class Cache(object):
 
         return tuple(new_args), {}
 
+    def _bypass_cache(self, unless, f, *args, **kwargs):
+        """
+        Determines whether or not to bypass the cache by calling unless(). Supports both unless()
+        that takes in arguments and unless() that doesn't.
+        """
+        bypass_cache = False
+
+        if callable(unless):
+            argspec = inspect.getargspec(unless)
+
+            # If unless() takes args, pass them in.
+            if len(argspec.args) > 0 and argspec.varargs and argspec.keywords:
+                if unless(f, *args, **kwargs) is True:
+                    bypass_cache = True
+            elif unless() is True:
+                bypass_cache = True
+
+        return bypass_cache
+
     def memoize(self, timeout=None, make_name=None, unless=None):
         """
         Use this to cache the result of a function, taking its arguments into
@@ -521,7 +540,7 @@ class Cache(object):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: bypass cache
-                if callable(unless) and unless() is True:
+                if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
 
                 try:
