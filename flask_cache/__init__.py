@@ -611,6 +611,7 @@ class Cache(object):
                               cache value will be updated regardless cache
                               is expired or not. Useful for background
                               renewal of cached functions.
+
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """
@@ -703,7 +704,7 @@ class Cache(object):
 
         When passing a instancemethod, it will only clear the cache related
         to that instance of that object. (object uniqueness can be overridden
-            by defining the __repr__ method, such as user id).
+        by defining the __repr__ method, such as user id).
 
         When passing a classmethod, it will clear all caches related across
         all instances of that class.
