@@ -1,6 +1,34 @@
 Changelog
 ---------
 
+Version 1.0.0 TBA
+`````````````````
+
+- Changed the way of importing Flask-Cache. Instead of using the depreacted
+  method for importing Flask Extensions (via ``flask.ext.cache``),
+  the name of the extension,  ``flask_cache`` is used. Have a look at
+  `Flask's documentation <http://flask.pocoo.org/docs/0.11/extensions/#flask-before-0-8>`_
+  for more information regarding this matter. This also fixes the
+  deprecation warning from Flask.
+- Lots of PEP8 and Documentation fixes
+
+In addition to the above mentioned fixes, following pull requests have been
+merged into this fork of `Flask-Cache <https://github.com/thadeusb/flask-cache>`_:
+
+- `#90 Update documentation: route decorator before cache <https://github.com/thadeusb/flask-cache/pull/90>`_
+- `#95 Pass the memoize parameters into unless(). <https://github.com/thadeusb/flask-cache/pull/95>`_
+- `#109 wrapped function called twice <https://github.com/thadeusb/flask-cache/pull/109>`_
+- `#117 Moves setting the app attribute to the _set_cache method <https://github.com/thadeusb/flask-cache/pull/117>`_
+- `#121 fix doc for delete_memoized <https://github.com/thadeusb/flask-cache/pull/121>`_
+- `#122 Added proxy for werkzeug get_dict <https://github.com/thadeusb/flask-cache/pull/122>`_
+- `#123 "forced_update" option to 'cache' and 'memoize' decorators <https://github.com/thadeusb/flask-cache/pull/123>`_
+- `#124 Fix handling utf8 key args <https://github.com/thadeusb/flask-cache/pull/124)>`_ (cherry-picked)
+- `#125 Fix unittest failing for redis unittest <https://github.com/thadeusb/flask-cache/pull/125>`_
+- `#127 Improve doc for using @cached on view <https://github.com/thadeusb/flask-cache/pull/127>`_
+- `#128 Doc for delete_memoized <https://github.com/thadeusb/flask-cache/pull/128>`_
+- `#129 tries replacing inspect.getargspec with either signature or getfullargspec if possible <https://github.com/thadeusb/flask-cache/pull/129>`_
+- `make_cache_key() returning incorrect key <https://github.com/SkierPGP/Flask-Cache/pull/1>`_ (cherry-picked)
+
 Version 0.13 2014-04-21
 ```````````````````````
 
