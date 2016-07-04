@@ -9,13 +9,13 @@ itsdangerous
 Jinja2
 MarkupSafe
 nose
+pluggy
+py
 Pygments
 pytz
 redis
 six
 snowballstemmer
 Sphinx
+tox
 Werkzeug
-coveralls
-redis
-pylibmc
