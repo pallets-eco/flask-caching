@@ -2,13 +2,13 @@ language: python
 python:
  - "2.7"
  - "3.3"
+ - "3.5"
 install:
  - pip install . --use-mirrors
  - pip install coverage --use-mirrors
  - pip install redis --use-mirrors
- - "if [[ $TRAVIS_PYTHON_VERSION == 2.7* ]]; then pip install pylibmc --use-mirrors; fi"
- - "if [[ $TRAVIS_PYTHON_VERSION == 3.3* ]]; then pip install python3-memcached --use-mirrors; fi"
-script: nosetests --with-coverage --cover-package=flask_cache
+ - pip install pylibmc --use-mirrors
+script: nosetests --with-coverage --cover-package=flask_caching
 services:
  - memcached
  - redis-server
