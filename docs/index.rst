@@ -1,7 +1,19 @@
-Flask-Cache
-===========
+.. Flask-Caching documentation master file, created by
+   sphinx-quickstart on Mon Jul  4 22:58:53 2016.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Flask-Caching
+=============
 
 .. module:: flask_caching
+
+Flask-Caching is an extension to `Flask`_ that adds caching support for
+various backends to any Flask application. Besides providing support for all
+of `werkzeug`_'s supported caching backends through a uniformed API,
+it is also possible to develop your own caching backend by subclassing
+:class:`werkzeug.contrib.cache.BaseCache` class.
+
 
 Installation
 ------------
@@ -14,6 +26,7 @@ or alternatively if you have pip installed::
 
     $ pip install Flask-Caching
 
+
 Set Up
 ------
 
@@ -23,7 +36,7 @@ Cache is managed through a ``Cache`` instance::
     from flask_caching import Cache
 
     app = Flask(__name__)
-    # Check Configuring Flask-Cache section for more details
+    # Check Configuring Flask-Caching section for more details
     cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 You may also set up your ``Cache`` instance later at configuration time using
@@ -43,6 +56,7 @@ be multiple ``Cache`` instances each with a different backend.::
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
 
 .. versionadded:: 0.7
+
 
 Caching View Functions
 ----------------------
@@ -72,6 +86,7 @@ argument accepts a callable that returns True or False. If ``unless`` returns
     If you reverse both decorator, what will be cached is the result of
     ``@route`` decorator, and not the result of your view function.
 
+
 Caching Other Functions
 -----------------------
 
@@ -85,6 +100,7 @@ non-view related functions. The only stipulation is that you replace the
         return [x.author for x in comments]
 
     cached_comments = get_all_comments()
+
 
 Memoization
 -----------
@@ -131,6 +147,7 @@ every time this information is needed you might do something like the following:
             def __repr__(self):
                 return "%s(%s)" % (self.__class__.__name__, self.id)
 
+
 Deleting memoize cache
 ``````````````````````
 
@@ -156,6 +173,7 @@ You can do this with the :meth:`~Cache.delete_memoized` function.::
      user_has_membership('demo', 'user')
 
      cache.delete_memoized(user_has_membership, 'demo', 'user')
+
 
 Caching Jinja2 Snippets
 -----------------------
@@ -197,6 +215,7 @@ Example::
     </div>
     {% endcache %}
 
+
 Clearing Cache
 --------------
 
@@ -230,10 +249,11 @@ Here's an example script to empty your application's cache:
     will flush the whole database. Make sure you're not storing any other
     data in your caching database.
 
-Configuring Flask-Cache
------------------------
 
-The following configuration values exist for Flask-Cache:
+Configuring Flask-Caching
+-------------------------
+
+The following configuration values exist for Flask-Caching:
 
 .. tabularcolumns:: |p{6.5cm}|p{8.5cm}|
 
@@ -301,13 +321,17 @@ The following configuration values exist for Flask-Cache:
 
 
 In addition the standard Flask ``TESTING`` configuration option is used. If this
-is True then **Flask-Cache** will use NullCache only.
+is True then **Flask-Caching** will use NullCache only.
+
 
 Built-in Cache Backends
 -----------------------
 
-NullCache -- null
-`````````````````
+
+NullCache
+`````````
+
+Set ``CACHE_TYPE`` to ``null`` to use this type.
 
 Cache that doesn't cache
 
@@ -315,8 +339,10 @@ Cache that doesn't cache
 - CACHE_OPTIONS
 
 
-SimpleCache -- simple
-`````````````````````
+SimpleCache
+```````````
+
+Set ``CACHE_TYPE`` to ``simple`` to use this type.
 
 Uses a local python dictionary for caching. This is not really thread safe.
 
@@ -327,8 +353,11 @@ Relevant configuration values
 - CACHE_ARGS
 - CACHE_OPTIONS
 
-FileSystemCache -- filesystem
-`````````````````````````````
+
+FileSystemCache
+```````````````
+
+Set ``CACHE_TYPE`` to ``filesystem`` to use this type.
 
 Uses the filesystem to store cached values
 
@@ -338,8 +367,11 @@ Uses the filesystem to store cached values
 - CACHE_ARGS
 - CACHE_OPTIONS
 
-MemcachedCache -- memcached
-```````````````````````````
+
+MemcachedCache
+``````````````
+
+Set ``CACHE_TYPE`` to ``memcached`` to use this type.
 
 Uses a memcached server as a backend. Supports either pylibmc or memcache or
 google app engine memcache library.
@@ -352,13 +384,19 @@ Relevant configuration values
 - CACHE_ARGS
 - CACHE_OPTIONS
 
-GAEMemcachedCache -- gaememcached
-`````````````````````````````````
+
+GAEMemcachedCache
+`````````````````
+
+Set ``CACHE_TYPE`` to ``gaememcached`` to use this type.
 
 Is MemcachedCache under a different name
 
-SASLMemcachedCache -- saslmemcached
-```````````````````````````````````
+
+SASLMemcachedCache
+``````````````````
+
+Set ``CACHE_TYPE`` to ``saslmemcached`` to use this type.
 
 Uses a memcached server as a backend. Intended to be used with a SASL enabled
 connection to the memcached server. pylibmc is required and SASL must be supported
@@ -376,8 +414,11 @@ Relevant configuration values
 
 .. versionadded:: 0.10
 
-SpreadSASLMemcachedCache -- spreadsaslmemcachedcache
-````````````````````````````````````````````````````
+
+SpreadSASLMemcachedCache
+````````````````````````
+
+Set ``CACHE_TYPE`` to ``spreadsaslmemcachedcache`` to use this type.
 
 Same as SASLMemcachedCache however, it has the ablity to spread value across
 multiple keys if it is bigger than the memcached treshold which by
@@ -385,8 +426,11 @@ default is 1M. Uses pickle.
 
 .. versionadded:: 0.11
 
-RedisCache -- redis
-```````````````````
+
+RedisCache
+``````````
+
+Set ``CACHE_TYPE`` to ``redis`` to use this type.
 
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_KEY_PREFIX
@@ -412,7 +456,7 @@ arguments.
 * ``kwargs``
 
 Your custom cache object must also subclass the
-:class:`werkzeug.contrib.cache.BaseCache` class. Flask-Cache will make sure
+:class:`werkzeug.contrib.cache.BaseCache` class. Flask-Caching will make sure
 that ``threshold`` is already included in the kwargs options dictionary since
 it is common to all BaseCache classes.
 
@@ -441,6 +485,7 @@ username/password if SASL is enabled on the library::
 
 With this example, your ``CACHE_TYPE`` might be ``the_app.custom.pylibmccache``
 
+
 API
 ---
 
@@ -450,3 +495,15 @@ API
              cached, memoize, delete_memoized, delete_memoized_verhash
 
 .. include:: ../CHANGES
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+
+.. _Flask: http://flask.pocoo.org/
+.. _werkzeug: http://werkzeug.pocoo.org/
