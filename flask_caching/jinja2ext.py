@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    flask_cache.jinja2ext
-    ~~~~~~~~~~~~~~~~~~~~~
+    flask_caching.jinja2ext
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
     Jinja2 extension that adds support for caching template fragments.
 
@@ -32,11 +32,11 @@
         {% endcache %}
 
     :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details
+    :license: BSD, see LICENSE for more details.
 """
 from jinja2 import nodes
 from jinja2.ext import Extension
-from flask_cache import make_template_fragment_key
+from flask_caching import make_template_fragment_key
 
 JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 

@@ -1,18 +1,18 @@
 Flask-Cache
 ===========
 
-.. module:: flask_cache
+.. module:: flask_caching
 
 Installation
 ------------
 
 Install the extension with one of the following commands::
 
-    $ easy_install Flask-Cache
+    $ easy_install Flask-Caching
 
 or alternatively if you have pip installed::
 
-    $ pip install Flask-Cache
+    $ pip install Flask-Caching
 
 Set Up
 ------
@@ -20,7 +20,7 @@ Set Up
 Cache is managed through a ``Cache`` instance::
 
     from flask import Flask
-    from flask_cache import Cache
+    from flask_caching import Cache
 
     app = Flask(__name__)
     # Check Configuring Flask-Cache section for more details

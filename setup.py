@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Flask-Cache
------------
+Flask-Caching
+-------------
 
 Adds cache support to your Flask application
 
@@ -10,16 +10,16 @@ Adds cache support to your Flask application
 from setuptools import setup
 
 setup(
-    name='Flask-Cache',
+    name='Flask-Caching',
     version='0.13',
-    url='http://github.com/thadeusb/flask-cache',
+    url='https://github.com/sh4nks/flask-caching',
     license='BSD',
-    author='Thadeus Burgess',
-    author_email='thadeusb@thadeusb.com',
-    description='Adds cache support to your Flask application',
+    author='Peter Justin',
+    author_email='Peter Justin',
+    description='Adds caching support to your Flask application',
     long_description=__doc__,
     packages=[
-        'flask_cache',
+        'flask_caching',
     ],
     zip_safe=False,
     platforms='any',

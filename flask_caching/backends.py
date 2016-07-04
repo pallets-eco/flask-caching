@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-    flask_cache.backends
-    ~~~~~~~~~~~~~~~~~~~~
+    flask_caching.backends
+    ~~~~~~~~~~~~~~~~~~~~~~
 
     Various caching backends.
 
     :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details
+    :license: BSD, see LICENSE for more details.
 """
 import pickle
 from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache,

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-    flask_cache
-    ~~~~~~~~~~~
+    flask_caching
+    ~~~~~~~~~~~~~
 
     Adds cache support to your application.
 
     :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details
+    :license: BSD, see LICENSE for more details.
 """
 import base64
 import functools
@@ -22,8 +22,7 @@ from flask import request, current_app, url_for
 
 from ._compat import PY2
 
-__version__ = '0.13'
-__versionfull__ = __version__
+__version__ = '1.0.0'
 
 logger = logging.getLogger(__name__)
 

@@ -8,7 +8,7 @@ import random
 import string
 
 from flask import Flask, render_template, render_template_string
-from flask_cache import Cache, function_namespace, make_template_fragment_key
+from flask_caching import Cache, function_namespace, make_template_fragment_key
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
