@@ -1,8 +1,8 @@
 Changelog
 ---------
 
-Version 1.0.0 TBA
-`````````````````
+Version 1.0.0 2016-07-05
+````````````````````````
 
 - Changed the way of importing Flask-Cache. Instead of using the depreacted
   method for importing Flask Extensions (via ``flask.ext.cache``),
