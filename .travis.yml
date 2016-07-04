@@ -4,7 +4,7 @@ python:
  - "3.3"
  - "3.5"
 install:
- - pip install -r requirements.txt --use-mirrors
+ - pip install -r requirements.txt
  - pip install --editable .
 script: nosetests --with-coverage --cover-package=flask_caching
 services:

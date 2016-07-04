@@ -16,7 +16,6 @@ six
 snowballstemmer
 Sphinx
 Werkzeug
-coverage
 coveralls
 redis
 pylibmc
