@@ -17,7 +17,7 @@ import string
 import uuid
 import warnings
 
-from werkzeug import import_string
+from werkzeug.utils import import_string
 from flask import request, current_app, url_for
 
 from ._compat import PY2
