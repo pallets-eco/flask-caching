@@ -139,8 +139,8 @@ html_theme_options = {
     'github_user': 'sh4nks',
     'github_repo': 'flask-caching',
     'extra_nav_links': {
-        'Flask-BabelPlus @ PyPI': 'https://pypi.python.org/pypi/Flask-Caching',
-        'Flask-BabelPlus @ GitHub': 'https://github.com/sh4nks/Flask-Caching',
+        'Flask-Caching @ PyPI': 'https://pypi.python.org/pypi/Flask-Caching',
+        'Flask-Caching @ GitHub': 'https://github.com/sh4nks/Flask-Caching',
     }
 }
 # Add any paths that contain custom themes here, relative to this directory.
