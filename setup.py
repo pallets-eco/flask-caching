@@ -55,7 +55,7 @@ setup(
     url='https://github.com/sh4nks/flask-caching',
     license='BSD',
     author='Peter Justin',
-    author_email='Peter Justin',
+    author_email='peter.justin@outlook.com',
     description='Adds caching support to your Flask application',
     long_description=__doc__,
     packages=['flask_caching'],
