@@ -228,23 +228,23 @@ class Cache(object):
 
     def set(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        self.cache.set(*args, **kwargs)
+        return self.cache.set(*args, **kwargs)
 
     def add(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        self.cache.add(*args, **kwargs)
+        return self.cache.add(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        self.cache.delete(*args, **kwargs)
+        return self.cache.delete(*args, **kwargs)
 
     def delete_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        self.cache.delete_many(*args, **kwargs)
+        return self.cache.delete_many(*args, **kwargs)
 
     def clear(self):
         "Proxy function for internal cache object."
-        self.cache.clear()
+        return self.cache.clear()
 
     def get_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
@@ -252,11 +252,11 @@ class Cache(object):
 
     def set_many(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        self.cache.set_many(*args, **kwargs)
+        return self.cache.set_many(*args, **kwargs)
 
     def get_dict(self, *args, **kwargs):
         "Proxy function for internal cache object."
-        self.cache.get_dict(*args, **kwargs)
+        return self.cache.get_dict(*args, **kwargs)
 
     def cached(self, timeout=None, key_prefix='view/%s', unless=None,
                forced_update=None):
