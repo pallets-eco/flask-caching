@@ -22,7 +22,7 @@ from flask import request, current_app, url_for
 
 from ._compat import PY2
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 logger = logging.getLogger(__name__)
 
