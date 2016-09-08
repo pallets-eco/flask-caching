@@ -1,8 +1,3 @@
-.. Flask-Caching documentation master file, created by
-   sphinx-quickstart on Mon Jul  4 22:58:53 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Flask-Caching
 =============
 
@@ -494,15 +489,19 @@ API
              get, set, add, delete, get_many, set_many, delete_many, clear,
              cached, memoize, delete_memoized, delete_memoized_verhash
 
-.. include:: ../CHANGES
 
+Additional Information
+----------------------
 
-Indices and tables
-==================
+.. toctree::
+   :maxdepth: 2
 
-* :ref:`genindex`
-* :ref:`modindex`
+   changelog
+   license
+
 * :ref:`search`
+
+
 
 
 .. _Flask: http://flask.pocoo.org/

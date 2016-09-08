@@ -195,7 +195,7 @@ html_sidebars = {
     '**': [
         'about.html',
         'localtoc.html',
-        'navigation.html',
+        'sidebarintro.html',
         'relations.html',
         'searchbox.html',
     ]
