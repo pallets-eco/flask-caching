@@ -769,10 +769,15 @@ class Cache(object):
             cached results would eventually be reclaimed by the caching
             backend.
         """
-        if not callable(f):
+        if not callable(f) and not issubclass(f.__class__, property):
             raise DeprecationWarning("Deleting messages by relative name is "
                                      "no longer reliable, please switch to a "
                                      "function reference.")
+
+        #property stores getter function in fget
+        if issubclass(f.__class__, property):
+            f = f.fget
+
 
         try:
             if not args and not kwargs:
