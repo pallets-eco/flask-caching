@@ -35,6 +35,19 @@ app = Flask(__name__)
 cache.init_app(app)
 ```
 
+Compatibility with Flask-Cache
+-----
+There are no known incompatibilities or breaking changes between the latest [Flask-Cache](https://github.com/thadeusb/flask-cache) 
+release (version 0.13, April 2014) and the current version of Flask-Caching. Due to the change to the Flask-Caching name
+and the [extension import transition](http://flask.pocoo.org/docs/0.11/extensiondev/#extension-import-transition), 
+Python import lines like:
+
+ ```from flask.ext.cache import Cache``` 
+ 
+ will need to be changed to:
+ 
+ ```from flask_caching import Cache```
+
 
 Links
 =====
