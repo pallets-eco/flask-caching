@@ -11,7 +11,7 @@
 import pickle
 from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache,
                                     MemcachedCache, GAEMemcachedCache,
-                                    FileSystemCache)
+                                    FileSystemCache, RedisCache)
 from ._compat import range_type
 
 
@@ -66,11 +66,10 @@ def filesystem(app, config, args, kwargs):
     return FileSystemCache(*args, **kwargs)
 
 def redis(app, config, args, kwargs):
-    # RedisCache is supported since Werkzeug 0.7. 
-    # Place RedisCache import here to not interfere with the
-    # rest of the cache backends for users running Werkzeug <0.7
-    from werkzeug.contrib.cache import RedisCache
-    from redis import from_url as redis_from_url
+    try:
+        from redis import from_url as redis_from_url
+    except ImportError:
+        raise RuntimeError('no redis module found')
     
     kwargs.update(dict(
         host=config.get('CACHE_REDIS_HOST', 'localhost'),
