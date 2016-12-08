@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 import pickle
 from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache,
                                     MemcachedCache, GAEMemcachedCache,
@@ -70,7 +71,7 @@ def redis(app, config, args, kwargs):
         from redis import from_url as redis_from_url
     except ImportError:
         raise RuntimeError('no redis module found')
-    
+
     kwargs.update(dict(
         host=config.get('CACHE_REDIS_HOST', 'localhost'),
         port=config.get('CACHE_REDIS_PORT', 6379),
