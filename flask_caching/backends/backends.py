@@ -13,7 +13,7 @@ import pickle
 from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache,
                                     MemcachedCache, GAEMemcachedCache,
                                     FileSystemCache, RedisCache)
-from ._compat import range_type
+from flask_caching._compat import range_type
 
 
 class SASLMemcachedCache(MemcachedCache):
