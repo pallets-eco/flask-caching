@@ -271,11 +271,12 @@ The following configuration values exist for Flask-Caching:
 
                                 * **null**: NullCache (default)
                                 * **simple**: SimpleCache
-                                * **memcached**: MemcachedCache (pylibmc or memcache required)
-                                * **gaememcached**: GAEMemcachedCache
                                 * **redis**: RedisCache (Werkzeug 0.7 required)
                                 * **filesystem**: FileSystemCache
+                                * **memcached**: MemcachedCache (pylibmc or memcache required)
+                                * **gaememcached**: GAEMemcachedCache
                                 * **saslmemcached**: SASLMemcachedCache (pylibmc required)
+                                * **spreadsaslmemcached**: SpreadSASLMemcachedCache (pylibmc required)
 
 ``CACHE_NO_NULL_WARNING``       Silents the warning message when using
                                 cache type of 'null'.
@@ -363,6 +364,22 @@ Uses the filesystem to store cached values
 - CACHE_OPTIONS
 
 
+RedisCache
+``````````
+
+Set ``CACHE_TYPE`` to ``redis`` to use this type.
+
+- CACHE_DEFAULT_TIMEOUT
+- CACHE_KEY_PREFIX
+- CACHE_REDIS_HOST
+- CACHE_REDIS_PORT
+- CACHE_REDIS_PASSWORD
+- CACHE_REDIS_DB
+- CACHE_ARGS
+- CACHE_OPTIONS
+- CACHE_REDIS_URL
+
+
 MemcachedCache
 ``````````````
 
@@ -413,7 +430,7 @@ Relevant configuration values
 SpreadSASLMemcachedCache
 ````````````````````````
 
-Set ``CACHE_TYPE`` to ``spreadsaslmemcachedcache`` to use this type.
+Set ``CACHE_TYPE`` to ``spreadsaslmemcached`` to use this type.
 
 Same as SASLMemcachedCache however, it has the ablity to spread value across
 multiple keys if it is bigger than the memcached treshold which by
@@ -421,21 +438,9 @@ default is 1M. Uses pickle.
 
 .. versionadded:: 0.11
 
-
-RedisCache
-``````````
-
-Set ``CACHE_TYPE`` to ``redis`` to use this type.
-
-- CACHE_DEFAULT_TIMEOUT
-- CACHE_KEY_PREFIX
-- CACHE_REDIS_HOST
-- CACHE_REDIS_PORT
-- CACHE_REDIS_PASSWORD
-- CACHE_REDIS_DB
-- CACHE_ARGS
-- CACHE_OPTIONS
-- CACHE_REDIS_URL
+.. versionchanged::  1.1.0
+    Renamed ``spreadsaslmemcachedcache`` to ``spreadsaslmemcached`` for
+    the sake of consistency.
 
 
 Custom Cache Backends
