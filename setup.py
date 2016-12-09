@@ -39,7 +39,7 @@ Links
 """
 import re
 import ast
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
@@ -58,7 +58,7 @@ setup(
     author_email='peter.justin@outlook.com',
     description='Adds caching support to your Flask application',
     long_description=__doc__,
-    packages=['flask_caching'],
+    packages=find_packages(exclude=('tests',)),
     zip_safe=False,
     platforms='any',
     install_requires=[

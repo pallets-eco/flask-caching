@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+Version 1.1.1 2016-12-09
+````````````````````````
+
+  - Fix PyPI Package distribution. See `#15 <https://github.com/sh4nks/flask-caching/issues/15>`_.
+
 Version 1.1.0 2016-12-09
 ````````````````````````
 

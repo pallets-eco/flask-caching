@@ -1,7 +1,6 @@
-include LICENSE CHANGES *.py
-include test_template.html
-recursive-include docs *
+include LICENSE CHANGES CONTRIBUTORS requirements.txt tox.ini
+include test_cache.py test_template.html
+graft docs *
 recursive-exclude docs *.pyc
 recursive-exclude docs *.pyo
 prune docs/_build
-prune docs/_themes/.git
