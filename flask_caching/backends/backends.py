@@ -8,11 +8,12 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 import pickle
 from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache,
                                     MemcachedCache, GAEMemcachedCache,
-                                    FileSystemCache)
-from ._compat import range_type
+                                    FileSystemCache, RedisCache)
+from flask_caching._compat import range_type
 
 
 class SASLMemcachedCache(MemcachedCache):
@@ -65,38 +66,36 @@ def filesystem(app, config, args, kwargs):
     kwargs.update(dict(threshold=config['CACHE_THRESHOLD']))
     return FileSystemCache(*args, **kwargs)
 
-# RedisCache is supported since Werkzeug 0.7.
-try:
-    from werkzeug.contrib.cache import RedisCache
-    from redis import from_url as redis_from_url
-except ImportError:
-    pass
-else:
-    def redis(app, config, args, kwargs):
-        kwargs.update(dict(
-            host=config.get('CACHE_REDIS_HOST', 'localhost'),
-            port=config.get('CACHE_REDIS_PORT', 6379),
-        ))
-        password = config.get('CACHE_REDIS_PASSWORD')
-        if password:
-            kwargs['password'] = password
+def redis(app, config, args, kwargs):
+    try:
+        from redis import from_url as redis_from_url
+    except ImportError:
+        raise RuntimeError('no redis module found')
 
-        key_prefix = config.get('CACHE_KEY_PREFIX')
-        if key_prefix:
-            kwargs['key_prefix'] = key_prefix
+    kwargs.update(dict(
+        host=config.get('CACHE_REDIS_HOST', 'localhost'),
+        port=config.get('CACHE_REDIS_PORT', 6379),
+    ))
+    password = config.get('CACHE_REDIS_PASSWORD')
+    if password:
+        kwargs['password'] = password
 
-        db_number = config.get('CACHE_REDIS_DB')
-        if db_number:
-            kwargs['db'] = db_number
+    key_prefix = config.get('CACHE_KEY_PREFIX')
+    if key_prefix:
+        kwargs['key_prefix'] = key_prefix
 
-        redis_url = config.get('CACHE_REDIS_URL')
-        if redis_url:
-            kwargs['host'] = redis_from_url(
-                redis_url,
-                db=kwargs.pop('db', None),
-            )
+    db_number = config.get('CACHE_REDIS_DB')
+    if db_number:
+        kwargs['db'] = db_number
 
-        return RedisCache(*args, **kwargs)
+    redis_url = config.get('CACHE_REDIS_URL')
+    if redis_url:
+        kwargs['host'] = redis_from_url(
+            redis_url,
+            db=kwargs.pop('db', None),
+        )
+
+    return RedisCache(*args, **kwargs)
 
 
 class SpreadSASLMemcachedCache(SASLMemcachedCache):
