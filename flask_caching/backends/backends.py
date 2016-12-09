@@ -31,6 +31,8 @@ class SASLMemcachedCache(MemcachedCache):
                                       binary=True)
 
         self.key_prefix = key_prefix
+__all__ = ('null', 'simple', 'filesystem', 'redis', 'memcached',
+           'saslmemcached', 'gaememcached', 'spreadsaslmemcached')
 
 
 def null(app, config, args, kwargs):
