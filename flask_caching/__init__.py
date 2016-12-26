@@ -443,7 +443,7 @@ class Cache(object):
         return fname, ''.join(version_data_list)
 
     def _memoize_make_cache_key(self, make_name=None, timeout=None,
-                                forced_update=False):
+                                forced_update=False, exclude_params=None):
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f, *args, **kwargs):
@@ -461,7 +461,7 @@ class Cache(object):
 
             if callable(f):
                 keyargs, keykwargs = self._memoize_kwargs_to_args(
-                    f, *args, **kwargs
+                    f, exclude_params, *args, **kwargs
                 )
             else:
                 keyargs, keykwargs = args, kwargs
@@ -480,7 +480,7 @@ class Cache(object):
             return cache_key
         return make_cache_key
 
-    def _memoize_kwargs_to_args(self, f, *args, **kwargs):
+    def _memoize_kwargs_to_args(self, f, exclude_params=None, *args, **kwargs):
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
@@ -493,15 +493,21 @@ class Cache(object):
 
         for i in range(args_len):
             arg_default = get_arg_default(f, i)
-            if i == 0 and arg_names[i] in ('self', 'cls'):
+            arg_name = arg_names[i]
+
+            #: not use params from exclude_params in cache key generation
+            if exclude_params and arg_name in exclude_params:
+                continue
+
+            if i == 0 and arg_name in ('self', 'cls'):
                 #: use the repr of the class instance
                 #: this supports instance methods for
                 #: the memoized functions, giving more
                 #: flexibility to developers
                 arg = repr(args[0])
                 arg_num += 1
-            elif arg_names[i] in kwargs:
-                arg = kwargs[arg_names[i]]
+            elif arg_name in kwargs:
+                arg = kwargs[arg_name]
             elif arg_num < len(args):
                 arg = args[arg_num]
                 arg_num += 1
@@ -555,7 +561,7 @@ class Cache(object):
         return bypass_cache
 
     def memoize(self, timeout=None, make_name=None, unless=None,
-                forced_update=None):
+                forced_update=None, exclude_params=None):
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
 
@@ -610,6 +616,9 @@ class Cache(object):
                               cache value will be updated regardless cache
                               is expired or not. Useful for background
                               renewal of cached functions.
+        :param exclude_params: Default None. If set to list of string, will exclude that
+                               parameters from cache key generation. For example, if you have f(p1, p2) and
+                               you don't want use parameter p2 for key generation, you may set exclude_params=["p2"]
 
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
@@ -654,7 +663,7 @@ class Cache(object):
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
             decorated_function.make_cache_key = self._memoize_make_cache_key(
-                make_name, decorated_function, forced_update
+                make_name, decorated_function, forced_update, exclude_params
             )
             decorated_function.delete_memoized = \
                 lambda: self.delete_memoized(f)
