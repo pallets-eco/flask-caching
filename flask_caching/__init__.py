@@ -488,6 +488,8 @@ class Cache(object):
         new_args = []
         arg_num = 0
 
+        # If the function uses VAR_KEYWORD type of parameters, we need to pass these further
+        kwargs_keys_remaining = list(kwargs.keys())
         arg_names = get_arg_names(f)
         args_len = len(arg_names)
 
@@ -502,6 +504,7 @@ class Cache(object):
                 arg_num += 1
             elif arg_names[i] in kwargs:
                 arg = kwargs[arg_names[i]]
+                kwargs_keys_remaining.pop(kwargs_keys_remaining.index(arg_names[i]))
             elif arg_num < len(args):
                 arg = args[arg_num]
                 arg_num += 1
@@ -533,7 +536,9 @@ class Cache(object):
 
             new_args.append(arg)
 
-        return tuple(new_args), {}
+        return tuple(new_args), {
+            k: v for k, v in kwargs.items() if k in kwargs_keys_remaining
+        }
 
     def _bypass_cache(self, unless, f, *args, **kwargs):
         """Determines whether or not to bypass the cache by calling unless().

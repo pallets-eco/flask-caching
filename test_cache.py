@@ -351,6 +351,22 @@ class CacheTestCase(unittest.TestCase):
             with self.assertRaises(TypeError):
                 f(1)
 
+    def test_10a_arg_kwarg_memoize_var_keyword(self):
+        with self.app.test_request_context():
+            @self.cache.memoize()
+            def f(a, b, c=1, **kwargs):
+                return a + b + c + random.randrange(0, 100000) + sum(list(kwargs.values()))
+
+            assert f(1, 2) == f(1, 2, c=1)
+            assert f(1, 2) == f(1, 2, 1)
+            assert f(1, 2) == f(1, 2)
+            assert f(1, 2, d=5, e=8) == f(1, 2, e=8, d=5)
+            assert f(1, b=2, c=3, d=5, e=8) == f(1, 2, e=8, d=5, b=2, c=3)
+            assert f(1, 2, 3) != f(1, 2)
+            assert f(1, 2, 3) != f(1, 2)
+            with self.assertRaises(TypeError):
+                f(1)
+
     def test_10b_classarg_memoize(self):
         @self.cache.memoize()
         def bar(a):
