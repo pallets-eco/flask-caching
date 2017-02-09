@@ -480,13 +480,14 @@ class Cache(object):
             return cache_key
         return make_cache_key
 
-    def _memoize_kwargs_to_args(self, f, exclude_params=None, *args, **kwargs):
+    def _memoize_kwargs_to_args(self, f, *args, **kwargs):
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
         #: 1, b=2 is equivilant to a=1, b=2, etc.
         new_args = []
         arg_num = 0
+        exclude_params = kwargs.pop("exclude_params", [])
 
         # If the function uses VAR_KEYWORD type of parameters, we need to pass these further
         kwargs_keys_remaining = list(kwargs.keys())
