@@ -828,7 +828,6 @@ class CacheFilesystemTestCase(CacheTestCase):
         app.config['CACHE_DIR'] = '/tmp'
 
 
-
 class TestCustomKeyGeneration(CacheTestCase):
     def setUp(self):
         super(TestCustomKeyGeneration, self).setUp()

@@ -460,8 +460,14 @@ class Cache(object):
                 altfname = fname
 
             if callable(f):
+
+                #: It is not secure pass exclude_params directly, so
+                #: I set it as attribute of function
+                if exclude_params:
+                    setattr(f, "exclude_params", exclude_params)
+
                 keyargs, keykwargs = self._memoize_kwargs_to_args(
-                    f, exclude_params, *args, **kwargs
+                    f, *args, **kwargs
                 )
             else:
                 keyargs, keykwargs = args, kwargs
@@ -487,7 +493,7 @@ class Cache(object):
         #: 1, b=2 is equivilant to a=1, b=2, etc.
         new_args = []
         arg_num = 0
-        exclude_params = kwargs.pop("exclude_params", [])
+        exclude_params = getattr(f, "exclude_params", [])
 
         # If the function uses VAR_KEYWORD type of parameters, we need to pass these further
         kwargs_keys_remaining = list(kwargs.keys())
