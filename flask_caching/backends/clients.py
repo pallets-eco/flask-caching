@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-    flask_caching.backends
-    ~~~~~~~~~~~~~~~~~~~~~~
+    flask_caching.clients
+    ~~~~~~~~~~~~~~~~~~~~~
 
-    Various caching backends.
+    This module holds various caching backend clients for
+    which werkzeug doesn't provide a class.
 
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
 import pickle
-from werkzeug.contrib.cache import (BaseCache, NullCache, SimpleCache,
-                                    MemcachedCache, GAEMemcachedCache,
-                                    FileSystemCache)
-from ._compat import range_type
+from werkzeug.contrib.cache import BaseCache, MemcachedCache
+
+from flask_caching._compat import range_type
 
 
 class SASLMemcachedCache(MemcachedCache):
@@ -30,73 +30,6 @@ class SASLMemcachedCache(MemcachedCache):
                                       binary=True)
 
         self.key_prefix = key_prefix
-
-
-def null(app, config, args, kwargs):
-    return NullCache()
-
-
-def simple(app, config, args, kwargs):
-    kwargs.update(dict(threshold=config['CACHE_THRESHOLD']))
-    return SimpleCache(*args, **kwargs)
-
-
-def memcached(app, config, args, kwargs):
-    args.append(config['CACHE_MEMCACHED_SERVERS'])
-    kwargs.update(dict(key_prefix=config['CACHE_KEY_PREFIX']))
-    return MemcachedCache(*args, **kwargs)
-
-
-def saslmemcached(app, config, args, kwargs):
-    args.append(config['CACHE_MEMCACHED_SERVERS'])
-    kwargs.update(dict(username=config['CACHE_MEMCACHED_USERNAME'],
-                       password=config['CACHE_MEMCACHED_PASSWORD'],
-                       key_prefix=config['CACHE_KEY_PREFIX']))
-    return SASLMemcachedCache(*args, **kwargs)
-
-
-def gaememcached(app, config, args, kwargs):
-    kwargs.update(dict(key_prefix=config['CACHE_KEY_PREFIX']))
-    return GAEMemcachedCache(*args, **kwargs)
-
-
-def filesystem(app, config, args, kwargs):
-    args.insert(0, config['CACHE_DIR'])
-    kwargs.update(dict(threshold=config['CACHE_THRESHOLD']))
-    return FileSystemCache(*args, **kwargs)
-
-# RedisCache is supported since Werkzeug 0.7.
-try:
-    from werkzeug.contrib.cache import RedisCache
-    from redis import from_url as redis_from_url
-except ImportError:
-    pass
-else:
-    def redis(app, config, args, kwargs):
-        kwargs.update(dict(
-            host=config.get('CACHE_REDIS_HOST', 'localhost'),
-            port=config.get('CACHE_REDIS_PORT', 6379),
-        ))
-        password = config.get('CACHE_REDIS_PASSWORD')
-        if password:
-            kwargs['password'] = password
-
-        key_prefix = config.get('CACHE_KEY_PREFIX')
-        if key_prefix:
-            kwargs['key_prefix'] = key_prefix
-
-        db_number = config.get('CACHE_REDIS_DB')
-        if db_number:
-            kwargs['db'] = db_number
-
-        redis_url = config.get('CACHE_REDIS_URL')
-        if redis_url:
-            kwargs['host'] = redis_from_url(
-                redis_url,
-                db=kwargs.pop('db', None),
-            )
-
-        return RedisCache(*args, **kwargs)
 
 
 class SpreadSASLMemcachedCache(SASLMemcachedCache):
@@ -179,12 +112,3 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if not serialized:
             return None
         return pickle.loads(serialized)
-
-
-def spreadsaslmemcachedcache(app, config, args, kwargs):
-    args.append(config['CACHE_MEMCACHED_SERVERS'])
-    kwargs.update(dict(username=config.get('CACHE_MEMCACHED_USERNAME'),
-                       password=config.get('CACHE_MEMCACHED_PASSWORD'),
-                       key_prefix=config.get('CACHE_KEY_PREFIX')))
-
-    return SpreadSASLMemcachedCache(*args, **kwargs)

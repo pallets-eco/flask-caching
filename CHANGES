@@ -1,6 +1,26 @@
 Changelog
 ---------
 
+Version 1.2.0 2017-02-02
+````````````````````````
+
+  - Allows functions with kwargs to be memoized correctly. See `#18 <https://github.com/sh4nks/flask-caching/issues/18>`_.
+
+Version 1.1.1 2016-12-09
+````````````````````````
+
+  - Fix PyPI Package distribution. See `#15 <https://github.com/sh4nks/flask-caching/issues/15>`_.
+
+Version 1.1.0 2016-12-09
+````````````````````````
+
+- Fix 'redis' backend import mechanisim. See `#14 <https://github.com/sh4nks/flask-caching/pull/14>`_.
+- Made backends a module to better control which cache backends to expose
+  and moved our custom clients into a own module inside of the backends
+  module. See also `#14 <https://github.com/sh4nks/flask-caching/pull/14>`_ (and partly some own changes).
+- Some docs and test changes. See `#8 <https://github.com/sh4nks/flask-caching/pull/8>`_
+  and `#12 <https://github.com/sh4nks/flask-caching/pull/12>`_.
+
 Version 1.0.1 2016-08-30
 ````````````````````````
 
