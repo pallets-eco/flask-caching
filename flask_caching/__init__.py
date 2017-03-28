@@ -219,7 +219,7 @@ class Cache(object):
 
     @property
     def cache(self):
-        app = self.app or current_app
+        app = current_app or self.app
         return app.extensions['cache'][self]
 
     def get(self, *args, **kwargs):
