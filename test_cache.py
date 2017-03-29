@@ -684,6 +684,32 @@ class CacheTestCase(unittest.TestCase):
         cache.init_app(self.app)
         assert cache.app == self.app
 
+    def test_21a_init_app_multi_apps(self):
+        cache = Cache()
+        app1 = Flask(__name__)
+        app1.config.from_mapping(
+            {
+                'CACHE_TYPE': 'redis',
+                'CACHE_KEY_PREFIX': 'foo'
+            })
+
+        app2 = Flask(__name__)
+        app2.config.from_mapping(
+            {
+                'CACHE_TYPE': 'redis',
+                'CACHE_KEY_PREFIX': 'bar'
+            })
+        cache.init_app(app1)
+        cache.init_app(app2)
+
+        # When we have the app context, the prefix should be
+        # different for each app.
+        with app1.app_context():
+            assert cache.cache.key_prefix == 'foo'
+
+        with app2.app_context():
+            assert cache.cache.key_prefix == 'bar'
+
     def test_22_cached_view_forced_update(self):
         forced_update = False
 
