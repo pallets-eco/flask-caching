@@ -11,8 +11,6 @@ clean:
 
 pypi:
 	python setup.py sdist bdist_wheel upload
-	python setup.py build_sphinx
-	python setup.py upload_sphinx
 
 docs:
 	$(MAKE) -C docs html

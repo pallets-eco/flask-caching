@@ -194,7 +194,7 @@ Set timeout to "del" to delete cached value::
 If keys are provided, you may easily generate the template fragment key and
 delete it from outside of the template context::
 
-    from flask.ext.cache import make_template_fragment_key
+    from flask_caching import make_template_fragment_key
     key = make_template_fragment_key("key1", vary_on=["key2", "key3"])
     cache.delete(key)
 
@@ -220,7 +220,7 @@ Here's an example script to empty your application's cache:
 
 .. code-block:: python
 
-    from flask.ext.cache import Cache
+    from flask_caching import Cache
 
     from yourapp import app, your_cache_config
 
@@ -271,7 +271,7 @@ The following configuration values exist for Flask-Caching:
 
                                 * **null**: NullCache (default)
                                 * **simple**: SimpleCache
-                                * **redis**: RedisCache (Werkzeug 0.7 required)
+                                * **redis**: RedisCache (Werkzeug >= 0.7 and redis required)
                                 * **filesystem**: FileSystemCache
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
                                 * **gaememcached**: GAEMemcachedCache
@@ -505,8 +505,6 @@ Additional Information
    license
 
 * :ref:`search`
-
-
 
 
 .. _Flask: http://flask.pocoo.org/
