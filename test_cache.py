@@ -713,9 +713,6 @@ class CacheTestCase(unittest.TestCase):
     def test_22_cached_view_forced_update(self):
         forced_update = False
 
-        def forced_update_fn():
-            return forced_update
-
         @self.app.route('/a')
         @self.cache.cached(5, forced_update=lambda: forced_update)
         def view():
