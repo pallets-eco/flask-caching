@@ -42,7 +42,7 @@ JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
 
 
 class CacheExtension(Extension):
-    tags = set(['cache'])
+    tags = {'cache'}
 
     def parse(self, parser):
         lineno = next(parser.stream).lineno
