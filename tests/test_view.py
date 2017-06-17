@@ -205,7 +205,7 @@ def test_cache_timeout_property(app, cache):
 def test_generate_cache_key_from_query_string(app, cache):
     """Test the _make_cache_key_query_string() cache key maker.
 
-    Create three requests to verify that same query string
+    Create three requests to verify that the same query string
     parameters (key/value) always reference the same cache,
     regardless of the order of parameters.
 
@@ -218,11 +218,10 @@ def test_generate_cache_key_from_query_string(app, cache):
       * GET /v1/works?mock=true&offset=20&limit=15
       * GET /v1/works?limit=15&mock=true&offset=20
 
-    Caching functionality is verified by time from response included
-    with any cache-able resource response.  The time in the response
-    can verify that two requests with the same query string
-    parameters/values, though differently ordered, produce responses
-    with the same `cache_timestamp`.
+    Caching functionality is verified by a `@cached` route `/works` which
+    produces a time in its response. The time in the response can verify that
+    two requests with the same query string parameters/values, though
+    differently ordered, produce responses with the same time.
     """
 
     @app.route('/works')
