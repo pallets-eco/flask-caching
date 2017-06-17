@@ -9,6 +9,8 @@ Version 1.3.0 Unreleased
   the same cache key for different query string requests,
   so long as they have the same key/value (order does not matter).
   PR `#35 <https://github.com/sh4nks/flask-caching/issues/35>`_.
+- Use pytest as test suite and test runner. Additionally, the tests have
+  been split up into multiple files instead of having one big file.
 
 Version 1.2.0 2017-02-02
 ````````````````````````

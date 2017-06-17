@@ -7,3 +7,5 @@ build/*
 dist/
 .idea/
 .idea/*
+.coverage
+.cache
