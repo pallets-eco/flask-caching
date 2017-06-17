@@ -345,7 +345,7 @@ def test_memoize_classfunc_delete(app, cache):
 
         assert a1 != a3
 
-        assert not a2 == a4
+        assert a2 == a4
         # self.assertEqual(a2, a4)
 
         cache.delete_memoized(Adder.add)
