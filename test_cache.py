@@ -785,6 +785,65 @@ class CacheTestCase(unittest.TestCase):
         # print view_pie.cake_cache_key
         assert view_cake.cake_cache_key == view_pie.cake_cache_key
 
+    def test_25_generate_cache_key_from_query_string(self):
+        """Test the _make_cache_key_query_string() cache key maker.
+
+        Create three requests to verify that same query string
+        parameters (key/value) always reference the same cache,
+        regardless of the order of parameters.
+
+        Also test to make sure that the same cache isn't being used for
+        any/all query string parameters.
+
+        For example, these two requests should yield the same
+        cache/cache key:
+
+          * GET /v1/works?mock=true&offset=20&limit=15
+          * GET /v1/works?limit=15&mock=true&offset=20
+
+        Caching functionality is verified by time from response included
+        with any cache-able resource response.  The time in the response
+        can verify that two requests with the same query string
+        parameters/values, though differently ordered, produce responses
+        with the same `cache_timestamp`.
+
+        """
+
+        @self.app.route('/works')
+        @self.cache.cached(query_string=True)
+        def view_works():
+            return str(time.time())
+
+        tc = self.app.test_client()
+
+        # Make our first query...
+        first_response = tc.get(
+            '/works?mock=true&offset=20&limit=15'
+        )
+        first_time = first_response.get_data(as_text=True)
+
+        # Make the second query...
+        second_response = tc.get(
+            '/works?limit=15&mock=true&offset=20'
+        )
+        second_time = second_response.get_data(as_text=True)
+
+        # Now make sure the time for the first and second
+        # query are the same!
+        self.assertEqual(second_time, first_time)
+
+        # Last/third query with different parameters/values should
+        # produce a different time.
+        third_response = tc.get(
+            '/v1/works?limit=20&mock=true&offset=60'
+        )
+        third_time = third_response.get_data(as_text=True)
+
+        # ... making sure that different query parameter values
+        # don't yield the same cache!
+        self.assertNotEqual(third_time, second_time)
+
+
 try:
     import redis
     HAS_REDIS = True
