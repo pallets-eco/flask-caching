@@ -271,8 +271,9 @@ The following configuration values exist for Flask-Caching:
 
                                 * **null**: NullCache (default)
                                 * **simple**: SimpleCache
-                                * **redis**: RedisCache (Werkzeug >= 0.7 and redis required)
                                 * **filesystem**: FileSystemCache
+                                * **redis**: RedisCache (Werkzeug >= 0.7 and redis required)
+                                * **uwsgi**: UWSGICache (Werkzeug >= 0.12 and uwsgi required)
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
                                 * **gaememcached**: GAEMemcachedCache
                                 * **saslmemcached**: SASLMemcachedCache (pylibmc required)
@@ -296,6 +297,12 @@ The following configuration values exist for Flask-Caching:
                                 memcached server for different apps.
                                 Used only for RedisCache, MemcachedCache and
                                 GAEMemcachedCache.
+``CACHE_UWSGI_NAME``            The name of the uwsgi caching instance to
+                                connect to, for example: mycache@localhost:3031,
+                                defaults to an empty string, which means uWSGI
+                                will cache in the local instance. If the cache
+                                is in the same instance as the werkzeug app,
+                                you only have to provide the name of the cache.
 ``CACHE_MEMCACHED_SERVERS``     A list or a tuple of server addresses.
                                 Used only for MemcachedCache
 ``CACHE_MEMCACHED_USERNAME``    Username for SASL authentication with memcached.

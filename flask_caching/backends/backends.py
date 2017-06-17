@@ -10,10 +10,10 @@
 """
 from werkzeug.contrib.cache import (NullCache, SimpleCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache,
-                                    RedisCache)
+                                    RedisCache, UWSGICache)
 from .clients import SASLMemcachedCache, SpreadSASLMemcachedCache
 
-__all__ = ('null', 'simple', 'filesystem', 'redis', 'memcached',
+__all__ = ('null', 'simple', 'filesystem', 'redis', 'uwsgi', 'memcached',
            'saslmemcached', 'gaememcached', 'spreadsaslmemcached')
 
 
@@ -62,6 +62,17 @@ def redis(app, config, args, kwargs):
         )
 
     return RedisCache(*args, **kwargs)
+
+
+def uwsgi(app, config, args, kwargs):
+    # The name of the caching instance to connect to, for
+    # example: mycache@localhost:3031, defaults to an empty string, which
+    # means uWSGI will cache in the local instance. If the cache is in the
+    # same instance as the werkzeug app, you only have to provide the name of
+    # the cache.
+    uwsgi_cache_name = config.get('CACHE_UWSGI_NAME', '')
+    kwargs.update(dict(cache=uwsgi_cache_name))
+    return UWSGICache(*args, **kwargs)
 
 
 def memcached(app, config, args, kwargs):
