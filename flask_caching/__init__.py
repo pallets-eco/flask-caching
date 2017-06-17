@@ -16,6 +16,7 @@ import logging
 import string
 import uuid
 import warnings
+from operator import itemgetter
 
 from werkzeug.utils import import_string
 from flask import request, current_app, url_for
@@ -259,7 +260,7 @@ class Cache(object):
         return self.cache.get_dict(*args, **kwargs)
 
     def cached(self, timeout=None, key_prefix='view/%s', unless=None,
-               forced_update=None):
+               forced_update=None, query_string=False):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
@@ -322,6 +323,14 @@ class Cache(object):
                               cache value will be updated regardless cache
                               is expired or not. Useful for background
                               renewal of cached functions.
+        :param query_string: Default False. When True, the cache key
+                             used will be the result of hashing the
+                             ordered query string parameters. This
+                             avoids creating different caches for
+                             the same query just because the parameters
+                             were passed in a different order. See
+                             _make_cache_key_query_string() for more
+                             details.
         """
 
         def decorator(f):
@@ -332,7 +341,11 @@ class Cache(object):
                     return f(*args, **kwargs)
 
                 try:
-                    cache_key = _make_cache_key(args, kwargs, use_request=True)
+                    if query_string:
+                        cache_key = _make_cache_key_query_string()
+                    else:
+                        cache_key = _make_cache_key(args, kwargs,
+                                                    use_request=True)
 
                     if callable(forced_update) and forced_update() is True:
                         rv = None
@@ -368,6 +381,31 @@ class Cache(object):
                     kwargs[arg_name] = arg
 
                 return _make_cache_key(args, kwargs, use_request=False)
+
+            def _make_cache_key_query_string():
+                """Create consistent keys for query string arguments.
+
+                Produces the same cache key regardless of argument order, e.g.,
+                both `?limit=10&offset=20` and `?offset=20&limit=10` will always
+                produce the same exact cache key.
+                """
+
+                # Create a tuple of (key, value) pairs, where the key is the
+                # argument name and the value is its respective value. Order this
+                # tuple by key. Doing this ensures the cache key created is always
+                # the same for query string args whose keys/values are the same,
+                # regardless of the order in which they are provided.
+                args_as_sorted_tuple = tuple(
+                    sorted(
+                        (pair for pair in request.args.items()),
+                        key=itemgetter(0),
+                    )
+                )
+                # ... now hash the sorted (key, value) tuple so it can be
+                # used as a key for cache.
+                hashed_args = str(hash(args_as_sorted_tuple))
+                cache_key = request.path + hashed_args
+                return cache_key
 
             def _make_cache_key(args, kwargs, use_request):
                 if callable(key_prefix):
