@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-Version 1.3.0 Unreleased
+Version 1.3.0 2017-06-17
 ````````````````````````
 
 - Add uWSGI Caching backend (requires Werkzeug >= 0.12)
