@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-Version 1.3.0 2017-06-20
+Version 1.3.1 2017-06-20
 ````````````````````````
 - Avoid breakage for environments with Werkzeug<0.12 installed because
   the uwsgi backend depends on Werkzeug >=0.12. See `#38 <https://github.com/sh4nks/flask-caching/issues/38>`_.
