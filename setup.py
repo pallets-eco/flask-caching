@@ -78,7 +78,8 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        'Flask'
+        'Flask',
+        'Werkzeug>=0.12',
     ],
     tests_require=['pytest'],
     cmdclass={'test': PyTest},
