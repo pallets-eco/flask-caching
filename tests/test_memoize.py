@@ -8,7 +8,7 @@ from flask_caching import Cache, function_namespace
 
 def test_memoize(app, cache):
     with app.test_request_context():
-        @cache.memoize(5)
+        @cache.memoize(3)
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
 
@@ -21,7 +21,7 @@ def test_memoize(app, cache):
         result2 = big_foo(5, 3)
         assert result2 != result
 
-        time.sleep(5)
+        time.sleep(3)
 
         assert big_foo(5, 2) != result
 
@@ -55,7 +55,7 @@ def test_memoize_annotated(app, cache):
 
             result = big_foo_annotated(5, 2)
 
-            time.sleep(2)
+            time.sleep(1)
 
             assert big_foo_annotated(5, 2) == result
 

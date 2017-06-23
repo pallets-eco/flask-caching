@@ -25,7 +25,7 @@ def test_cache_delete(app, cache):
 
 def test_cache_cached_function(app, cache):
     with app.test_request_context():
-        @cache.cached(2, key_prefix='MyBits')
+        @cache.cached(1, key_prefix='MyBits')
         def get_random_bits():
             return [random.randrange(0, 2) for i in range(50)]
 
@@ -34,7 +34,7 @@ def test_cache_cached_function(app, cache):
 
         assert my_list == his_list
 
-        time.sleep(4)
+        time.sleep(2)
 
         his_list = get_random_bits()
 

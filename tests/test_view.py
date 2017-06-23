@@ -4,7 +4,7 @@ import time
 
 def test_cached_view(app, cache):
     @app.route('/')
-    @cache.cached(5)
+    @cache.cached(2)
     def cached_view():
         return str(time.time())
 
@@ -13,13 +13,13 @@ def test_cached_view(app, cache):
     rv = tc.get('/')
     the_time = rv.data.decode('utf-8')
 
-    time.sleep(2)
+    time.sleep(1)
 
     rv = tc.get('/')
 
     assert the_time == rv.data.decode('utf-8')
 
-    time.sleep(5)
+    time.sleep(1)
 
     rv = tc.get('/')
     assert the_time != rv.data.decode('utf-8')
@@ -157,27 +157,26 @@ def test_make_cache_key_function_property(app, cache):
 
 def test_cache_timeout_property(app, cache):
     @app.route('/')
-    @cache.memoize(5)
+    @cache.memoize(2)
     def cached_view1():
         return str(time.time())
 
     @app.route('/<foo>/<bar>')
-    @cache.memoize(10)
+    @cache.memoize(4)
     def cached_view2(foo, bar):
         return str(time.time())
 
     assert hasattr(cached_view1, "cache_timeout")
     assert hasattr(cached_view2, "cache_timeout")
-    assert cached_view1.cache_timeout == 5
-    assert cached_view2.cache_timeout == 10
+    assert cached_view1.cache_timeout == 2
+    assert cached_view2.cache_timeout == 4
 
     # test that this is a read-write property
-    cached_view1.cache_timeout = 15
-    cached_view2.cache_timeout = 30
+    cached_view1.cache_timeout = 5
+    cached_view2.cache_timeout = 7
 
-    assert cached_view1.cache_timeout == 15
-    assert cached_view2.cache_timeout == 30
-
+    assert cached_view1.cache_timeout == 5
+    assert cached_view2.cache_timeout == 7
     tc = app.test_client()
 
     rv1 = tc.get('/')
@@ -189,16 +188,16 @@ def test_cache_timeout_property(app, cache):
     # VIEW1
     # it's been 1 second, cache is still active
     assert time1 == tc.get('/').data.decode('utf-8')
-    time.sleep(16)
-    # it's been >15 seconds, cache is not still active
+    time.sleep(5)
+    # it's been >5 seconds, cache is not still active
     assert time1 != tc.get('/').data.decode('utf-8')
 
     # VIEW2
     # it's been >17 seconds, cache is still active
     #self.assertEqual(time2, tc.get('/a/b').data.decode('utf-8'))
     assert time2 == tc.get('/a/b').data.decode('utf-8')
-    time.sleep(30)
-    # it's been >30 seconds, cache is not still active
+    time.sleep(3)
+    # it's been >7 seconds, cache is not still active
     assert time2 != tc.get('/a/b').data.decode('utf-8')
 
 
