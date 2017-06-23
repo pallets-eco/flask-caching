@@ -18,5 +18,11 @@ PYPY = hasattr(sys, 'pypy_translation_info')
 
 if not PY2:
     range_type = range
+    iterkeys = lambda d: iter(d.keys())
+    itervalues = lambda d: iter(d.values())
+    iteritems = lambda d: iter(d.items())
 else:
     range_type = xrange
+    iterkeys = lambda d: d.iterkeys()
+    itervalues = lambda d: d.itervalues()
+    iteritems = lambda d: d.iteritems()

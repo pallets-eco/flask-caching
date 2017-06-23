@@ -16,12 +16,13 @@ import logging
 import string
 import uuid
 import warnings
+from collections import OrderedDict
 from operator import itemgetter
 
 from werkzeug.utils import import_string
 from flask import request, current_app, url_for
 
-from ._compat import PY2
+from ._compat import PY2, iteritems
 
 __version__ = '1.3.1'
 
@@ -569,9 +570,9 @@ class Cache(object):
 
             new_args.append(arg)
 
-        return tuple(new_args), {
-            k: v for k, v in kwargs.items() if k in kwargs_keys_remaining
-        }
+        return tuple(new_args), OrderedDict(sorted(
+            (k, v) for k, v in iteritems(kwargs) if k in kw_keys_remaining
+        ))
 
     def _bypass_cache(self, unless, f, *args, **kwargs):
         """Determines whether or not to bypass the cache by calling unless().
@@ -652,7 +653,6 @@ class Cache(object):
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """
-
         def memoize(f):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
