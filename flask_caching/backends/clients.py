@@ -12,12 +12,12 @@
 import pickle
 from werkzeug.contrib.cache import BaseCache, MemcachedCache
 
-from flask_caching._compat import range_type
+from flask_caching._compat import PY2, range_type
 
 
 class SASLMemcachedCache(MemcachedCache):
     def __init__(self, servers=None, default_timeout=300, key_prefix=None,
-                 username=None, password=None):
+                 username=None, password=None, **kwargs):
         BaseCache.__init__(self, default_timeout)
 
         if servers is None:
@@ -27,7 +27,8 @@ class SASLMemcachedCache(MemcachedCache):
         self._client = pylibmc.Client(servers,
                                       username=username,
                                       password=password,
-                                      binary=True)
+                                      binary=True,
+                                      **kwargs)
 
         self.key_prefix = key_prefix
 
@@ -42,9 +43,12 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
     def __init__(self, *args, **kwargs):
         """
-        chunksize : (int) max size in bytes of chunk stored in memcached
+        Kwargs:
+            chunksize (int): max length of a pickled object that can fit in
+                memcached (memcache has an upper limit of 1MB for values,
+                default: 1048448)
         """
-        self.chunksize = kwargs.get('chunksize', 950000)
+        self.chunksize = kwargs.get('chunksize', 1048448)
         self.maxchunk = kwargs.get('maxchunk', 32)
         super(SpreadSASLMemcachedCache, self).__init__(*args, **kwargs)
 
@@ -108,7 +112,13 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
     def _get(self, key):
         to_get = ['%s.%s' % (key, i) for i in range_type(self.maxchunk)]
         result = super(SpreadSASLMemcachedCache, self).get_many(*to_get)
-        serialized = ''.join([v for v in result if v is not None])
+
+        if PY2:
+            serialized = ''.join(v for v in result if v is not None)
+        else:
+            serialized = b''.join(v for v in result if v is not None)
+
         if not serialized:
             return None
+
         return pickle.loads(serialized)
