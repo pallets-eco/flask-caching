@@ -151,7 +151,7 @@ class Cache(object):
             self.init_app(app, config)
 
     def init_app(self, app, config=None):
-        "This is used to initialize cache with your app object"
+        """This is used to initialize cache with your app object"""
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
 
@@ -224,39 +224,39 @@ class Cache(object):
         return app.extensions['cache'][self]
 
     def get(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.get(*args, **kwargs)
 
     def set(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.set(*args, **kwargs)
 
     def add(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.add(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.delete(*args, **kwargs)
 
     def delete_many(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.delete_many(*args, **kwargs)
 
     def clear(self):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.clear()
 
     def get_many(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.get_many(*args, **kwargs)
 
     def set_many(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.set_many(*args, **kwargs)
 
     def get_dict(self, *args, **kwargs):
-        "Proxy function for internal cache object."
+        """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
     def cached(self, timeout=None, key_prefix='view/%s', unless=None,
@@ -332,7 +332,6 @@ class Cache(object):
                              _make_cache_key_query_string() for more
                              details.
         """
-
         def decorator(f):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
@@ -386,15 +385,16 @@ class Cache(object):
                 """Create consistent keys for query string arguments.
 
                 Produces the same cache key regardless of argument order, e.g.,
-                both `?limit=10&offset=20` and `?offset=20&limit=10` will always
-                produce the same exact cache key.
+                both `?limit=10&offset=20` and `?offset=20&limit=10` will
+                always produce the same exact cache key.
                 """
 
                 # Create a tuple of (key, value) pairs, where the key is the
-                # argument name and the value is its respective value. Order this
-                # tuple by key. Doing this ensures the cache key created is always
-                # the same for query string args whose keys/values are the same,
-                # regardless of the order in which they are provided.
+                # argument name and the value is its respective value. Order
+                # this tuple by key. Doing this ensures the cache key created
+                # is always the same for query string args whose keys/values
+                # are the same, regardless of the order in which they are
+                # provided.
                 args_as_sorted_tuple = tuple(
                     sorted(
                         (pair for pair in request.args.items()),
@@ -492,10 +492,7 @@ class Cache(object):
 
             #: this should have to be after version_data, so that it
             #: does not break the delete_memoized functionality.
-            if callable(make_name):
-                altfname = make_name(fname)
-            else:
-                altfname = fname
+            altfname = make_name(fname) if callable(make_name) else fname
 
             if callable(f):
                 keyargs, keykwargs = self._memoize_kwargs_to_args(
@@ -504,10 +501,7 @@ class Cache(object):
             else:
                 keyargs, keykwargs = args, kwargs
 
-            try:
-                updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
-            except AttributeError:
-                updated = u"%s%s%s" % (altfname, keyargs, keykwargs)
+            updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
 
             cache_key = hashlib.md5()
             cache_key.update(updated.encode('utf-8'))
@@ -526,8 +520,9 @@ class Cache(object):
         new_args = []
         arg_num = 0
 
-        # If the function uses VAR_KEYWORD type of parameters, we need to pass these further
-        kwargs_keys_remaining = list(kwargs.keys())
+        # If the function uses VAR_KEYWORD type of parameters,
+        # we need to pass these further
+        kw_keys_remaining = list(kwargs.keys())
         arg_names = get_arg_names(f)
         args_len = len(arg_names)
 
@@ -542,7 +537,7 @@ class Cache(object):
                 arg_num += 1
             elif arg_names[i] in kwargs:
                 arg = kwargs[arg_names[i]]
-                kwargs_keys_remaining.pop(kwargs_keys_remaining.index(arg_names[i]))
+                kw_keys_remaining.pop(kw_keys_remaining.index(arg_names[i]))
             elif arg_num < len(args):
                 arg = args[arg_num]
                 arg_num += 1
@@ -665,39 +660,30 @@ class Cache(object):
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
 
-                try:
-                    cache_key = decorated_function.make_cache_key(
-                        f, *args, **kwargs
-                    )
-                    if callable(forced_update) and forced_update() is True:
-                        rv = None
-                    else:
-                        rv = self.cache.get(cache_key)
-                except Exception:
-                    if current_app.debug:
-                        raise
-                    logger.exception("Exception possibly due to "
-                                     "cache backend.")
-                    return f(*args, **kwargs)
+                cache_key = decorated_function.make_cache_key(
+                    f, *args, **kwargs
+                )
+
+                if callable(forced_update) and forced_update() is True:
+                    rv = None
+                else:
+                    rv = self.cache.get(cache_key)
 
                 if rv is None:
                     rv = f(*args, **kwargs)
-                    try:
-                        self.cache.set(
-                            cache_key, rv,
-                            timeout=decorated_function.cache_timeout
-                        )
-                    except Exception:
-                        if current_app.debug:
-                            raise
-                        logger.exception("Exception possibly due to "
-                                         "cache backend.")
+
+                    self.cache.set(
+                        cache_key, rv,
+                        timeout=decorated_function.cache_timeout
+                    )
+
                 return rv
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
             decorated_function.make_cache_key = self._memoize_make_cache_key(
-                make_name, decorated_function, forced_update
+                make_name=make_name, timeout=decorated_function,
+                forced_update=forced_update
             )
             decorated_function.delete_memoized = \
                 lambda: self.delete_memoized(f)
@@ -817,16 +803,11 @@ class Cache(object):
                                      "no longer reliable, please switch to a "
                                      "function reference.")
 
-        try:
-            if not args and not kwargs:
-                self._memoize_version(f, reset=True)
-            else:
-                cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
-                self.cache.delete(cache_key)
-        except Exception:
-            if current_app.debug:
-                raise
-            logger.exception("Exception possibly due to cache backend.")
+        if not (args or kwargs):
+            self._memoize_version(f, reset=True)
+        else:
+            cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
+            self.cache.delete(cache_key)
 
     def delete_memoized_verhash(self, f, *args):
         """Delete the version hash associated with the function.
@@ -844,9 +825,4 @@ class Cache(object):
                                      "no longer reliable, please use a "
                                      "function reference.")
 
-        try:
-            self._memoize_version(f, delete=True)
-        except Exception:
-            if current_app.debug:
-                raise
-            logger.exception("Exception possibly due to cache backend.")
+        self._memoize_version(f, delete=True)
