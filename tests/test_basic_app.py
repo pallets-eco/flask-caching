@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
+from werkzeug.contrib.cache import SimpleCache
 from flask_caching import Cache
+
+
+class CustomSimpleCache(SimpleCache):
+    pass
+
+
+def newsimple(app, config, args, kwargs):
+    return CustomSimpleCache(*args, **kwargs)
 
 
 def test_dict_config(app):
@@ -55,3 +64,12 @@ def test_init_app_multi_apps(app):
 
     with app2.app_context():
         assert cache.cache.key_prefix == 'bar'
+
+
+def test_app_custom_cache_backend(app):
+    cache = Cache()
+    app.config['CACHE_TYPE'] = 'test_basic_app.newsimple'
+    cache.init_app(app)
+
+    with app.app_context():
+        assert isinstance(cache.cache, CustomSimpleCache)
