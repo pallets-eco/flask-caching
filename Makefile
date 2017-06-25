@@ -1,7 +1,10 @@
-.PHONY: clean  test pypi docs
+.PHONY: text tox clean wheel upload docs
 
 test:
-	python setup.py test
+	pytest
+
+tox:
+	@tox
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -9,8 +12,11 @@ clean:
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -rf {} +
 
-pypi:
-	python setup.py sdist bdist_wheel upload
+wheel:
+	python setup.py bdist_wheel
+
+upload:
+	twine upload dist/* --skip-existing
 
 docs:
 	$(MAKE) -C docs html
