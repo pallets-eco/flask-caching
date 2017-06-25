@@ -4,6 +4,7 @@ Flask-Caching
 [![Build Status](https://travis-ci.org/sh4nks/flask-caching.svg?branch=master)](https://travis-ci.org/sh4nks/flask-caching)
 [![Coverage Status](https://coveralls.io/repos/sh4nks/flask-caching/badge.png)](https://coveralls.io/r/sh4nks/flask-caching)
 [![PyPI Version](https://img.shields.io/pypi/v/Flask-Caching.svg)](https://pypi.python.org/pypi/Flask-Caching)
+[![Documentation Status](https://readthedocs.org/projects/flask-caching/badge/?version=latest)](https://flask-caching.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/license-BSD-yellow.svg)](https://github.com/sh4nks/flask-caching)
 
 Adds easy cache support to Flask.
@@ -37,22 +38,22 @@ cache.init_app(app)
 
 Compatibility with Flask-Cache
 -----
-There are no known incompatibilities or breaking changes between the latest [Flask-Cache](https://github.com/thadeusb/flask-cache) 
+There are no known incompatibilities or breaking changes between the latest [Flask-Cache](https://github.com/thadeusb/flask-cache)
 release (version 0.13, April 2014) and the current version of Flask-Caching. Due to the change to the Flask-Caching name
-and the [extension import transition](http://flask.pocoo.org/docs/0.11/extensiondev/#extension-import-transition), 
+and the [extension import transition](http://flask.pocoo.org/docs/0.11/extensiondev/#extension-import-transition),
 Python import lines like:
 
- ```from flask.ext.cache import Cache``` 
- 
+ ```from flask.ext.cache import Cache```
+
  will need to be changed to:
- 
+
  ```from flask_caching import Cache```
 
 
 Links
 =====
 
-* [Documentation](https://pythonhosted.org/Flask-Caching/)
+* [Documentation](https://flask-caching.readthedocs.io)
 * [Source Code](https://github.com/sh4nks/flask-caching)
 * [Issues](https://github.com/sh4nks/flask-caching/issues)
 * [Original Flask-Cache Extension](https://github.com/thadeusb/flask-cache)
