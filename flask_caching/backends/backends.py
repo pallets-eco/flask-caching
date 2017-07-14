@@ -17,10 +17,11 @@ try:
 except ImportError:
     has_UWSGICache = False
 
-from .clients import SASLMemcachedCache, SpreadSASLMemcachedCache
+from .clients import (SASLMemcachedCache, SpreadSASLMemcachedCache,
+                      RedisSentinelCache)
 
-__all__ = ('null', 'simple', 'filesystem', 'redis', 'uwsgi', 'memcached',
-           'saslmemcached', 'gaememcached', 'spreadsaslmemcached')
+__all__ = ('null', 'simple', 'filesystem', 'redis', 'redissentinel', 'uwsgi',
+           'memcached', 'saslmemcached', 'gaememcached', 'spreadsaslmemcached')
 
 
 def null(app, config, args, kwargs):
@@ -68,6 +69,18 @@ def redis(app, config, args, kwargs):
         )
 
     return RedisCache(*args, **kwargs)
+
+
+def redissentinel(app, config, args, kwargs):
+    kwargs.update(dict(
+        sentinels=config.get('CACHE_REDIS_SENTINELS', [('127.0.0.1', 26379)]),
+        master=config.get('CACHE_REDIS_SENTINEL_MASTER', 'mymaster'),
+        password=config.get('CACHE_REDIS_PASSWORD', None),
+        key_prefix=config.get('CACHE_KEY_PREFIX', None),
+        db=config.get('CACHE_REDIS_DB', 0)
+    ))
+
+    return RedisSentinelCache(*args, **kwargs)
 
 
 def uwsgi(app, config, args, kwargs):
