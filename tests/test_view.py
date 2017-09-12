@@ -258,25 +258,11 @@ def test_generate_cache_key_from_query_string(app, cache):
     assert not third_time == second_time
 
 def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
-    """Test the _make_cache_key_query_string() cache key maker.
+    """Test the _make_cache_key_query_string() cache key maker's support for
+    repeated query paramaters
 
-    Create three requests to verify that the same query string
-    parameters (key/value) always reference the same cache,
-    regardless of the order of parameters.
-
-    Also test to make sure that the same cache isn't being used for
-    any/all query string parameters.
-
-    For example, these two requests should yield the same
-    cache/cache key:
-
-      * GET /v1/works?mock=true&offset=20&limit=15
-      * GET /v1/works?limit=15&mock=true&offset=20
-
-    Caching functionality is verified by a `@cached` route `/works` which
-    produces a time in its response. The time in the response can verify that
-    two requests with the same query string parameters/values, though
-    differently ordered, produce responses with the same time.
+    URL params can be repeated with different values. Flask's MultiDict
+    supports them
     """
 
     @app.route('/works')
