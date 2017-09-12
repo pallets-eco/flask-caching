@@ -256,3 +256,59 @@ def test_generate_cache_key_from_query_string(app, cache):
     # ... making sure that different query parameter values
     # don't yield the same cache!
     assert not third_time == second_time
+
+def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
+    """Test the _make_cache_key_query_string() cache key maker.
+
+    Create three requests to verify that the same query string
+    parameters (key/value) always reference the same cache,
+    regardless of the order of parameters.
+
+    Also test to make sure that the same cache isn't being used for
+    any/all query string parameters.
+
+    For example, these two requests should yield the same
+    cache/cache key:
+
+      * GET /v1/works?mock=true&offset=20&limit=15
+      * GET /v1/works?limit=15&mock=true&offset=20
+
+    Caching functionality is verified by a `@cached` route `/works` which
+    produces a time in its response. The time in the response can verify that
+    two requests with the same query string parameters/values, though
+    differently ordered, produce responses with the same time.
+    """
+
+    @app.route('/works')
+    @cache.cached(query_string=True)
+    def view_works():
+        return str(time.time())
+
+    tc = app.test_client()
+
+    # Make our first query...
+    first_response = tc.get(
+        '/works?mock=true&offset=20&limit=15&user[]=123&user[]=124'
+    )
+    first_time = first_response.get_data(as_text=True)
+
+    # Make the second query...
+    second_response = tc.get(
+        '/works?mock=true&offset=20&limit=15&user[]=124&user[]=123'
+    )
+    second_time = second_response.get_data(as_text=True)
+
+    # Now make sure the time for the first and second
+    # query are the same!
+    assert second_time == first_time
+
+    # Last/third query with different parameters/values should
+    # produce a different time.
+    third_response = tc.get(
+        '/works?mock=true&offset=20&limit=15&user[]=125&user[]=124'
+    )
+    third_time = third_response.get_data(as_text=True)
+
+    # ... making sure that different query parameter values
+    # don't yield the same cache!
+    assert not third_time == second_time

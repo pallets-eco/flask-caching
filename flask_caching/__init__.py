@@ -398,13 +398,14 @@ class Cache(object):
                 # provided.
                 args_as_sorted_tuple = tuple(
                     sorted(
-                        (pair for pair in request.args.items()),
-                        key=itemgetter(0),
+                        (pair for pair in request.args.items(multi=True))
                     )
                 )
                 # ... now hash the sorted (key, value) tuple so it can be
-                # used as a key for cache.
-                hashed_args = str(hash(args_as_sorted_tuple))
+                # used as a key for cache. Turn them into bytes so that md5
+                # will accept them
+                args_as_bytes = str(args_as_sorted_tuple).encode()
+                hashed_args = str(hashlib.md5(args_as_bytes).hexdigest())
                 cache_key = request.path + hashed_args
                 return cache_key
 
