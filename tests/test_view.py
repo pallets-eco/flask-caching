@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+from flask import request
 
 
 def test_cached_view(app, cache):
@@ -250,6 +251,49 @@ def test_generate_cache_key_from_query_string(app, cache):
     # produce a different time.
     third_response = tc.get(
         '/v1/works?limit=20&mock=true&offset=60'
+    )
+    third_time = third_response.get_data(as_text=True)
+
+    # ... making sure that different query parameter values
+    # don't yield the same cache!
+    assert not third_time == second_time
+
+def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
+    """Test the _make_cache_key_query_string() cache key maker's support for
+    repeated query paramaters
+
+    URL params can be repeated with different values. Flask's MultiDict
+    supports them
+    """
+
+    @app.route('/works')
+    @cache.cached(query_string=True)
+    def view_works():
+        flatted_values = sum(request.args.listvalues(), [])
+        return str(sorted(flatted_values)) + str(time.time())
+
+    tc = app.test_client()
+
+    # Make our first query...
+    first_response = tc.get(
+        '/works?mock=true&offset=20&limit=15&user[]=123&user[]=124'
+    )
+    first_time = first_response.get_data(as_text=True)
+
+    # Make the second query...
+    second_response = tc.get(
+        '/works?mock=true&offset=20&limit=15&user[]=124&user[]=123'
+    )
+    second_time = second_response.get_data(as_text=True)
+
+    # Now make sure the time for the first and second
+    # query are the same!
+    assert second_time == first_time
+
+    # Last/third query with different parameters/values should
+    # produce a different time.
+    third_response = tc.get(
+        '/works?mock=true&offset=20&limit=15&user[]=125&user[]=124'
     )
     third_time = third_response.get_data(as_text=True)
 
