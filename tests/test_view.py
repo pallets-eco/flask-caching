@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+from flask import request
 
 
 def test_cached_view(app, cache):
@@ -268,7 +269,8 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
     @app.route('/works')
     @cache.cached(query_string=True)
     def view_works():
-        return str(time.time())
+        flatted_values = sum(request.args.listvalues(), [])
+        return str(sorted(flatted_values)) + str(time.time())
 
     tc = app.test_client()
 
