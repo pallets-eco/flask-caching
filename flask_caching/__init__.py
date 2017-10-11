@@ -93,6 +93,11 @@ def function_namespace(f, args=None):
 
     module = f.__module__
 
+    if m_args and m_args[0] == 'cls' and not inspect.isclass(args[0]):
+        raise ValueError('When using `delete_memoized` on a '
+                         '`@classmethod` you must provide the '
+                         'class as the first argument')
+
     if hasattr(f, '__qualname__'):
         name = f.__qualname__
     else:

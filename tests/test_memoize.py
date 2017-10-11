@@ -385,6 +385,36 @@ def test_memoize_classmethod_delete(app, cache):
         assert Mock.big_foo(5, 3) != result2
 
 
+def test_memoize_classmethod_delete_with_args(app, cache):
+    with app.test_request_context():
+        class Mock(object):
+            @classmethod
+            @cache.memoize(5)
+            def big_foo(cls, a, b):
+                return a + b + random.randrange(0, 100000)
+
+        result = Mock.big_foo(5, 2)
+        result2 = Mock.big_foo(5, 3)
+
+        time.sleep(1)
+
+        assert Mock.big_foo(5, 2) == result
+        assert Mock.big_foo(5, 2) == result
+        assert Mock.big_foo(5, 3) != result
+        assert Mock.big_foo(5, 3) == result2
+
+        with pytest.raises(ValueError):
+            cache.delete_memoized(Mock.big_foo, 5, 2)
+
+        assert Mock.big_foo(5, 2) == result
+        assert Mock.big_foo(5, 3) == result2
+
+        cache.delete_memoized(Mock.big_foo, Mock, 5, 2)
+
+        assert Mock.big_foo(5, 2) != result
+        assert Mock.big_foo(5, 3) == result2
+
+
 def test_memoize_forced_update(app, cache):
     with app.test_request_context():
         forced_update = False
