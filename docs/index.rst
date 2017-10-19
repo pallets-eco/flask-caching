@@ -342,8 +342,7 @@ Set ``CACHE_TYPE`` to ``null`` to use this type.
 
 Cache that doesn't cache
 
-- CACHE_ARGS
-- CACHE_OPTIONS
+- CACHE_DEFAULT_TIMEOUT
 
 
 SimpleCache
@@ -357,8 +356,6 @@ Relevant configuration values
 
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_THRESHOLD
-- CACHE_ARGS
-- CACHE_OPTIONS
 
 
 FileSystemCache
@@ -371,9 +368,10 @@ Uses the filesystem to store cached values
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_DIR
 - CACHE_THRESHOLD
-- CACHE_ARGS
 - CACHE_OPTIONS
 
+There is a single valid entry in CACHE_OPTIONS: *mode*, which should be a 3 digit
+linux-style permissions octal mode.
 
 RedisCache
 ``````````
@@ -386,10 +384,10 @@ Set ``CACHE_TYPE`` to ``redis`` to use this type.
 - CACHE_REDIS_PORT
 - CACHE_REDIS_PASSWORD
 - CACHE_REDIS_DB
-- CACHE_ARGS
 - CACHE_OPTIONS
 - CACHE_REDIS_URL
 
+Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
 MemcachedCache
 ``````````````
@@ -404,17 +402,30 @@ Relevant configuration values
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_KEY_PREFIX
 - CACHE_MEMCACHED_SERVERS
-- CACHE_ARGS
-- CACHE_OPTIONS
 
+
+.. note:: Werkzeug does not pass additional configuration options
+   to memcached backends. To add additional configuration to these caches,
+   directly set the configuration options on the object after instantiation::
+
+       from flask_caching import Cache
+       cache = Cache()
+
+       # Can't configure the client yet...
+       cache.init_app(flask_app, {"CACHE_TYPE": "memcached"})
+
+       # Break convention and set options on the _client object
+       # directly. For pylibmc behaviors:
+       cache.cache._client.behaviors({"tcp_nodelay": True})
+
+   Alternatively, see `Custom Cache Backends`_.
 
 GAEMemcachedCache
 `````````````````
 
 Set ``CACHE_TYPE`` to ``gaememcached`` to use this type.
 
-Is MemcachedCache under a different name
-
+Is MemcachedCache under a different name.
 
 SASLMemcachedCache
 ``````````````````
@@ -432,8 +443,10 @@ Relevant configuration values
 - CACHE_MEMCACHED_SERVERS
 - CACHE_MEMCACHED_USERNAME
 - CACHE_MEMCACHED_PASSWORD
-- CACHE_ARGS
 - CACHE_OPTIONS
+
+.. note:: Since the SASL Memcached cache types do not use the werkzeug built-in cache
+   infrastructure, they can be configured with CACHE_OPTIONS.
 
 .. versionadded:: 0.10
 
