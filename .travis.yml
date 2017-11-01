@@ -9,6 +9,7 @@ python:
  - "pypy3"
 install:
  - pip install -r requirements.txt
+ - pip install coveralls
  - pip install --editable .
 script: py.test
 services:
