@@ -43,7 +43,7 @@ You may also set up your ``Cache`` instance later at configuration time using
     cache.init_app(app)
 
 You may also provide an alternate configuration dictionary, useful if there will
-be multiple ``Cache`` instances each with a different backend.::
+be multiple ``Cache`` instances each with a different backend::
 
     #: Method A: During instantiation of class
     cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -57,7 +57,7 @@ Caching View Functions
 ----------------------
 
 To cache view functions you will use the :meth:`~Cache.cached` decorator.
-This decorator will use request.path by default for the cache_key.::
+This decorator will use request.path by default for the cache_key::
 
     @app.route("/")
     @cache.cached(timeout=50)
@@ -91,7 +91,7 @@ non-view related functions. The only stipulation is that you replace the
 Keys control what should be fetched from the cache. If, for example, a key
 does not exist in the cache, a new key-value entry will be created in the
 cache. Otherwise the the value (i.e. the cached result) of the key will be
-returned.::
+returned::
 
     @cache.cached(timeout=50, key_prefix='all_comments')
     def get_all_comments():
@@ -140,7 +140,7 @@ every time this information is needed you might do something like the following:
     cache key.
 
     For example, an sqlalchemy person object that returns the database id as
-    part of the unique identifier.::
+    part of the unique identifier::
 
         class Person(db.Model):
             def __repr__(self):
@@ -155,7 +155,7 @@ Deleting memoize cache
 You might need to delete the cache on a per-function bases. Using the above
 example, lets say you change the users permissions and assign them to a role,
 but now you need to re-calculate if they have certain memberships or not.
-You can do this with the :meth:`~Cache.delete_memoized` function.::
+You can do this with the :meth:`~Cache.delete_memoized` function::
 
     cache.delete_memoized(user_has_membership)
 
