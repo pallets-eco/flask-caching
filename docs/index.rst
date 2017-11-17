@@ -183,17 +183,21 @@ Usage::
     ...
     {% endcache %}
 
-By default the value of "path to template file" + "block start line" is used as cache key.
-Also key name can be set manually. Keys are concated together into a single string.
-that can be used to avoid the same block evaluating in different templates.
+By default, the value of "path to template file" + "block start line" is used as the cache key.
+Also, the key name can be set manually. Keys are concatenated together into a single string, that 
+can be used to avoid the same block evaluating in different templates.
 
-Set the timeout to None for no timeout, but with custom keys::
+Set the timeout to ``None`` for no timeout, but with custom keys::
 
-    {% cache None "key" %}...
+    {% cache None "key" %}
+    ...
+    {% endcache %}
 
-Set timeout to "del" to delete cached value::
+Set timeout to ``del`` to delete cached value::
 
-    {% cache 'del' %}...
+    {% cache 'del' key1 %}
+    ...
+    {% endcache %}
 
 If keys are provided, you may easily generate the template fragment key and
 delete it from outside of the template context::
@@ -202,14 +206,13 @@ delete it from outside of the template context::
     key = make_template_fragment_key("key1", vary_on=["key2", "key3"])
     cache.delete(key)
 
-Example::
+Considering we have ``render_form_field`` and ``render_submit`` macros::
 
-    Considering we have render_form_field and render_submit macroses.
     {% cache 60*5 %}
     <div>
         <form>
-        {% render_form_field form.username %}
-        {% render_submit %}
+        {% render_form_field(form.username) %}
+        {% render_submit() %}
         </form>
     </div>
     {% endcache %}
