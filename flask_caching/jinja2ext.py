@@ -11,22 +11,30 @@
         ...
         {% endcache %}
 
-        By default the value of "path to template file" + "block start line"
-        is used as cache key. Also key name can be set manually.
-        Keys are concated together into a single string. Tthat can be used
-        to avoid the same block evaluating in different templates.
+    By default, the value of "path to template file" + "block start line"
+    is used as the cache key. Also, the key name can be set manually.
+    Keys are concatenated together into a single string, that can be used
+    to avoid the same block evaluating in different templates.
 
-        Set timeout to "del" to delete cached value:
-        {% cache 'del' key1 %}...
+    Set the timeout to ``None`` for no timeout, but with custom keys::
 
-    Example::
+        {% cache None "key" %}
+        ...
+        {% endcache %}
+    
+    Set timeout to ``del`` to delete cached value::
+    
+        {% cache 'del' key1 %}
+        ...
+        {% endcache %}
 
-        Considering we have render_form_field and render_submit macros.
+    Considering we have ``render_form_field`` and ``render_submit`` macros::
+    
         {% cache 60*5 'myform' %}
         <div>
             <form>
-            {% render_form_field form.username %}
-            {% render_submit %}
+            {% render_form_field(form.username) %}
+            {% render_submit() %}
             </form>
         </div>
         {% endcache %}
