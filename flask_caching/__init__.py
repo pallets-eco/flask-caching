@@ -416,8 +416,9 @@ class Cache(object):
 
             def _make_cache_key(args, kwargs, use_request):
                 if callable(key_prefix):
-                    cache_key = key_prefix()
-                elif '%s' in key_prefix:
+                    key_prefix = key_prefix()
+                
+                if '%s' in key_prefix:
                     if use_request:
                         cache_key = key_prefix % request.path
                     else:
