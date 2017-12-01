@@ -43,7 +43,7 @@ You may also set up your ``Cache`` instance later at configuration time using
     cache.init_app(app)
 
 You may also provide an alternate configuration dictionary, useful if there will
-be multiple ``Cache`` instances each with a different backend.::
+be multiple ``Cache`` instances each with a different backend::
 
     #: Method A: During instantiation of class
     cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -57,7 +57,7 @@ Caching View Functions
 ----------------------
 
 To cache view functions you will use the :meth:`~Cache.cached` decorator.
-This decorator will use request.path by default for the cache_key.::
+This decorator will use request.path by default for the cache_key::
 
     @app.route("/")
     @cache.cached(timeout=50)
@@ -91,7 +91,7 @@ non-view related functions. The only stipulation is that you replace the
 Keys control what should be fetched from the cache. If, for example, a key
 does not exist in the cache, a new key-value entry will be created in the
 cache. Otherwise the the value (i.e. the cached result) of the key will be
-returned.::
+returned::
 
     @cache.cached(timeout=50, key_prefix='all_comments')
     def get_all_comments():
@@ -140,7 +140,7 @@ every time this information is needed you might do something like the following:
     cache key.
 
     For example, an sqlalchemy person object that returns the database id as
-    part of the unique identifier.::
+    part of the unique identifier::
 
         class Person(db.Model):
             def __repr__(self):
@@ -155,7 +155,7 @@ Deleting memoize cache
 You might need to delete the cache on a per-function bases. Using the above
 example, lets say you change the users permissions and assign them to a role,
 but now you need to re-calculate if they have certain memberships or not.
-You can do this with the :meth:`~Cache.delete_memoized` function.::
+You can do this with the :meth:`~Cache.delete_memoized` function::
 
     cache.delete_memoized(user_has_membership)
 
@@ -183,17 +183,21 @@ Usage::
     ...
     {% endcache %}
 
-By default the value of "path to template file" + "block start line" is used as cache key.
-Also key name can be set manually. Keys are concated together into a single string.
-that can be used to avoid the same block evaluating in different templates.
+By default, the value of "path to template file" + "block start line" is used as the cache key.
+Also, the key name can be set manually. Keys are concatenated together into a single string, that 
+can be used to avoid the same block evaluating in different templates.
 
-Set the timeout to None for no timeout, but with custom keys::
+Set the timeout to ``None`` for no timeout, but with custom keys::
 
-    {% cache None "key" %}...
+    {% cache None "key" %}
+    ...
+    {% endcache %}
 
-Set timeout to "del" to delete cached value::
+Set timeout to ``del`` to delete cached value::
 
-    {% cache 'del' %}...
+    {% cache 'del' key1 %}
+    ...
+    {% endcache %}
 
 If keys are provided, you may easily generate the template fragment key and
 delete it from outside of the template context::
@@ -202,14 +206,13 @@ delete it from outside of the template context::
     key = make_template_fragment_key("key1", vary_on=["key2", "key3"])
     cache.delete(key)
 
-Example::
+Considering we have ``render_form_field`` and ``render_submit`` macros::
 
-    Considering we have render_form_field and render_submit macroses.
     {% cache 60*5 %}
     <div>
         <form>
-        {% render_form_field form.username %}
-        {% render_submit %}
+        {% render_form_field(form.username) %}
+        {% render_submit() %}
         </form>
     </div>
     {% endcache %}
