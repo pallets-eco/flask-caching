@@ -666,10 +666,10 @@ class Cache(object):
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
 
-                cache_key = decorated_function.make_cache_key(
-                    f, *args, **kwargs
-                )
                 try:
+                    cache_key = decorated_function.make_cache_key(
+                        f, *args, **kwargs
+                    )
 
                     if callable(forced_update) and forced_update() is True:
                         rv = None
