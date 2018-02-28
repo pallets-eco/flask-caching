@@ -357,8 +357,6 @@ class Cache(object):
                     else:
                         rv = self.cache.get(cache_key)
                 except Exception:
-                    if current_app.debug:
-                        raise
                     logger.exception("Exception possibly due to "
                                      "cache backend.")
                     return f(*args, **kwargs)
@@ -371,8 +369,6 @@ class Cache(object):
                             timeout=decorated_function.cache_timeout
                         )
                     except Exception:
-                        if current_app.debug:
-                            raise
                         logger.exception("Exception possibly due to "
                                          "cache backend.")
                 return rv
