@@ -666,6 +666,7 @@ class Cache(object):
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
 
+
                 try:
                     cache_key = decorated_function.make_cache_key(
                         f, *args, **kwargs
@@ -676,8 +677,6 @@ class Cache(object):
                     else:
                         rv = self.cache.get(cache_key)
                 except Exception:
-                    if current_app.debug:
-                        raise
                     logger.exception("Exception possibly due to "
                                      "cache backend.")
                     return f(*args, **kwargs)
@@ -690,8 +689,6 @@ class Cache(object):
                             timeout=decorated_function.cache_timeout
                         )
                     except Exception:
-                        if current_app.debug:
-                            raise
                         logger.exception("Exception possibly due to "
                                          "cache backend.")
                 return rv
