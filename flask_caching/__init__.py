@@ -669,20 +669,31 @@ class Cache(object):
                 cache_key = decorated_function.make_cache_key(
                     f, *args, **kwargs
                 )
+                try:
 
-                if callable(forced_update) and forced_update() is True:
-                    rv = None
-                else:
-                    rv = self.cache.get(cache_key)
+                    if callable(forced_update) and forced_update() is True:
+                        rv = None
+                    else:
+                        rv = self.cache.get(cache_key)
+                except Exception:
+                    if current_app.debug:
+                        raise
+                    logger.exception("Exception possibly due to "
+                                     "cache backend.")
+                    return f(*args, **kwargs)
 
                 if rv is None:
                     rv = f(*args, **kwargs)
-
-                    self.cache.set(
-                        cache_key, rv,
-                        timeout=decorated_function.cache_timeout
-                    )
-
+                    try:
+                        self.cache.set(
+                            cache_key, rv,
+                            timeout=decorated_function.cache_timeout
+                        )
+                    except Exception:
+                        if current_app.debug:
+                            raise
+                        logger.exception("Exception possibly due to "
+                                         "cache backend.")
                 return rv
 
             decorated_function.uncached = f
