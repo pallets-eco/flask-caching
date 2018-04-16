@@ -13,7 +13,7 @@ clean:
 	find . -name '__pycache__' -exec rm -rf {} +
 
 wheel:
-	python setup.py bdist_wheel
+	python setup.py sdist bdist_wheel
 
 upload:
 	twine upload dist/* --skip-existing

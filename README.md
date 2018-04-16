@@ -16,6 +16,10 @@ extension.
 Setup
 -----
 
+Flask-Caching is available on PyPI and can be installed with:
+
+    pip install flask-caching
+
 The Cache Extension can either be initialized directly:
 
 ```python

@@ -21,15 +21,15 @@
         {% cache None "key" %}
         ...
         {% endcache %}
-    
+
     Set timeout to ``del`` to delete cached value::
-    
+
         {% cache 'del' key1 %}
         ...
         {% endcache %}
 
     Considering we have ``render_form_field`` and ``render_submit`` macros::
-    
+
         {% cache 60*5 'myform' %}
         <div>
             <form>

@@ -17,7 +17,6 @@ import string
 import uuid
 import warnings
 from collections import OrderedDict
-from operator import itemgetter
 
 from werkzeug.utils import import_string
 from flask import request, current_app, url_for
@@ -666,7 +665,6 @@ class Cache(object):
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
-
 
                 try:
                     cache_key = decorated_function.make_cache_key(

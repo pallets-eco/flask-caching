@@ -12,10 +12,10 @@ from werkzeug.contrib.cache import (NullCache, SimpleCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache,
                                     RedisCache)
 try:
-  from werkzeug.contrib.cache import UWSGICache
-  has_UWSGICache = True
+    from werkzeug.contrib.cache import UWSGICache
+    has_UWSGICache = True
 except ImportError:
-  has_UWSGICache = False
+    has_UWSGICache = False
 
 from .clients import SASLMemcachedCache, SpreadSASLMemcachedCache
 
@@ -72,7 +72,8 @@ def redis(app, config, args, kwargs):
 
 def uwsgi(app, config, args, kwargs):
     if not has_UWSGICache:
-        raise NotImplementedError('UWSGICache backend is not available, you should upgrade werkzeug module')
+        raise NotImplementedError("UWSGICache backend is not available, "
+                                  "you should upgrade werkzeug module.")
     # The name of the caching instance to connect to, for
     # example: mycache@localhost:3031, defaults to an empty string, which
     # means uWSGI will cache in the local instance. If the cache is in the
