@@ -498,3 +498,45 @@ def test_memoize_kwargs_to_args(app, cache):
         assert (args == expected)
         args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, d='bar', c='foo')
         assert (args == expected)
+
+
+def test_memoize_when_using_args_unpacking(app, cache):
+    with app.test_request_context():
+
+        @cache.memoize()
+        def big_foo(*args):
+            return sum(args) + random.randrange(0, 100000)
+
+        result_a = big_foo(1, 2)
+        result_b = big_foo(1, 3)
+
+        assert big_foo(1, 2) == result_a
+        assert big_foo(1, 3) == result_b
+        assert big_foo(1, 2) != result_b
+        assert big_foo(1, 3) != result_a
+
+        cache.delete_memoized(big_foo)
+
+        assert big_foo(1, 2) != result_a
+        assert big_foo(1, 3) != result_b
+
+
+def test_memoize_when_using_variable_mix_args_unpacking(app, cache):
+    with app.test_request_context():
+
+        @cache.memoize()
+        def big_foo(a, b, *args, **kwargs):
+            return sum([a, b]) + sum(args) + sum(kwargs.values()) + random.randrange(0, 100000)
+
+        result_a = big_foo(1, 2, 3, 4, x=2, y=5)
+        result_b = big_foo(4, 7, 7, 2, x=1, y=4)
+
+        assert big_foo(1, 2, 3, 4, x=2, y=5) == result_a
+        assert big_foo(4, 7, 7, 2, x=1, y=4) == result_b
+        assert big_foo(1, 2, 3, 4, x=2, y=5) != result_b
+        assert big_foo(4, 7, 7, 2, x=1, y=4) != result_a
+
+        cache.delete_memoized(big_foo)
+
+        assert big_foo(1, 2, 3, 4, x=2, y=5) != result_a
+        assert big_foo(4, 7, 7, 2, x=1, y=4) != result_b

@@ -576,6 +576,7 @@ class Cache(object):
 
             new_args.append(arg)
 
+        new_args.extend(args[len(arg_names):])
         return tuple(new_args), OrderedDict(sorted(
             (k, v) for k, v in iteritems(kwargs) if k in kw_keys_remaining
         ))
