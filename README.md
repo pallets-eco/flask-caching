@@ -16,6 +16,11 @@ extension.
 Setup
 -----
 
+Installation:
+```shell
+pip install Flask-Caching
+```
+
 The Cache Extension can either be initialized directly:
 
 ```python
