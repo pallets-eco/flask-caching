@@ -1,6 +1,22 @@
 Changelog
 ---------
 
+Version 1.4.0 2018-04-16
+````````````````````````
+
+- Fix logic for creating key for var args in memoize.
+  PR `#70 <https://github.com/sh4nks/flask-caching/pull/70>`_.
+- Allow older Werkzeug versions by making the UWSGICache backend conditional.
+  PR `#55 <https://github.com/sh4nks/flask-caching/pull/55>`_.
+- Some documentation improvements.
+  PR `#48 <https://github.com/sh4nks/flask-caching/pull/48>`_,
+  `#51 <https://github.com/sh4nks/flask-caching/pull/51>`_,
+  `#56 <https://github.com/sh4nks/flask-caching/pull/56>`_,
+  `#67 <https://github.com/sh4nks/flask-caching/pull/67>`_.
+- Some CI improvements.
+  PR `#49 <https://github.com/sh4nks/flask-caching/pull/49>`_,
+  `#50 <https://github.com/sh4nks/flask-caching/pull/50>`_.
+
 Version 1.3.3 2017-06-25
 ````````````````````````
 
