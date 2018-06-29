@@ -1,5 +1,6 @@
 include LICENSE CHANGES CONTRIBUTORS requirements.txt tox.ini
 include test_cache.py test_template.html
+include tests/*.py
 graft docs *
 recursive-exclude docs *.pyc
 recursive-exclude docs *.pyo
