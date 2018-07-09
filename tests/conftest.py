@@ -38,7 +38,7 @@ class CacheRedisTestCase(CacheTestCase):
         }
         cache = Cache()
         cache.init_app(self.app, config=config)
-        from werkzeug.contrib.cache import RedisCache
+        from flask_caching.backends.cache import RedisCache
         assert isinstance(self.app.extensions['cache'][cache], RedisCache)
         rconn = self.app.extensions['cache'][cache] \
                     ._client.connection_pool.get_connection('foo')

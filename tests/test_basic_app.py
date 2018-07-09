@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
-from werkzeug.contrib.cache import SimpleCache
+from flask_caching.backends.cache import SimpleCache
 from flask_caching import Cache
 
 
@@ -22,14 +22,14 @@ def test_dict_config(app):
 def test_dict_config_initapp(app):
     cache = Cache()
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
-    from werkzeug.contrib.cache import SimpleCache
+    from flask_caching.backends.cache import SimpleCache
     assert isinstance(app.extensions['cache'][cache], SimpleCache)
 
 
 def test_dict_config_both(app):
     cache = Cache(config={'CACHE_TYPE': 'null'})
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
-    from werkzeug.contrib.cache import SimpleCache
+    from flask_caching.backends.cache import SimpleCache
     assert isinstance(app.extensions['cache'][cache], SimpleCache)
 
 
