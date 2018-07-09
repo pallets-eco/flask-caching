@@ -8,11 +8,11 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from werkzeug.contrib.cache import (NullCache, SimpleCache, MemcachedCache,
+from flask_caching.backends.cache import (NullCache, SimpleCache, MemcachedCache,
                                     GAEMemcachedCache, FileSystemCache,
                                     RedisCache)
 try:
-    from werkzeug.contrib.cache import UWSGICache
+    from flask_caching.backends.cache import UWSGICache
     has_UWSGICache = True
 except ImportError:
     has_UWSGICache = False

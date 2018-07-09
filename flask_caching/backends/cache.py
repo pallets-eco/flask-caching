@@ -41,7 +41,7 @@
     from the cache module and instantiate it.  Then you can start working
     with that object:
 
-    >>> from werkzeug.contrib.cache import SimpleCache
+    >>> from flask_caching.backends.cache import SimpleCache
     >>> c = SimpleCache()
     >>> c.set("foo", "value")
     >>> c.get("foo")

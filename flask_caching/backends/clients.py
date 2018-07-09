@@ -10,7 +10,7 @@
     :license: BSD, see LICENSE for more details.
 """
 import pickle
-from werkzeug.contrib.cache import BaseCache, MemcachedCache
+from flask_caching.backends.cache import BaseCache, MemcachedCache
 
 from flask_caching._compat import PY2, range_type
 
