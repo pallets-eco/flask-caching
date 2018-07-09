@@ -9,3 +9,4 @@ dist/
 .idea/*
 .coverage
 .cache
+.xprocess
