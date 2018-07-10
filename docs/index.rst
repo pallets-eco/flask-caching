@@ -408,7 +408,7 @@ Relevant configuration values
 - CACHE_MEMCACHED_SERVERS
 
 
-.. note:: Flask-Cached does not pass additional configuration options
+.. note:: Flask-Caching does not pass additional configuration options
    to memcached backends. To add additional configuration to these caches,
    directly set the configuration options on the object after instantiation::
 
