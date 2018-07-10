@@ -5,9 +5,9 @@ Flask-Caching
 
 Flask-Caching is an extension to `Flask`_ that adds caching support for
 various backends to any Flask application. Besides providing support for all
-of `werkzeug`_'s supported caching backends through a uniformed API,
+`werkzeug`_'s original caching backends through a uniformed API,
 it is also possible to develop your own caching backend by subclassing
-:class:`werkzeug.contrib.cache.BaseCache` class.
+:class:`flask_caching.backends.cache.BaseCache` class.
 
 
 Installation
@@ -184,7 +184,7 @@ Usage::
     {% endcache %}
 
 By default, the value of "path to template file" + "block start line" is used as the cache key.
-Also, the key name can be set manually. Keys are concatenated together into a single string, that 
+Also, the key name can be set manually. Keys are concatenated together into a single string, that
 can be used to avoid the same block evaluating in different templates.
 
 Set the timeout to ``None`` for no timeout, but with custom keys::
@@ -266,10 +266,9 @@ The following configuration values exist for Flask-Caching:
                                 be imported and instantiated. It is
                                 assumed that the import object is a
                                 function that will return a cache
-                                object that adheres to the werkzeug cache
-                                API.
+                                object that adheres to the cache API.
 
-                                For werkzeug.contrib.cache objects, you
+                                For flask_caching.backends.cache objects, you
                                 do not need to specify the entire
                                 import string, just one of the following
                                 names.
@@ -279,8 +278,8 @@ The following configuration values exist for Flask-Caching:
                                 * **null**: NullCache (default)
                                 * **simple**: SimpleCache
                                 * **filesystem**: FileSystemCache
-                                * **redis**: RedisCache (Werkzeug >= 0.7 and redis required)
-                                * **uwsgi**: UWSGICache (Werkzeug >= 0.12 and uwsgi required)
+                                * **redis**: RedisCache (redis required)
+                                * **uwsgi**: UWSGICache (uwsgi required)
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
                                 * **gaememcached**: GAEMemcachedCache
                                 * **saslmemcached**: SASLMemcachedCache (pylibmc required)
@@ -409,7 +408,7 @@ Relevant configuration values
 - CACHE_MEMCACHED_SERVERS
 
 
-.. note:: Werkzeug does not pass additional configuration options
+.. note:: Flask-Caching does not pass additional configuration options
    to memcached backends. To add additional configuration to these caches,
    directly set the configuration options on the object after instantiation::
 
@@ -450,7 +449,7 @@ Relevant configuration values
 - CACHE_MEMCACHED_PASSWORD
 - CACHE_OPTIONS
 
-.. note:: Since the SASL Memcached cache types do not use the werkzeug built-in cache
+.. note:: Since the SASL Memcached cache types do not use werkzeug's original built-in cache
    infrastructure, they can be configured with CACHE_OPTIONS.
 
 .. versionadded:: 0.10
@@ -485,7 +484,7 @@ arguments.
 * ``kwargs``
 
 Your custom cache object must also subclass the
-:class:`werkzeug.contrib.cache.BaseCache` class. Flask-Caching will make sure
+:class:`flask_caching.backends.cache.BaseCache` class. Flask-Caching will make sure
 that ``threshold`` is already included in the kwargs options dictionary since
 it is common to all BaseCache classes.
 
