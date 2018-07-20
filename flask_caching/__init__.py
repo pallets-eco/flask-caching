@@ -419,12 +419,7 @@ class Cache(object):
 
 
             def _make_cache_key_request_body():
-                """Create keys based on request body.
-
-                Produces the same cache key regardless of argument order, e.g.,
-                both `?limit=10&offset=20` and `?offset=20&limit=10` will
-                always produce the same exact cache key.
-                """
+                """Create keys based on request body."""
 
                 # now hash the request body so it can be
                 # used as a key for cache.
