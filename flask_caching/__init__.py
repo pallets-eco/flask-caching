@@ -265,7 +265,7 @@ class Cache(object):
         return self.cache.get_dict(*args, **kwargs)
 
     def cached(self, timeout=None, key_prefix='view/%s', unless=None,
-               forced_update=None, query_string=False):
+               forced_update=None, query_string=False, hash_method=hashlib.md5):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
@@ -406,10 +406,10 @@ class Cache(object):
                     )
                 )
                 # ... now hash the sorted (key, value) tuple so it can be
-                # used as a key for cache. Turn them into bytes so that md5
-                # will accept them
+                # used as a key for cache. Turn them into bytes so that the
+                # hash function will accept them
                 args_as_bytes = str(args_as_sorted_tuple).encode()
-                hashed_args = str(hashlib.md5(args_as_bytes).hexdigest())
+                hashed_args = str(hash_method(args_as_bytes).hexdigest())
                 cache_key = request.path + hashed_args
                 return cache_key
 
@@ -487,7 +487,7 @@ class Cache(object):
         return fname, ''.join(version_data_list)
 
     def _memoize_make_cache_key(self, make_name=None, timeout=None,
-                                forced_update=False):
+                                forced_update=False, hash_method=hashlib.md5):
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f, *args, **kwargs):
@@ -509,7 +509,7 @@ class Cache(object):
 
             updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
 
-            cache_key = hashlib.md5()
+            cache_key = hash_method()
             cache_key.update(updated.encode('utf-8'))
             cache_key = base64.b64encode(cache_key.digest())[:16]
             cache_key = cache_key.decode('utf-8')
@@ -600,7 +600,7 @@ class Cache(object):
         return bypass_cache
 
     def memoize(self, timeout=None, make_name=None, unless=None,
-                forced_update=None):
+                forced_update=None, hash_method=hashlib.md5):
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
 
@@ -700,7 +700,7 @@ class Cache(object):
             decorated_function.cache_timeout = timeout
             decorated_function.make_cache_key = self._memoize_make_cache_key(
                 make_name=make_name, timeout=decorated_function,
-                forced_update=forced_update
+                forced_update=forced_update, hash_method=hash_method
             )
             decorated_function.delete_memoized = \
                 lambda: self.delete_memoized(f)

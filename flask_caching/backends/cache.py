@@ -61,7 +61,7 @@ import re
 import errno
 import tempfile
 import platform
-from hashlib import md5
+import hashlib
 from time import time
 try:
     import cPickle as pickle
@@ -707,11 +707,12 @@ class FileSystemCache(BaseCache):
     _fs_count_file = '__wz_cache_count'
 
     def __init__(self, cache_dir, threshold=500, default_timeout=300,
-                 mode=0o600):
+                 mode=0o600, hash_method=hashlib.md5):
         BaseCache.__init__(self, default_timeout)
         self._path = cache_dir
         self._threshold = threshold
         self._mode = mode
+        self._hash_method = hash_method
 
         try:
             os.makedirs(self._path)
@@ -783,7 +784,7 @@ class FileSystemCache(BaseCache):
     def _get_filename(self, key):
         if isinstance(key, text_type):
             key = key.encode('utf-8')  # XXX unicode review
-        hash = md5(key).hexdigest()
+        hash = self._hash_method(key).hexdigest()
         return os.path.join(self._path, hash)
 
     def get(self, key):

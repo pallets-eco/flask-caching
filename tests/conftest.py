@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import hashlib
 import os
 
 import flask
@@ -85,7 +86,13 @@ def app(request):
     app.config["CACHE_TYPE"] = "simple"
     return app
 
-
 @pytest.fixture
-def cache(app):
+def cache(app, hash_method):
     return fsc.Cache(app)
+
+@pytest.fixture(params=[hashlib.md5, hashlib.sha256], ids=[
+    'md5',
+    'sha256'
+])
+def hash_method(request):
+    return request.param

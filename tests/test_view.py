@@ -3,9 +3,9 @@ import time
 from flask import request
 
 
-def test_cached_view(app, cache):
+def test_cached_view(app, cache, hash_method):
     @app.route('/')
-    @cache.cached(2)
+    @cache.cached(2, hash_method=hash_method)
     def cached_view():
         return str(time.time())
 
@@ -26,14 +26,14 @@ def test_cached_view(app, cache):
     assert the_time != rv.data.decode('utf-8')
 
 
-def test_cached_view_unless(app, cache):
+def test_cached_view_unless(app, cache, hash_method):
     @app.route('/a')
-    @cache.cached(5, unless=lambda: True)
+    @cache.cached(5, unless=lambda: True, hash_method=hash_method)
     def non_cached_view():
         return str(time.time())
 
     @app.route('/b')
-    @cache.cached(5, unless=lambda: False)
+    @cache.cached(5, unless=lambda: False, hash_method=hash_method)
     def cached_view():
         return str(time.time())
 
@@ -56,11 +56,11 @@ def test_cached_view_unless(app, cache):
     assert the_time == rv.data.decode('utf-8')
 
 
-def test_cached_view_forced_update(app, cache):
+def test_cached_view_forced_update(app, cache, hash_method):
     forced_update = False
 
     @app.route('/a')
-    @cache.cached(5, forced_update=lambda: forced_update)
+    @cache.cached(5, forced_update=lambda: forced_update, hash_method=hash_method)
     def view():
         return str(time.time())
 
@@ -83,9 +83,9 @@ def test_cached_view_forced_update(app, cache):
     assert new_time == rv.data.decode('utf-8')
 
 
-def test_generate_cache_key_from_different_view(app, cache):
+def test_generate_cache_key_from_different_view(app, cache, hash_method):
     @app.route('/cake/<flavor>')
-    @cache.cached()
+    @cache.cached(hash_method=hash_method)
     def view_cake(flavor):
         # What's the cache key for apple cake? thanks for making me hungry
         view_cake.cake_cache_key = view_cake.make_cache_key('apple')
@@ -95,7 +95,7 @@ def test_generate_cache_key_from_different_view(app, cache):
     view_cake.cake_cache_key = ''
 
     @app.route('/pie/<flavor>')
-    @cache.cached()
+    @cache.cached(hash_method=hash_method)
     def view_pie(flavor):
         # What's the cache key for apple cake?
         view_pie.cake_cache_key = view_cake.make_cache_key('apple')
@@ -114,9 +114,9 @@ def test_generate_cache_key_from_different_view(app, cache):
 
 
 # rename/move to seperate module?
-def test_cache_key_property(app, cache):
+def test_cache_key_property(app, cache, hash_method):
     @app.route('/')
-    @cache.cached(5)
+    @cache.cached(5, hash_method=hash_method)
     def cached_view():
         return str(time.time())
 
@@ -133,9 +133,9 @@ def test_cache_key_property(app, cache):
         assert the_time == cache_data
 
 
-def test_make_cache_key_function_property(app, cache):
+def test_make_cache_key_function_property(app, cache, hash_method):
     @app.route('/<foo>/<bar>')
-    @cache.memoize(5)
+    @cache.memoize(5, hash_method=hash_method)
     def cached_view(foo, bar):
         return str(time.time())
 
@@ -156,14 +156,14 @@ def test_make_cache_key_function_property(app, cache):
     assert the_time != different_data
 
 
-def test_cache_timeout_property(app, cache):
+def test_cache_timeout_property(app, cache, hash_method):
     @app.route('/')
-    @cache.memoize(2)
+    @cache.memoize(2, hash_method=hash_method)
     def cached_view1():
         return str(time.time())
 
     @app.route('/<foo>/<bar>')
-    @cache.memoize(4)
+    @cache.memoize(4, hash_method=hash_method)
     def cached_view2(foo, bar):
         return str(time.time())
 
@@ -202,7 +202,7 @@ def test_cache_timeout_property(app, cache):
     assert time2 != tc.get('/a/b').data.decode('utf-8')
 
 
-def test_generate_cache_key_from_query_string(app, cache):
+def test_generate_cache_key_from_query_string(app, cache, hash_method):
     """Test the _make_cache_key_query_string() cache key maker.
 
     Create three requests to verify that the same query string
@@ -225,7 +225,7 @@ def test_generate_cache_key_from_query_string(app, cache):
     """
 
     @app.route('/works')
-    @cache.cached(query_string=True)
+    @cache.cached(query_string=True, hash_method=hash_method)
     def view_works():
         return str(time.time())
 
@@ -258,7 +258,7 @@ def test_generate_cache_key_from_query_string(app, cache):
     # don't yield the same cache!
     assert not third_time == second_time
 
-def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
+def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache, hash_method):
     """Test the _make_cache_key_query_string() cache key maker's support for
     repeated query paramaters
 
@@ -267,7 +267,7 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
     """
 
     @app.route('/works')
-    @cache.cached(query_string=True)
+    @cache.cached(query_string=True, hash_method=hash_method)
     def view_works():
         flatted_values = sum(request.args.listvalues(), [])
         return str(sorted(flatted_values)) + str(time.time())
