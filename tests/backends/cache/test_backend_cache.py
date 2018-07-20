@@ -162,8 +162,8 @@ class TestSimpleCache(GenericCacheTests):
 
 class TestFileSystemCache(GenericCacheTests):
     @pytest.fixture
-    def make_cache(self, tmpdir):
-        return lambda **kw: cache.FileSystemCache(cache_dir=str(tmpdir), **kw)
+    def make_cache(self, tmpdir, hash_method):
+        return lambda **kw: cache.FileSystemCache(cache_dir=str(tmpdir), hash_method=hash_method, **kw)
 
     def test_filesystemcache_prune(self, make_cache):
         THRESHOLD = 13
