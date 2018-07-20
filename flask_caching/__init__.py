@@ -265,7 +265,7 @@ class Cache(object):
         return self.cache.get_dict(*args, **kwargs)
 
     def cached(self, timeout=None, key_prefix='view/%s', unless=None,
-               forced_update=None, query_string=False):
+               forced_update=None, query_string=False, request_body=False):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
@@ -336,6 +336,8 @@ class Cache(object):
                              were passed in a different order. See
                              _make_cache_key_query_string() for more
                              details.
+        :param request_body: Default False. When True, the cache key used
+                          will be the result of hashing the request body.
         """
         def decorator(f):
             @functools.wraps(f)
@@ -347,6 +349,8 @@ class Cache(object):
                 try:
                     if query_string:
                         cache_key = _make_cache_key_query_string()
+                    elif request_body:
+                        cache_key = _make_cache_key_request_body()
                     else:
                         cache_key = _make_cache_key(args, kwargs,
                                                     use_request=True)
@@ -411,6 +415,22 @@ class Cache(object):
                 args_as_bytes = str(args_as_sorted_tuple).encode()
                 hashed_args = str(hashlib.md5(args_as_bytes).hexdigest())
                 cache_key = request.path + hashed_args
+                return cache_key
+
+
+            def _make_cache_key_request_body():
+                """Create keys based on request body.
+
+                Produces the same cache key regardless of argument order, e.g.,
+                both `?limit=10&offset=20` and `?offset=20&limit=10` will
+                always produce the same exact cache key.
+                """
+
+                # now hash the request body so it can be
+                # used as a key for cache.
+                request_body = request.get_data(as_text=False)
+                hashed_body = str(hashlib.md5(request_body).hexdigest())
+                cache_key = request.path + hashed_body
                 return cache_key
 
             def _make_cache_key(args, kwargs, use_request):
