@@ -28,6 +28,9 @@ __version__ = '1.4.0'
 logger = logging.getLogger(__name__)
 
 TEMPLATE_FRAGMENT_KEY_TEMPLATE = '_template_fragment_cache_%s%s'
+SUPPORTED_HASH_FUNCTIONS = [
+    hashlib.sha1, hashlib.sha224, hashlib.sha256, hashlib.sha384, hashlib.sha512, hashlib.md5
+]
 
 # Used to remove control characters and whitespace from cache keys.
 valid_chars = set(string.ascii_letters + string.digits + '_.')

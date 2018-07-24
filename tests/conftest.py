@@ -86,13 +86,12 @@ def app(request):
     app.config["CACHE_TYPE"] = "simple"
     return app
 
+
 @pytest.fixture
-def cache(app, hash_method):
+def cache(app):
     return fsc.Cache(app)
 
-@pytest.fixture(params=[hashlib.md5, hashlib.sha256], ids=[
-    'md5',
-    'sha256'
-])
+@pytest.fixture(params=[method for method in fsc.SUPPORTED_HASH_FUNCTIONS], ids=[method.__name__ for method in fsc.SUPPORTED_HASH_FUNCTIONS])
 def hash_method(request):
     return request.param
+

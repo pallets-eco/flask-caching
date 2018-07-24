@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import hashlib
 import sys
 import random
 import time
@@ -7,7 +6,31 @@ import pytest
 from flask_caching import Cache, function_namespace
 
 
-def test_memoize(app, cache, hash_method):
+def test_memoize(app, cache):
+    with app.test_request_context():
+        @cache.memoize(3)
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+
+        time.sleep(1)
+
+        assert big_foo(5, 2) == result
+
+        result2 = big_foo(5, 3)
+        assert result2 != result
+
+        time.sleep(3)
+
+        assert big_foo(5, 2) != result
+
+        time.sleep(1)
+
+        assert big_foo(5, 3) != result2
+
+
+def test_memoize_hashes(app, cache, hash_method):
     with app.test_request_context():
         @cache.memoize(3, hash_method=hash_method)
         def big_foo(a, b):
@@ -31,12 +54,12 @@ def test_memoize(app, cache, hash_method):
         assert big_foo(5, 3) != result2
 
 
-def test_memoize_timeout(app, hash_method):
+def test_memoize_timeout(app):
     app.config['CACHE_DEFAULT_TIMEOUT'] = 1
     cache = Cache(app)
 
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
 
@@ -46,10 +69,10 @@ def test_memoize_timeout(app, hash_method):
         assert big_foo(5, 2) != result
 
 
-def test_memoize_annotated(app, cache, hash_method):
+def test_memoize_annotated(app, cache):
     if sys.version_info >= (3, 0):
         with app.test_request_context():
-            @cache.memoize(50, hash_method=hash_method)
+            @cache.memoize(50)
             def big_foo_annotated(a, b):
                 return a + b + random.randrange(0, 100000)
             big_foo_annotated.__annotations__ = {'a': int, 'b': int, 'return': int}
@@ -61,27 +84,27 @@ def test_memoize_annotated(app, cache, hash_method):
             assert big_foo_annotated(5, 2) == result
 
 
-def test_memoize_utf8_arguments(app, cache, hash_method):
+def test_memoize_utf8_arguments(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b):
             return "{}-{}".format(a, b)
 
         big_foo("æøå", "chars")
 
 
-def test_memoize_unicode_arguments(app, cache, hash_method):
+def test_memoize_unicode_arguments(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b):
             return u"{}-{}".format(a, b)
 
         big_foo(u"æøå", "chars")
 
 
-def test_memoize_delete(app, cache, hash_method):
+def test_memoize_delete(app, cache):
     with app.test_request_context():
-        @cache.memoize(5, hash_method=hash_method)
+        @cache.memoize(5)
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
 
@@ -101,9 +124,9 @@ def test_memoize_delete(app, cache, hash_method):
         assert big_foo(5, 3) != result2
 
 
-def test_memoize_no_timeout_delete(app, cache, hash_method):
+def test_memoize_no_timeout_delete(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
 
@@ -123,9 +146,9 @@ def test_memoize_no_timeout_delete(app, cache, hash_method):
         cache.delete_memoized(big_foo, 5, 1)
 
 
-def test_memoize_verhash_delete(app, cache, hash_method):
+def test_memoize_verhash_delete(app, cache):
     with app.test_request_context():
-        @cache.memoize(5, hash_method=hash_method)
+        @cache.memoize(5)
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
 
@@ -151,9 +174,9 @@ def test_memoize_verhash_delete(app, cache, hash_method):
         assert cache.get(version_key) is not None
 
 
-def test_memoize_annotated_delete(app, cache, hash_method):
+def test_memoize_annotated_delete(app, cache):
     with app.test_request_context():
-        @cache.memoize(5, hash_method=hash_method)
+        @cache.memoize(5)
         def big_foo_annotated(a, b):
             return a + b + random.randrange(0, 100000)
 
@@ -181,9 +204,9 @@ def test_memoize_annotated_delete(app, cache, hash_method):
         assert cache.get(version_key) is not None
 
 
-def test_memoize_args(app, cache, hash_method):
+def test_memoize_args(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b):
             return sum(a) + sum(b) + random.randrange(0, 100000)
 
@@ -204,9 +227,9 @@ def test_memoize_args(app, cache, hash_method):
         cache.delete_memoized(big_foo, [3, 3], [1])
 
 
-def test_memoize_kwargs(app, cache, hash_method):
+def test_memoize_kwargs(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b=None):
             return a + sum(b.values()) + random.randrange(0, 100000)
 
@@ -222,9 +245,9 @@ def test_memoize_kwargs(app, cache, hash_method):
         assert big_foo(5, dict(three=3, four=4)) == result_b
 
 
-def test_memoize_kwargonly(app, cache, hash_method):
+def test_memoize_kwargonly(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a=None):
             if a is None:
                 a = 0
@@ -239,9 +262,9 @@ def test_memoize_kwargonly(app, cache, hash_method):
         assert big_foo(5) >= 5 and big_foo(5) < 6
 
 
-def test_memoize_arg_kwarg(app, cache, hash_method):
+def test_memoize_arg_kwarg(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def f(a, b, c=1):
             return a + b + c + random.randrange(0, 100000)
 
@@ -254,9 +277,9 @@ def test_memoize_arg_kwarg(app, cache, hash_method):
             f(1)
 
 
-def test_memoize_arg_kwarg_var_keyword(app, cache, hash_method):
+def test_memoize_arg_kwarg_var_keyword(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def f(a, b, c=1, **kwargs):
             return a + b + c + random.randrange(0, 100000) + sum(list(kwargs.values()))
 
@@ -272,8 +295,8 @@ def test_memoize_arg_kwarg_var_keyword(app, cache, hash_method):
             f(1)
 
 
-def test_memoize_classarg(app, cache, hash_method):
-    @cache.memoize(hash_method=hash_method)
+def test_memoize_classarg(app, cache):
+    @cache.memoize()
     def bar(a):
         return a.value + random.random()
 
@@ -298,12 +321,12 @@ def test_memoize_classarg(app, cache, hash_method):
     assert bar(adder2) == z
 
 
-def test_memoize_classfunc(app, cache, hash_method):
+def test_memoize_classfunc(app, cache):
     class Adder(object):
         def __init__(self, initial):
             self.initial = initial
 
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def add(self, b):
             return self.initial + b
 
@@ -316,13 +339,13 @@ def test_memoize_classfunc(app, cache, hash_method):
     assert adder1.add(3) != adder2.add(3)
 
 
-def test_memoize_classfunc_delete(app, cache, hash_method):
+def test_memoize_classfunc_delete(app, cache):
     with app.test_request_context():
         class Adder(object):
             def __init__(self, initial):
                 self.initial = initial
 
-            @cache.memoize(hash_method=hash_method)
+            @cache.memoize()
             def add(self, b):
                 return self.initial + b + random.random()
 
@@ -362,11 +385,11 @@ def test_memoize_classfunc_delete(app, cache, hash_method):
         #self.assertNotEqual(a4, a6)
 
 
-def test_memoize_classmethod_delete(app, cache, hash_method):
+def test_memoize_classmethod_delete(app, cache):
     with app.test_request_context():
         class Mock(object):
             @classmethod
-            @cache.memoize(5, hash_method=hash_method)
+            @cache.memoize(5)
             def big_foo(cls, a, b):
                 return a + b + random.randrange(0, 100000)
 
@@ -386,11 +409,11 @@ def test_memoize_classmethod_delete(app, cache, hash_method):
         assert Mock.big_foo(5, 3) != result2
 
 
-def test_memoize_classmethod_delete_with_args(app, cache, hash_method):
+def test_memoize_classmethod_delete_with_args(app, cache):
     with app.test_request_context():
         class Mock(object):
             @classmethod
-            @cache.memoize(5, hash_method=hash_method)
+            @cache.memoize(5)
             def big_foo(cls, a, b):
                 return a + b + random.randrange(0, 100000)
 
@@ -416,11 +439,11 @@ def test_memoize_classmethod_delete_with_args(app, cache, hash_method):
         assert Mock.big_foo(5, 3) == result2
 
 
-def test_memoize_forced_update(app, cache, hash_method):
+def test_memoize_forced_update(app, cache):
     with app.test_request_context():
         forced_update = False
 
-        @cache.memoize(5, forced_update=lambda: forced_update, hash_method=hash_method)
+        @cache.memoize(5, forced_update=lambda: forced_update)
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
 
@@ -437,9 +460,9 @@ def test_memoize_forced_update(app, cache, hash_method):
         assert big_foo(5, 2) == new_result
 
 
-def test_memoize_multiple_arg_kwarg_calls(app, cache, hash_method):
+def test_memoize_multiple_arg_kwarg_calls(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b, c=[1, 1], d=[1, 1]):
             return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
 
@@ -450,9 +473,9 @@ def test_memoize_multiple_arg_kwarg_calls(app, cache, hash_method):
         assert big_foo([5, 3, 2], [1], [3, 3], [3, 3]) == result_a
 
 
-def test_memoize_multiple_arg_kwarg_delete(app, cache, hash_method):
+def test_memoize_multiple_arg_kwarg_delete(app, cache):
     with app.test_request_context():
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b, c=[1, 1], d=[1, 1]):
             return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
 
@@ -501,10 +524,10 @@ def test_memoize_kwargs_to_args(app, cache):
         assert (args == expected)
 
 
-def test_memoize_when_using_args_unpacking(app, cache, hash_method):
+def test_memoize_when_using_args_unpacking(app, cache):
     with app.test_request_context():
 
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(*args):
             return sum(args) + random.randrange(0, 100000)
 
@@ -522,10 +545,10 @@ def test_memoize_when_using_args_unpacking(app, cache, hash_method):
         assert big_foo(1, 3) != result_b
 
 
-def test_memoize_when_using_variable_mix_args_unpacking(app, cache, hash_method):
+def test_memoize_when_using_variable_mix_args_unpacking(app, cache):
     with app.test_request_context():
 
-        @cache.memoize(hash_method=hash_method)
+        @cache.memoize()
         def big_foo(a, b, *args, **kwargs):
             return sum([a, b]) + sum(args) + sum(kwargs.values()) + random.randrange(0, 100000)
 
