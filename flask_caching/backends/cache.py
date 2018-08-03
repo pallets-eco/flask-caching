@@ -699,6 +699,8 @@ class FileSystemCache(BaseCache):
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
     :param mode: the file mode wanted for the cache files, default 0600
+    :param hash_method: Default hashlib.md5. The hash method used to
+                        generate the filename for cached results.
     """
 
     #: used for temporary files by the FileSystemCache

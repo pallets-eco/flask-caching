@@ -339,6 +339,9 @@ class Cache(object):
                              were passed in a different order. See
                              _make_cache_key_query_string() for more
                              details.
+        :param hash_method: Default hashlib.md5. The hash method used to
+                            generate the keys for cached results.
+
         """
         def decorator(f):
             @functools.wraps(f)
@@ -658,7 +661,8 @@ class Cache(object):
                               cache value will be updated regardless cache
                               is expired or not. Useful for background
                               renewal of cached functions.
-
+        :param hash_method: Default hashlib.md5. The hash method used to
+                            generate the keys for cached results.
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """
