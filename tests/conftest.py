@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import hashlib
 import os
 
 import flask
@@ -89,3 +90,8 @@ def app(request):
 @pytest.fixture
 def cache(app):
     return fsc.Cache(app)
+
+@pytest.fixture(params=[method for method in fsc.SUPPORTED_HASH_FUNCTIONS], ids=[method.__name__ for method in fsc.SUPPORTED_HASH_FUNCTIONS])
+def hash_method(request):
+    return request.param
+

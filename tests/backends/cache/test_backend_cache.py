@@ -8,6 +8,7 @@
     :copyright: (c) 2014 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+import hashlib
 import errno
 
 import pytest
@@ -164,6 +165,10 @@ class TestFileSystemCache(GenericCacheTests):
     @pytest.fixture
     def make_cache(self, tmpdir):
         return lambda **kw: cache.FileSystemCache(cache_dir=str(tmpdir), **kw)
+
+    def test_filesystemcache_hashes(self, make_cache, hash_method):
+        cache = make_cache(hash_method=hash_method)
+        self.test_count_file_accuracy(cache)
 
     def test_filesystemcache_prune(self, make_cache):
         THRESHOLD = 13

@@ -30,6 +30,30 @@ def test_memoize(app, cache):
         assert big_foo(5, 3) != result2
 
 
+def test_memoize_hashes(app, cache, hash_method):
+    with app.test_request_context():
+        @cache.memoize(3, hash_method=hash_method)
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+
+        time.sleep(1)
+
+        assert big_foo(5, 2) == result
+
+        result2 = big_foo(5, 3)
+        assert result2 != result
+
+        time.sleep(3)
+
+        assert big_foo(5, 2) != result
+
+        time.sleep(1)
+
+        assert big_foo(5, 3) != result2
+
+
 def test_memoize_timeout(app):
     app.config['CACHE_DEFAULT_TIMEOUT'] = 1
     cache = Cache(app)
