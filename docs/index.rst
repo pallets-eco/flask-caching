@@ -318,9 +318,14 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_REDIS_HOST``            A Redis server host. Used only for RedisCache.
 ``CACHE_REDIS_PORT``            A Redis server port. Default is 6379.
                                 Used only for RedisCache.
-``CACHE_REDIS_PASSWORD``        A Redis password for server. Used only for RedisCache.
+``CACHE_REDIS_PASSWORD``        A Redis password for server. Used only for RedisCache and
+                                RedisSentinelCache.
 ``CACHE_REDIS_DB``              A Redis db (zero-based number index). Default is 0.
-                                Used only for RedisCache.
+                                Used only for RedisCache and RedisSentinelCache.
+``CACHE_REDIS_SENTINELS``       A list or a tuple of Redis sentinel addresses. Used only for
+                                RedisSentinelCache.
+``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
+                                only for RedisSentinelCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
 ``CACHE_REDIS_URL``             URL to connect to Redis server.
@@ -390,6 +395,19 @@ Set ``CACHE_TYPE`` to ``redis`` to use this type.
 - CACHE_REDIS_DB
 - CACHE_OPTIONS
 - CACHE_REDIS_URL
+
+Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
+
+RedisSentinelCache
+``````````````````
+
+Set ``CACHE_TYPE`` to ``redissentinel`` to use this type.
+
+- CACHE_REDIS_SENTINELS
+- CACHE_REDIS_SENTINEL-MASTER
+- CACHE_REDIS_PASSWORD
+- CACHE_KEY_PREFIX
+- CACHE_REDIS_DB
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
