@@ -76,6 +76,7 @@ def redissentinel(app, config, args, kwargs):
         sentinels=config.get('CACHE_REDIS_SENTINELS', [('127.0.0.1', 26379)]),
         master=config.get('CACHE_REDIS_SENTINEL_MASTER', 'mymaster'),
         password=config.get('CACHE_REDIS_PASSWORD', None),
+        sentinel_password=config.get('CACHE_REDIS_SENTINEL_PASSWORD', None),
         key_prefix=config.get('CACHE_KEY_PREFIX', None),
         db=config.get('CACHE_REDIS_DB', 0)
     ))

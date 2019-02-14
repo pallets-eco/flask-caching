@@ -29,13 +29,19 @@ class RedisSentinelCache(RedisCache):
             raise ValueError('decode_responses is not supported by '
                              'RedisCache.')
 
-        if sentinels is None:
-            sentinels = [("127.0.0.1", 26379)]
+        sentinels = sentinels or [('127.0.0.1', 26379)]
+        sentinel_kwargs = {key[9:]: value
+                           for key, value in kwargs.items()
+                           if key.startswith('sentinel_')}
+        kwargs = {key[9:]: value
+                  for key, value in kwargs.items()
+                  if not key.startswith('sentinel_')}
 
         sentinel = redis.sentinel.Sentinel(
             sentinels=sentinels,
             password=password,
-            db=db, **kwargs)
+            db=db,
+            sentinel_kwargs=sentinel_kwargs, **kwargs)
 
         self._client = sentinel.master_for(master)
 
