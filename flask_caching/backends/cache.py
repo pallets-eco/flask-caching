@@ -574,10 +574,12 @@ class RedisCache(BaseCache):
             if kwargs.get('decode_responses', None):
                 raise ValueError('decode_responses is not supported by '
                                  'RedisCache.')
-            self._client = redis.Redis(host=host, port=port, password=password,
-                                       db=db, **kwargs)
+            client = redis.Redis(host=host, port=port, password=password,
+                                 db=db, **kwargs)
         else:
-            self._client = host
+            client = host
+
+        self._write_client = self._read_client = client
         self.key_prefix = key_prefix or ''
 
     def _normalize_timeout(self, timeout):
@@ -613,21 +615,21 @@ class RedisCache(BaseCache):
             return value
 
     def get(self, key):
-        return self.load_object(self._client.get(self.key_prefix + key))
+        return self.load_object(self._read_client.get(self.key_prefix + key))
 
     def get_many(self, *keys):
         if self.key_prefix:
             keys = [self.key_prefix + key for key in keys]
-        return [self.load_object(x) for x in self._client.mget(keys)]
+        return [self.load_object(x) for x in self._read_client.mget(keys)]
 
     def set(self, key, value, timeout=None):
         timeout = self._normalize_timeout(timeout)
         dump = self.dump_object(value)
         if timeout == -1:
-            result = self._client.set(name=self.key_prefix + key,
+            result = self._write_client.set(name=self.key_prefix + key,
                                       value=dump)
         else:
-            result = self._client.setex(name=self.key_prefix + key,
+            result = self._write_client.setex(name=self.key_prefix + key,
                                         value=dump, time=timeout)
         return result
 
@@ -635,15 +637,15 @@ class RedisCache(BaseCache):
         timeout = self._normalize_timeout(timeout)
         dump = self.dump_object(value)
         return (
-            self._client.setnx(name=self.key_prefix + key, value=dump) and
-            self._client.expire(name=self.key_prefix + key, time=timeout)
+            self._write_client.setnx(name=self.key_prefix + key, value=dump) and
+            self._write_client.expire(name=self.key_prefix + key, time=timeout)
         )
 
     def set_many(self, mapping, timeout=None):
         timeout = self._normalize_timeout(timeout)
         # Use transaction=False to batch without calling redis MULTI
         # which is not supported by twemproxy
-        pipe = self._client.pipeline(transaction=False)
+        pipe = self._write_client.pipeline(transaction=False)
 
         for key, value in _items(mapping):
             dump = self.dump_object(value)
@@ -655,33 +657,33 @@ class RedisCache(BaseCache):
         return pipe.execute()
 
     def delete(self, key):
-        return self._client.delete(self.key_prefix + key)
+        return self._write_client.delete(self.key_prefix + key)
 
     def delete_many(self, *keys):
         if not keys:
             return
         if self.key_prefix:
             keys = [self.key_prefix + key for key in keys]
-        return self._client.delete(*keys)
+        return self._write_client.delete(*keys)
 
     def has(self, key):
-        return self._client.exists(self.key_prefix + key)
+        return self._read_client.exists(self.key_prefix + key)
 
     def clear(self):
         status = False
         if self.key_prefix:
-            keys = self._client.keys(self.key_prefix + '*')
+            keys = self._read_client.keys(self.key_prefix + '*')
             if keys:
-                status = self._client.delete(*keys)
+                status = self._write_client.delete(*keys)
         else:
-            status = self._client.flushdb()
+            status = self._write_client.flushdb()
         return status
 
     def inc(self, key, delta=1):
-        return self._client.incr(name=self.key_prefix + key, amount=delta)
+        return self._write_client.incr(name=self.key_prefix + key, amount=delta)
 
     def dec(self, key, delta=1):
-        return self._client.decr(name=self.key_prefix + key, amount=delta)
+        return self._write_client.decr(name=self.key_prefix + key, amount=delta)
 
 
 class FileSystemCache(BaseCache):

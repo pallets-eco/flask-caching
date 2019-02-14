@@ -43,7 +43,8 @@ class RedisSentinelCache(RedisCache):
             db=db,
             sentinel_kwargs=sentinel_kwargs, **kwargs)
 
-        self._client = sentinel.master_for(master)
+        self._write_client = sentinel.master_for(master)
+        self._read_clients = sentinel.slave_for(master)
 
         self.key_prefix = key_prefix or ''
 
