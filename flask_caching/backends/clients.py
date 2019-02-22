@@ -18,7 +18,7 @@ from flask_caching._compat import PY2, range_type
 class RedisSentinelCache(RedisCache):
     def __init__(self, sentinels=None, master=None, password=None,
                  db=0, default_timeout=300, key_prefix=None, **kwargs):
-        BaseCache.__init__(self, default_timeout)
+        super(RedisSentinelCache, self).__init__(default_timeout)
 
         try:
             import redis.sentinel
