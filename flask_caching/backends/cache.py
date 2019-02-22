@@ -579,7 +579,7 @@ class RedisCache(BaseCache):
         else:
             client = host
 
-        self._write_client = self._read_client = client
+        self._write_client = self._read_clients = client
         self.key_prefix = key_prefix or ''
 
     def _normalize_timeout(self, timeout):
@@ -615,12 +615,12 @@ class RedisCache(BaseCache):
             return value
 
     def get(self, key):
-        return self.load_object(self._read_client.get(self.key_prefix + key))
+        return self.load_object(self._read_clients.get(self.key_prefix + key))
 
     def get_many(self, *keys):
         if self.key_prefix:
             keys = [self.key_prefix + key for key in keys]
-        return [self.load_object(x) for x in self._read_client.mget(keys)]
+        return [self.load_object(x) for x in self._read_clients.mget(keys)]
 
     def set(self, key, value, timeout=None):
         timeout = self._normalize_timeout(timeout)
@@ -667,12 +667,12 @@ class RedisCache(BaseCache):
         return self._write_client.delete(*keys)
 
     def has(self, key):
-        return self._read_client.exists(self.key_prefix + key)
+        return self._read_clients.exists(self.key_prefix + key)
 
     def clear(self):
         status = False
         if self.key_prefix:
-            keys = self._read_client.keys(self.key_prefix + '*')
+            keys = self._read_clients.keys(self.key_prefix + '*')
             if keys:
                 status = self._write_client.delete(*keys)
         else:
