@@ -1,6 +1,16 @@
-include LICENSE CHANGES CONTRIBUTORS requirements.txt tox.ini
-include test_cache.py test_template.html
-graft docs *
-recursive-exclude docs *.pyc
-recursive-exclude docs *.pyo
+include LICENSE
+include CONTRIBUTORS
+include CHANGES
+include README.md
+include requirements.txt
+include tox.ini
+include setup.cfg
+
+graft docs
+graft tests
+
 prune docs/_build
+
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude *.sw[a-z]

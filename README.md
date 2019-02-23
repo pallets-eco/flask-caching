@@ -12,6 +12,9 @@ Adds easy cache support to Flask.
 This is a fork of the [Flask-Cache](https://github.com/thadeusb/flask-cache)
 extension.
 
+Flask-Caching also includes the ``cache`` module from werkzeug licensed under a
+BSD-3 Clause License.
+
 
 Setup
 -----

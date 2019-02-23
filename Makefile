@@ -1,4 +1,4 @@
-.PHONY: text tox clean wheel upload docs
+.PHONY: test tox clean wheel upload docs
 
 test:
 	pytest

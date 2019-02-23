@@ -21,7 +21,7 @@ from collections import OrderedDict
 from flask import current_app, request, url_for
 from werkzeug.utils import import_string
 
-from ._compat import PY2, iteritems
+from flask_caching._compat import PY2, iteritems
 
 __version__ = "1.4.0"
 
@@ -198,7 +198,7 @@ class Cache(object):
             and not config["CACHE_NO_NULL_WARNING"]
         ):
             warnings.warn(
-                "Flask-Cache: CACHE_TYPE is set to null, "
+                "Flask-Caching: CACHE_TYPE is set to null, "
                 "caching is effectively disabled."
             )
 
@@ -219,7 +219,7 @@ class Cache(object):
                 cache_obj = getattr(backends, import_me)
             except AttributeError:
                 raise ImportError(
-                    "%s is not a valid FlaskCache backend" % (import_me)
+                    "%s is not a valid Flask-Caching backend" % (import_me)
                 )
         else:
             cache_obj = import_string(import_me)
@@ -411,8 +411,13 @@ class Cache(object):
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
-                argspec = inspect.getargspec(f)
-                for arg_name, arg in zip(argspec.args, args):
+                try:
+                    # Python >= 3.0
+                    argspec_args = inspect.getfullargspec(f).args
+                except AttributeError:
+                    argspec_args = inspect.getargspec(f).args
+
+                for arg_name, arg in zip(argspec_args, args):
                     kwargs[arg_name] = arg
 
                 return _make_cache_key(args, kwargs, use_request=False)
@@ -619,7 +624,7 @@ class Cache(object):
 
             new_args.append(arg)
 
-        new_args.extend(args[len(arg_names) :])
+        new_args.extend(args[len(arg_names):])
         return (
             tuple(new_args),
             OrderedDict(
@@ -639,7 +644,11 @@ class Cache(object):
         bypass_cache = False
 
         if callable(unless):
-            argspec = inspect.getargspec(unless)
+            try:
+                # Python >= 3.0
+                argspec = inspect.getfullargspec(unless)
+            except AttributeError:
+                argspec = inspect.getargspec(unless)
 
             # If unless() takes args, pass them in.
             if len(argspec.args) > 0 and argspec.varargs and argspec.keywords:
@@ -714,6 +723,7 @@ class Cache(object):
                               renewal of cached functions.
         :param hash_method: Default hashlib.md5. The hash method used to
                             generate the keys for cached results.
+
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """

@@ -7,7 +7,7 @@ Flask-Caching is an extension to `Flask`_ that adds caching support for
 various backends to any Flask application. Besides providing support for all
 `werkzeug`_'s original caching backends through a uniformed API,
 it is also possible to develop your own caching backend by subclassing
-:class:`flask_caching.backends.cache.BaseCache` class.
+:class:`flask_caching.backends.base.BaseCache` class.
 
 
 Installation
@@ -279,9 +279,9 @@ The following configuration values exist for Flask-Caching:
                                 * **simple**: SimpleCache
                                 * **filesystem**: FileSystemCache
                                 * **redis**: RedisCache (redis required)
+                                * **redissentinel**: RedisSentinelCache (redis required)
                                 * **uwsgi**: UWSGICache (uwsgi required)
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
-                                * **gaememcached**: GAEMemcachedCache
                                 * **saslmemcached**: SASLMemcachedCache (pylibmc required)
                                 * **spreadsaslmemcached**: SpreadSASLMemcachedCache (pylibmc required)
 
@@ -301,8 +301,7 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_KEY_PREFIX``            A prefix that is added before all keys.
                                 This makes it possible to use the same
                                 memcached server for different apps.
-                                Used only for RedisCache, MemcachedCache and
-                                GAEMemcachedCache.
+                                Used only for RedisCache and MemcachedCache
 ``CACHE_UWSGI_NAME``            The name of the uwsgi caching instance to
                                 connect to, for example: mycache@localhost:3031,
                                 defaults to an empty string, which means uWSGI
@@ -389,11 +388,11 @@ Set ``CACHE_TYPE`` to ``redis`` to use this type.
 
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_KEY_PREFIX
+- CACHE_OPTIONS
 - CACHE_REDIS_HOST
 - CACHE_REDIS_PORT
 - CACHE_REDIS_PASSWORD
 - CACHE_REDIS_DB
-- CACHE_OPTIONS
 - CACHE_REDIS_URL
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
@@ -403,10 +402,10 @@ RedisSentinelCache
 
 Set ``CACHE_TYPE`` to ``redissentinel`` to use this type.
 
+- CACHE_KEY_PREFIX
 - CACHE_REDIS_SENTINELS
 - CACHE_REDIS_SENTINEL_MASTER
 - CACHE_REDIS_PASSWORD
-- CACHE_KEY_PREFIX
 - CACHE_REDIS_DB
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
@@ -442,13 +441,6 @@ Relevant configuration values
 
    Alternatively, see `Custom Cache Backends`_.
 
-GAEMemcachedCache
-`````````````````
-
-Set ``CACHE_TYPE`` to ``gaememcached`` to use this type.
-
-Is MemcachedCache under a different name.
-
 SASLMemcachedCache
 ``````````````````
 
@@ -462,10 +454,10 @@ Relevant configuration values
 
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_KEY_PREFIX
+- CACHE_OPTIONS
 - CACHE_MEMCACHED_SERVERS
 - CACHE_MEMCACHED_USERNAME
 - CACHE_MEMCACHED_PASSWORD
-- CACHE_OPTIONS
 
 .. note:: Since the SASL Memcached cache types do not use werkzeug's original built-in cache
    infrastructure, they can be configured with CACHE_OPTIONS.
