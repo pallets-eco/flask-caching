@@ -10,9 +10,43 @@
     :license: BSD, see LICENSE for more details.
 """
 import pickle
-from flask_caching.backends.cache import BaseCache, MemcachedCache
+from flask_caching.backends.cache import BaseCache, MemcachedCache, RedisCache
 
 from flask_caching._compat import PY2, range_type
+
+
+class RedisSentinelCache(RedisCache):
+    def __init__(self, sentinels=None, master=None, password=None,
+                 db=0, default_timeout=300, key_prefix=None, **kwargs):
+        super(RedisSentinelCache, self).__init__(default_timeout)
+
+        try:
+            import redis.sentinel
+        except ImportError:
+            raise RuntimeError('no redis module found')
+
+        if kwargs.get('decode_responses', None):
+            raise ValueError('decode_responses is not supported by '
+                             'RedisCache.')
+
+        sentinels = sentinels or [('127.0.0.1', 26379)]
+        sentinel_kwargs = {key[9:]: value
+                           for key, value in kwargs.items()
+                           if key.startswith('sentinel_')}
+        kwargs = {key[9:]: value
+                  for key, value in kwargs.items()
+                  if not key.startswith('sentinel_')}
+
+        sentinel = redis.sentinel.Sentinel(
+            sentinels=sentinels,
+            password=password,
+            db=db,
+            sentinel_kwargs=sentinel_kwargs, **kwargs)
+
+        self._write_client = sentinel.master_for(master)
+        self._read_clients = sentinel.slave_for(master)
+
+        self.key_prefix = key_prefix or ''
 
 
 class SASLMemcachedCache(MemcachedCache):
