@@ -12,9 +12,6 @@ install:
  - pip install coveralls
  - pip install --editable .
 script: py.test
-services:
- - memcached
- - redis-server
 after_success:
   - coveralls
 cache: pip

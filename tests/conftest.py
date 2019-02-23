@@ -63,12 +63,12 @@ def hash_method(request):
     return request.param
 
 
-@pytest.fixture
+@pytest.fixture(scope="session", autouse=True)
 def redis_server(xprocess):
     try:
         import redis
     except ImportError:
-        pytest.skip('Python package "redis" is not installed.')
+        pytest.skip("Python package 'redis' is not installed.")
 
     class Starter(ProcessStarter):
         pattern = "[Rr]eady to accept connections"

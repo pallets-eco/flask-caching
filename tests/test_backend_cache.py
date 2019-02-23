@@ -15,7 +15,6 @@ import pytest
 
 from flask_caching import backends
 from flask_caching._compat import text_type
-from xprocess import ProcessStarter
 
 try:
     import redis
@@ -213,27 +212,6 @@ class TestFileSystemCache(GenericCacheTests):
 # skip happens in requirements fixture instead
 class TestRedisCache(GenericCacheTests):
     _can_use_fast_sleep = False
-
-    @pytest.fixture(scope="class", autouse=True)
-    def requirements(self, xprocess):
-        if redis is None:
-            pytest.skip('Python package "redis" is not installed.')
-
-        class Starter(ProcessStarter):
-            pattern = "[Rr]eady to accept connections"
-            args = ["redis-server"]
-
-        try:
-            xprocess.ensure("redis_server", Starter)
-        except IOError as e:
-            # xprocess raises FileNotFoundError
-            if e.errno == errno.ENOENT:
-                pytest.skip("Redis is not installed.")
-            else:
-                raise
-
-        yield
-        xprocess.getinfo("redis_server").terminate()
 
     @pytest.fixture(params=(None, False, True))
     def make_cache(self, request):

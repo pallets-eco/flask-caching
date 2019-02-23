@@ -14,7 +14,8 @@ from flask_caching.backends.memcache import (MemcachedCache,
                                              SASLMemcachedCache,
                                              SpreadSASLMemcachedCache)
 from flask_caching.backends.null import NullCache
-from flask_caching.backends.redis import RedisCache, RedisSentinelCache
+# TODO: Rename to "redis" when python2 support is removed
+from flask_caching.backends.rediscache import RedisCache, RedisSentinelCache
 from flask_caching.backends.simple import SimpleCache
 
 try:

@@ -77,7 +77,7 @@ def test_app_redis_cache_backend_url_default_db(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    from flask_caching.backends.redis import RedisCache
+    from flask_caching.backends.rediscache import RedisCache
 
     assert isinstance(app.extensions["cache"][cache], RedisCache)
     rconn = app.extensions["cache"][
