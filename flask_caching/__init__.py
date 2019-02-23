@@ -18,23 +18,28 @@ import uuid
 import warnings
 from collections import OrderedDict
 
+from flask import current_app, request, url_for
 from werkzeug.utils import import_string
-from flask import request, current_app, url_for
 
 from ._compat import PY2, iteritems
 
-__version__ = '1.4.0'
+__version__ = "1.4.0"
 
 logger = logging.getLogger(__name__)
 
-TEMPLATE_FRAGMENT_KEY_TEMPLATE = '_template_fragment_cache_%s%s'
+TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
 SUPPORTED_HASH_FUNCTIONS = [
-    hashlib.sha1, hashlib.sha224, hashlib.sha256, hashlib.sha384, hashlib.sha512, hashlib.md5
+    hashlib.sha1,
+    hashlib.sha224,
+    hashlib.sha256,
+    hashlib.sha384,
+    hashlib.sha512,
+    hashlib.md5,
 ]
 
 # Used to remove control characters and whitespace from cache keys.
-valid_chars = set(string.ascii_letters + string.digits + '_.')
-delchars = ''.join(c for c in map(chr, range(256)) if c not in valid_chars)
+valid_chars = set(string.ascii_letters + string.digits + "_.")
+delchars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 if PY2:
     null_control = (None, delchars)
 else:
@@ -50,8 +55,11 @@ def get_arg_names(f):
     try:
         # Python >= 3.3
         sig = inspect.signature(f)
-        return [parameter.name for parameter in sig.parameters.values()
-                if parameter.kind == parameter.POSITIONAL_OR_KEYWORD]
+        return [
+            parameter.name
+            for parameter in sig.parameters.values()
+            if parameter.kind == parameter.POSITIONAL_OR_KEYWORD
+        ]
     except AttributeError:
         try:
             # Python >= 3.0
@@ -86,48 +94,50 @@ def function_namespace(f, args=None):
 
     instance_token = None
 
-    instance_self = getattr(f, '__self__', None)
+    instance_self = getattr(f, "__self__", None)
 
     if instance_self and not inspect.isclass(instance_self):
         instance_token = repr(f.__self__)
-    elif m_args and m_args[0] == 'self' and args:
+    elif m_args and m_args[0] == "self" and args:
         instance_token = repr(args[0])
 
     module = f.__module__
 
-    if m_args and m_args[0] == 'cls' and not inspect.isclass(args[0]):
-        raise ValueError('When using `delete_memoized` on a '
-                         '`@classmethod` you must provide the '
-                         'class as the first argument')
+    if m_args and m_args[0] == "cls" and not inspect.isclass(args[0]):
+        raise ValueError(
+            "When using `delete_memoized` on a "
+            "`@classmethod` you must provide the "
+            "class as the first argument"
+        )
 
-    if hasattr(f, '__qualname__'):
+    if hasattr(f, "__qualname__"):
         name = f.__qualname__
     else:
-        klass = getattr(f, '__self__', None)
+        klass = getattr(f, "__self__", None)
 
         if klass and not inspect.isclass(klass):
             klass = klass.__class__
 
         if not klass:
-            klass = getattr(f, 'im_class', None)
+            klass = getattr(f, "im_class", None)
 
         if not klass:
             if m_args and args:
-                if m_args[0] == 'self':
+                if m_args[0] == "self":
                     klass = args[0].__class__
-                elif m_args[0] == 'cls':
+                elif m_args[0] == "cls":
                     klass = args[0]
 
         if klass:
-            name = klass.__name__ + '.' + f.__name__
+            name = klass.__name__ + "." + f.__name__
         else:
             name = f.__name__
 
-    ns = '.'.join((module, name))
+    ns = ".".join((module, name))
     ns = ns.translate(*null_control)
 
     if instance_token:
-        ins = '.'.join((module, name, instance_token))
+        ins = ".".join((module, name, instance_token))
         ins = ins.translate(*null_control)
     else:
         ins = None
@@ -141,9 +151,6 @@ def make_template_fragment_key(fragment_name, vary_on=[]):
         fragment_name = "%s_" % fragment_name
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
-
-#: Cache Object
-################
 
 class Cache(object):
     """This class is used to control the cache objects."""
@@ -176,20 +183,24 @@ class Cache(object):
             base_config.update(config)
         config = base_config
 
-        config.setdefault('CACHE_DEFAULT_TIMEOUT', 300)
-        config.setdefault('CACHE_THRESHOLD', 500)
-        config.setdefault('CACHE_KEY_PREFIX', 'flask_cache_')
-        config.setdefault('CACHE_MEMCACHED_SERVERS', None)
-        config.setdefault('CACHE_DIR', None)
-        config.setdefault('CACHE_OPTIONS', None)
-        config.setdefault('CACHE_ARGS', [])
-        config.setdefault('CACHE_TYPE', 'null')
-        config.setdefault('CACHE_NO_NULL_WARNING', False)
+        config.setdefault("CACHE_DEFAULT_TIMEOUT", 300)
+        config.setdefault("CACHE_THRESHOLD", 500)
+        config.setdefault("CACHE_KEY_PREFIX", "flask_cache_")
+        config.setdefault("CACHE_MEMCACHED_SERVERS", None)
+        config.setdefault("CACHE_DIR", None)
+        config.setdefault("CACHE_OPTIONS", None)
+        config.setdefault("CACHE_ARGS", [])
+        config.setdefault("CACHE_TYPE", "null")
+        config.setdefault("CACHE_NO_NULL_WARNING", False)
 
-        if config['CACHE_TYPE'] == 'null' and \
-                not config['CACHE_NO_NULL_WARNING']:
-            warnings.warn("Flask-Cache: CACHE_TYPE is set to null, "
-                          "caching is effectively disabled.")
+        if (
+            config["CACHE_TYPE"] == "null"
+            and not config["CACHE_NO_NULL_WARNING"]
+        ):
+            warnings.warn(
+                "Flask-Cache: CACHE_TYPE is set to null, "
+                "caching is effectively disabled."
+            )
 
         if self.with_jinja2_ext:
             from .jinja2ext import CacheExtension, JINJA_CACHE_ATTR_NAME
@@ -200,36 +211,38 @@ class Cache(object):
         self._set_cache(app, config)
 
     def _set_cache(self, app, config):
-        import_me = config['CACHE_TYPE']
-        if '.' not in import_me:
+        import_me = config["CACHE_TYPE"]
+        if "." not in import_me:
             from . import backends
 
             try:
                 cache_obj = getattr(backends, import_me)
             except AttributeError:
-                raise ImportError("%s is not a valid FlaskCache backend" % (
-                                  import_me))
+                raise ImportError(
+                    "%s is not a valid FlaskCache backend" % (import_me)
+                )
         else:
             cache_obj = import_string(import_me)
 
-        cache_args = config['CACHE_ARGS'][:]
-        cache_options = {'default_timeout': config['CACHE_DEFAULT_TIMEOUT']}
+        cache_args = config["CACHE_ARGS"][:]
+        cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
 
-        if config['CACHE_OPTIONS']:
-            cache_options.update(config['CACHE_OPTIONS'])
+        if config["CACHE_OPTIONS"]:
+            cache_options.update(config["CACHE_OPTIONS"])
 
-        if not hasattr(app, 'extensions'):
+        if not hasattr(app, "extensions"):
             app.extensions = {}
 
-        app.extensions.setdefault('cache', {})
-        app.extensions['cache'][self] = cache_obj(app, config, cache_args,
-                                                  cache_options)
+        app.extensions.setdefault("cache", {})
+        app.extensions["cache"][self] = cache_obj(
+            app, config, cache_args, cache_options
+        )
         self.app = app
 
     @property
     def cache(self):
         app = current_app or self.app
-        return app.extensions['cache'][self]
+        return app.extensions["cache"][self]
 
     def get(self, *args, **kwargs):
         """Proxy function for internal cache object."""
@@ -267,8 +280,15 @@ class Cache(object):
         """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
-    def cached(self, timeout=None, key_prefix='view/%s', unless=None,
-               forced_update=None, query_string=False, hash_method=hashlib.md5):
+    def cached(
+        self,
+        timeout=None,
+        key_prefix="view/%s",
+        unless=None,
+        forced_update=None,
+        query_string=False,
+        hash_method=hashlib.md5,
+    ):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
@@ -343,6 +363,7 @@ class Cache(object):
                             generate the keys for cached results.
 
         """
+
         def decorator(f):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
@@ -354,8 +375,9 @@ class Cache(object):
                     if query_string:
                         cache_key = _make_cache_key_query_string()
                     else:
-                        cache_key = _make_cache_key(args, kwargs,
-                                                    use_request=True)
+                        cache_key = _make_cache_key(
+                            args, kwargs, use_request=True
+                        )
 
                     if callable(forced_update) and forced_update() is True:
                         rv = None
@@ -364,22 +386,25 @@ class Cache(object):
                 except Exception:
                     if self.app.debug:
                         raise
-                    logger.exception("Exception possibly due to "
-                                     "cache backend.")
+                    logger.exception(
+                        "Exception possibly due to " "cache backend."
+                    )
                     return f(*args, **kwargs)
 
                 if rv is None:
                     rv = f(*args, **kwargs)
                     try:
                         self.cache.set(
-                            cache_key, rv,
-                            timeout=decorated_function.cache_timeout
+                            cache_key,
+                            rv,
+                            timeout=decorated_function.cache_timeout,
                         )
                     except Exception:
                         if self.app.debug:
                             raise
-                        logger.exception("Exception possibly due to "
-                                         "cache backend.")
+                        logger.exception(
+                            "Exception possibly due to " "cache backend."
+                        )
                 return rv
 
             def make_cache_key(*args, **kwargs):
@@ -407,9 +432,7 @@ class Cache(object):
                 # are the same, regardless of the order in which they are
                 # provided.
                 args_as_sorted_tuple = tuple(
-                    sorted(
-                        (pair for pair in request.args.items(multi=True))
-                    )
+                    sorted((pair for pair in request.args.items(multi=True)))
                 )
                 # ... now hash the sorted (key, value) tuple so it can be
                 # used as a key for cache. Turn them into bytes so that the
@@ -422,7 +445,7 @@ class Cache(object):
             def _make_cache_key(args, kwargs, use_request):
                 if callable(key_prefix):
                     cache_key = key_prefix()
-                elif '%s' in key_prefix:
+                elif "%s" in key_prefix:
                     if use_request:
                         cache_key = key_prefix % request.path
                     else:
@@ -437,16 +460,24 @@ class Cache(object):
             decorated_function.make_cache_key = make_cache_key
 
             return decorated_function
+
         return decorator
 
     def _memvname(self, funcname):
-        return funcname + '_memver'
+        return funcname + "_memver"
 
     def _memoize_make_version_hash(self):
-        return base64.b64encode(uuid.uuid4().bytes)[:6].decode('utf-8')
+        return base64.b64encode(uuid.uuid4().bytes)[:6].decode("utf-8")
 
-    def _memoize_version(self, f, args=None, reset=False, delete=False,
-                         timeout=None, forced_update=False):
+    def _memoize_version(
+        self,
+        f,
+        args=None,
+        reset=False,
+        delete=False,
+        timeout=None,
+        forced_update=False,
+    ):
         """Updates the hash version associated with a memoized function or
         method.
         """
@@ -487,17 +518,23 @@ class Cache(object):
             dirty = True
 
         if dirty:
-            self.cache.set_many(dict(zip(fetch_keys, version_data_list)),
-                                timeout=timeout)
+            self.cache.set_many(
+                dict(zip(fetch_keys, version_data_list)), timeout=timeout
+            )
 
-        return fname, ''.join(version_data_list)
+        return fname, "".join(version_data_list)
 
-    def _memoize_make_cache_key(self, make_name=None, timeout=None,
-                                forced_update=False, hash_method=hashlib.md5):
+    def _memoize_make_cache_key(
+        self,
+        make_name=None,
+        timeout=None,
+        forced_update=False,
+        hash_method=hashlib.md5,
+    ):
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f, *args, **kwargs):
-            _timeout = getattr(timeout, 'cache_timeout', timeout)
+            _timeout = getattr(timeout, "cache_timeout", timeout)
             fname, version_data = self._memoize_version(
                 f, args=args, timeout=_timeout, forced_update=forced_update
             )
@@ -516,12 +553,13 @@ class Cache(object):
             updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
 
             cache_key = hash_method()
-            cache_key.update(updated.encode('utf-8'))
+            cache_key.update(updated.encode("utf-8"))
             cache_key = base64.b64encode(cache_key.digest())[:16]
-            cache_key = cache_key.decode('utf-8')
+            cache_key = cache_key.decode("utf-8")
             cache_key += version_data
 
             return cache_key
+
         return make_cache_key
 
     def _memoize_kwargs_to_args(self, f, *args, **kwargs):
@@ -540,7 +578,7 @@ class Cache(object):
 
         for i in range(args_len):
             arg_default = get_arg_default(f, i)
-            if i == 0 and arg_names[i] in ('self', 'cls'):
+            if i == 0 and arg_names[i] in ("self", "cls"):
                 #: use the repr of the class instance
                 #: this supports instance methods for
                 #: the memoized functions, giving more
@@ -581,10 +619,17 @@ class Cache(object):
 
             new_args.append(arg)
 
-        new_args.extend(args[len(arg_names):])
-        return tuple(new_args), OrderedDict(sorted(
-            (k, v) for k, v in iteritems(kwargs) if k in kw_keys_remaining
-        ))
+        new_args.extend(args[len(arg_names) :])
+        return (
+            tuple(new_args),
+            OrderedDict(
+                sorted(
+                    (k, v)
+                    for k, v in iteritems(kwargs)
+                    if k in kw_keys_remaining
+                )
+            ),
+        )
 
     def _bypass_cache(self, unless, f, *args, **kwargs):
         """Determines whether or not to bypass the cache by calling unless().
@@ -605,8 +650,14 @@ class Cache(object):
 
         return bypass_cache
 
-    def memoize(self, timeout=None, make_name=None, unless=None,
-                forced_update=None, hash_method=hashlib.md5):
+    def memoize(
+        self,
+        timeout=None,
+        make_name=None,
+        unless=None,
+        forced_update=None,
+        hash_method=hashlib.md5,
+    ):
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
 
@@ -666,6 +717,7 @@ class Cache(object):
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """
+
         def memoize(f):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
@@ -685,34 +737,39 @@ class Cache(object):
                 except Exception:
                     if self.app.debug:
                         raise
-                    logger.exception("Exception possibly due to "
-                                     "cache backend.")
+                    logger.exception(
+                        "Exception possibly due to " "cache backend."
+                    )
                     return f(*args, **kwargs)
 
                 if rv is None:
                     rv = f(*args, **kwargs)
                     try:
                         self.cache.set(
-                            cache_key, rv,
-                            timeout=decorated_function.cache_timeout
+                            cache_key,
+                            rv,
+                            timeout=decorated_function.cache_timeout,
                         )
                     except Exception:
                         if self.app.debug:
                             raise
-                        logger.exception("Exception possibly due to "
-                                         "cache backend.")
+                        logger.exception(
+                            "Exception possibly due to " "cache backend."
+                        )
                 return rv
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
             decorated_function.make_cache_key = self._memoize_make_cache_key(
-                make_name=make_name, timeout=decorated_function,
-                forced_update=forced_update, hash_method=hash_method
+                make_name=make_name,
+                timeout=decorated_function,
+                forced_update=forced_update,
+                hash_method=hash_method,
             )
-            decorated_function.delete_memoized = \
-                lambda: self.delete_memoized(f)
+            decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
             return decorated_function
+
         return memoize
 
     def delete_memoized(self, f, *args, **kwargs):
@@ -823,9 +880,11 @@ class Cache(object):
             backend.
         """
         if not callable(f):
-            raise DeprecationWarning("Deleting messages by relative name is "
-                                     "no longer reliable, please switch to a "
-                                     "function reference.")
+            raise DeprecationWarning(
+                "Deleting messages by relative name is "
+                "no longer reliable, please switch to a "
+                "function reference."
+            )
 
         if not (args or kwargs):
             self._memoize_version(f, reset=True)
@@ -845,8 +904,10 @@ class Cache(object):
             in the cache backend.
         """
         if not callable(f):
-            raise DeprecationWarning("Deleting messages by relative name is "
-                                     "no longer reliable, please use a "
-                                     "function reference.")
+            raise DeprecationWarning(
+                "Deleting messages by relative name is "
+                "no longer reliable, please use a "
+                "function reference."
+            )
 
         self._memoize_version(f, delete=True)

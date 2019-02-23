@@ -44,13 +44,14 @@
 """
 from jinja2 import nodes
 from jinja2.ext import Extension
+
 from flask_caching import make_template_fragment_key
 
-JINJA_CACHE_ATTR_NAME = '_template_fragment_cache'
+JINJA_CACHE_ATTR_NAME = "_template_fragment_cache"
 
 
 class CacheExtension(Extension):
-    tags = set(['cache'])
+    tags = set(["cache"])
 
     def parse(self, parser):
         lineno = next(parser.stream).lineno
@@ -62,14 +63,14 @@ class CacheExtension(Extension):
         #: Grab the fragment name if it exists
         #: otherwise, default to the old method of using the templates
         #: lineno to maintain backwards compatibility.
-        if parser.stream.skip_if('comma'):
+        if parser.stream.skip_if("comma"):
             args.append(parser.parse_expression())
         else:
             args.append(nodes.Const("%s%s" % (parser.filename, lineno)))
 
         #: Parse vary_on parameters
         vary_on = []
-        while parser.stream.skip_if('comma'):
+        while parser.stream.skip_if("comma"):
             vary_on.append(parser.parse_expression())
 
         if vary_on:
@@ -77,9 +78,10 @@ class CacheExtension(Extension):
         else:
             args.append(nodes.Const([]))
 
-        body = parser.parse_statements(['name:endcache'], drop_needle=True)
-        return nodes.CallBlock(self.call_method('_cache', args),
-                               [], [], body).set_lineno(lineno)
+        body = parser.parse_statements(["name:endcache"], drop_needle=True)
+        return nodes.CallBlock(
+            self.call_method("_cache", args), [], [], body
+        ).set_lineno(lineno)
 
     def _cache(self, timeout, fragment_name, vary_on, caller):
         try:

@@ -10,59 +10,80 @@
     :license: BSD, see LICENSE for more details.
 """
 import pickle
-from flask_caching.backends.cache import BaseCache, MemcachedCache, RedisCache
 
 from flask_caching._compat import PY2, range_type
+from flask_caching.backends.cache import BaseCache, MemcachedCache, RedisCache
 
 
 class RedisSentinelCache(RedisCache):
-    def __init__(self, sentinels=None, master=None, password=None,
-                 db=0, default_timeout=300, key_prefix=None, **kwargs):
+    def __init__(
+        self,
+        sentinels=None,
+        master=None,
+        password=None,
+        db=0,
+        default_timeout=300,
+        key_prefix=None,
+        **kwargs
+    ):
         super(RedisSentinelCache, self).__init__(default_timeout)
 
         try:
             import redis.sentinel
         except ImportError:
-            raise RuntimeError('no redis module found')
+            raise RuntimeError("no redis module found")
 
-        if kwargs.get('decode_responses', None):
-            raise ValueError('decode_responses is not supported by '
-                             'RedisCache.')
+        if kwargs.get("decode_responses", None):
+            raise ValueError(
+                "decode_responses is not supported by " "RedisCache."
+            )
 
-        sentinels = sentinels or [('127.0.0.1', 26379)]
-        sentinel_kwargs = {key[9:]: value
-                           for key, value in kwargs.items()
-                           if key.startswith('sentinel_')}
-        kwargs = {key[9:]: value
-                  for key, value in kwargs.items()
-                  if not key.startswith('sentinel_')}
+        sentinels = sentinels or [("127.0.0.1", 26379)]
+        sentinel_kwargs = {
+            key[9:]: value
+            for key, value in kwargs.items()
+            if key.startswith("sentinel_")
+        }
+        kwargs = {
+            key[9:]: value
+            for key, value in kwargs.items()
+            if not key.startswith("sentinel_")
+        }
 
         sentinel = redis.sentinel.Sentinel(
             sentinels=sentinels,
             password=password,
             db=db,
-            sentinel_kwargs=sentinel_kwargs, **kwargs)
+            sentinel_kwargs=sentinel_kwargs,
+            **kwargs
+        )
 
         self._write_client = sentinel.master_for(master)
         self._read_clients = sentinel.slave_for(master)
 
-        self.key_prefix = key_prefix or ''
+        self.key_prefix = key_prefix or ""
 
 
 class SASLMemcachedCache(MemcachedCache):
-    def __init__(self, servers=None, default_timeout=300, key_prefix=None,
-                 username=None, password=None, **kwargs):
+    def __init__(
+        self,
+        servers=None,
+        default_timeout=300,
+        key_prefix=None,
+        username=None,
+        password=None,
+        **kwargs
+    ):
         BaseCache.__init__(self, default_timeout)
 
         if servers is None:
-            servers = ['127.0.0.1:11211']
+            servers = ["127.0.0.1:11211"]
 
         import pylibmc
-        self._client = pylibmc.Client(servers,
-                                      username=username,
-                                      password=password,
-                                      binary=True,
-                                      **kwargs)
+
+        self._client = pylibmc.Client(
+            servers, username=username, password=password, binary=True, **kwargs
+        )
 
         self.key_prefix = key_prefix
 
@@ -82,8 +103,8 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
                 memcached (memcache has an upper limit of 1MB for values,
                 default: 1048448)
         """
-        self.chunksize = kwargs.get('chunksize', 1048448)
-        self.maxchunk = kwargs.get('maxchunk', 32)
+        self.chunksize = kwargs.get("chunksize", 1048448)
+        self.maxchunk = kwargs.get("maxchunk", 32)
         super(SpreadSASLMemcachedCache, self).__init__(*args, **kwargs)
 
     def delete(self, key):
@@ -105,8 +126,9 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if chunk:
             return self._set(key, value, timeout=timeout)
         else:
-            return super(SpreadSASLMemcachedCache, self).set(key, value,
-                                                             timeout=timeout)
+            return super(SpreadSASLMemcachedCache, self).set(
+                key, value, timeout=timeout
+            )
 
     def _set(self, key, value, timeout=None):
         # pickling/unpickling add an overhead,
@@ -120,12 +142,13 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
         if len(chks) > self.maxchunk:
             raise ValueError(
-                'Cannot store value in less than %s keys' % self.maxchunk
+                "Cannot store value in less than %s keys" % self.maxchunk
             )
 
         for i in chks:
-            values['%s.%s' % (key, i // self.chunksize)] = \
-                serialized[i:i + self.chunksize]
+            values["%s.%s" % (key, i // self.chunksize)] = serialized[
+                i : i + self.chunksize
+            ]
 
         super(SpreadSASLMemcachedCache, self).set_many(values, timeout)
 
@@ -141,16 +164,16 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
             return super(SpreadSASLMemcachedCache, self).get(key)
 
     def _genkeys(self, key):
-        return ['%s.%s' % (key, i) for i in range_type(self.maxchunk)]
+        return ["%s.%s" % (key, i) for i in range_type(self.maxchunk)]
 
     def _get(self, key):
-        to_get = ['%s.%s' % (key, i) for i in range_type(self.maxchunk)]
+        to_get = ["%s.%s" % (key, i) for i in range_type(self.maxchunk)]
         result = super(SpreadSASLMemcachedCache, self).get_many(*to_get)
 
         if PY2:
-            serialized = ''.join(v for v in result if v is not None)
+            serialized = "".join(v for v in result if v is not None)
         else:
-            serialized = b''.join(v for v in result if v is not None)
+            serialized = b"".join(v for v in result if v is not None)
 
         if not serialized:
             return None
