@@ -1,6 +1,6 @@
 Flask
 Werkzeug
 Sphinx
-pytest
-pytest-cov
+pytest<5.0.0
+pytest-cov<2.6.0
 redis
