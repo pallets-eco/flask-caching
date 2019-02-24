@@ -213,6 +213,10 @@ class TestFileSystemCache(GenericCacheTests):
 class TestRedisCache(GenericCacheTests):
     _can_use_fast_sleep = False
 
+    @pytest.fixture(scope="class", autouse=True)
+    def requirements(self, redis_server):
+        pass
+
     @pytest.fixture(params=(None, False, True))
     def make_cache(self, request):
         if request.param is None:
@@ -246,27 +250,8 @@ class TestMemcachedCache(GenericCacheTests):
     _guaranteed_deletes = False
 
     @pytest.fixture(scope="class", autouse=True)
-    def requirements(self, xprocess):
-        if memcache is None:
-            pytest.skip(
-                "Python package for memcache is not installed. Need one of "
-                '"pylibmc", "google.appengine", or "memcache".'
-            )
-
-        def prepare(cwd):
-            return "", ["memcached"]
-
-        try:
-            xprocess.ensure("memcached", prepare)
-        except IOError as e:
-            # xprocess raises FileNotFoundError
-            if e.errno == errno.ENOENT:
-                pytest.skip("Memcached is not installed.")
-            else:
-                raise
-
-        yield
-        xprocess.getinfo("memcached").terminate()
+    def requirements(self, memcache_server):
+        pass
 
     @pytest.fixture
     def make_cache(self):

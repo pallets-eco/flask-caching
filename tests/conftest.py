@@ -63,7 +63,7 @@ def hash_method(request):
     return request.param
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="class")
 def redis_server(xprocess):
     try:
         import redis
@@ -85,3 +85,36 @@ def redis_server(xprocess):
 
     yield
     xprocess.getinfo("redis_server").terminate()
+
+
+@pytest.fixture(scope="class")
+def memcache_server(xprocess):
+    try:
+        import pylibmc as memcache
+    except ImportError:
+        try:
+            from google.appengine.api import memcache
+        except ImportError:
+            try:
+                import memcache
+            except ImportError:
+                pytest.skip(
+                    "Python package for memcache is not installed. Need one of "
+                    "pylibmc', 'google.appengine', or 'memcache'."
+                )
+
+    class Starter(ProcessStarter):
+        pattern = ""
+        args = ["memcached"]
+
+    try:
+        xprocess.ensure("memcached", Starter)
+    except IOError as e:
+        # xprocess raises FileNotFoundError
+        if e.errno == errno.ENOENT:
+            pytest.skip("Memcached is not installed.")
+        else:
+            raise
+
+    yield
+    xprocess.getinfo("memcached").terminate()
