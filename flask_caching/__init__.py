@@ -804,7 +804,7 @@ class Cache(object):
             43
             >>> random_func()
             43
-            >>> cache.delete_memoized('random_func')
+            >>> cache.delete_memoized(random_func)
             >>> random_func()
             16
             >>> param_func(1, 2)
@@ -813,7 +813,7 @@ class Cache(object):
             32
             >>> param_func(2, 2)
             47
-            >>> cache.delete_memoized('param_func', 1, 2)
+            >>> cache.delete_memoized(param_func, 1, 2)
             >>> param_func(1, 2)
             13
             >>> param_func(2, 2)
@@ -854,8 +854,7 @@ class Cache(object):
             >>> adder2.add(3)
             3.72341788
 
-        :param fname: Name of the memoized function, or a reference to
-                      the function.
+        :param fname: The memoized function.
         :param \*args: A list of positional parameters used with
                        memoized function.
         :param \**kwargs: A dict of named parameters used with
@@ -863,20 +862,20 @@ class Cache(object):
 
         .. note::
 
-            Flask-Cache uses inspect to order kwargs into positional args when
+            Flask-Caching uses inspect to order kwargs into positional args when
             the function is memoized. If you pass a function reference into
-            ``fname`` instead of the function name, Flask-Cache will be able
-            to place the args/kwargs in the proper order, and delete the
-            positional cache.
+            ``fname``, Flask-Caching will be able to place the args/kwargs in
+            the proper order, and delete the positional cache.
 
             However, if ``delete_memoized`` is just called with the name of the
             function, be sure to pass in potential arguments in the same order
-            as defined in your function as args only, otherwise Flask-Cache
-            will not be able to compute the same cache key.
+            as defined in your function as args only, otherwise Flask-Caching
+            will not be able to compute the same cache key and delete all
+            memoized versions of it.
 
         .. note::
 
-            Flask-Cache maintains an internal random version hash for
+            Flask-Caching maintains an internal random version hash for
             the function. Using delete_memoized will only swap out
             the version hash, causing the memoize function to recompute
             results and put them into another key.
