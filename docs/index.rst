@@ -528,9 +528,8 @@ API
 ---
 
 .. autoclass:: Cache
-   :members: init_app,
-             get, set, add, delete, get_many, set_many, delete_many, clear,
-             cached, memoize, delete_memoized, delete_memoized_verhash
+   :members: init_app, get, set, add, delete, get_many, set_many, delete_many,
+             clear, cached, memoize, delete_memoized, delete_memoized_verhash
 
 
 Additional Information
