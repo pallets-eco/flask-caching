@@ -536,9 +536,10 @@ With this example, your ``CACHE_TYPE`` might be ``the_app.custom.pylibmccache``
 API
 ---
 
-.. autoclass:: Cache
-   :members: init_app, get, set, add, delete, get_many, set_many, delete_many,
-             clear, cached, memoize, delete_memoized, delete_memoized_verhash
+.. toctree::
+   :maxdepth: 2
+
+   api
 
 
 Additional Information

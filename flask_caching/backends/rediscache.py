@@ -167,6 +167,28 @@ class RedisCache(BaseCache):
 
 
 class RedisSentinelCache(RedisCache):
+    """Uses the Redis key-value store as a cache backend.
+
+    The first argument can be either a string denoting address of the Redis
+    server or an object resembling an instance of a redis.Redis class.
+
+    Note: Python Redis API already takes care of encoding unicode strings on
+    the fly.
+
+
+    :param sentinels: A list or a tuple of Redis sentinel addresses.
+    :param master: The name of the master server in a sentinel configuration.
+    :param password: password authentication for the Redis server.
+    :param db: db (zero-based numeric index) on Redis Server to connect.
+    :param default_timeout: the default timeout that is used if no timeout is
+                            specified on :meth:`~BaseCache.set`. A timeout of
+                            0 indicates that the cache never expires.
+    :param key_prefix: A prefix that should be added to all keys.
+
+    Any additional keyword arguments will be passed to
+    ``redis.sentinel.Sentinel``.
+    """
+
     def __init__(
         self,
         sentinels=None,
