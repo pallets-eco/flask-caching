@@ -252,6 +252,27 @@ Here's an example script to empty your application's cache:
     data in your caching database.
 
 
+Explicitly Caching Data
+-----------------------
+
+Data can be cached explicitly by using the proxy methods like
+:meth:`Cache.set`, and :meth:`Cache.get` directly. There are many other proxy
+methods available via the :class:`Cache` class.
+
+For example:
+
+.. code-block:: python
+
+    @app.route("/html")
+    @app.route("/html/<foo>")
+    def html(foo=None):
+        if foo is not None:
+            cache.set("foo", foo)
+        return render_template_string(
+            "<html><body>foo cache: {{foo}}</body></html>", foo=cache.get("foo")
+        )
+
+
 Configuring Flask-Caching
 -------------------------
 
