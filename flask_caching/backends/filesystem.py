@@ -32,6 +32,11 @@ class FileSystemCache(BaseCache):
     :param mode: the file mode wanted for the cache files, default 0600
     :param hash_method: Default hashlib.md5. The hash method used to
                         generate the filename for cached results.
+    :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
+                          method will ignore any errors that occured during the
+                          deletion process. However, if it is set to ``False``
+                          it will stop on the first error. Defaults to
+                          ``False``.
     """
 
     #: used for temporary files by the FileSystemCache
@@ -46,12 +51,14 @@ class FileSystemCache(BaseCache):
         default_timeout=300,
         mode=0o600,
         hash_method=hashlib.md5,
+        ignore_errors=False
     ):
         super(FileSystemCache, self).__init__(default_timeout)
         self._path = cache_dir
         self._threshold = threshold
         self._mode = mode
         self._hash_method = hash_method
+        self.ignore_errors = ignore_errors
 
         try:
             os.makedirs(self._path)

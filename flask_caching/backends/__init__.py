@@ -44,13 +44,23 @@ def null(app, config, args, kwargs):
 
 
 def simple(app, config, args, kwargs):
-    kwargs.update(dict(threshold=config["CACHE_THRESHOLD"]))
+    kwargs.update(
+        dict(
+            threshold=config["CACHE_THRESHOLD"],
+            ignore_errors=config["CACHE_IGNORE_ERRORS"],
+        )
+    )
     return SimpleCache(*args, **kwargs)
 
 
 def filesystem(app, config, args, kwargs):
     args.insert(0, config["CACHE_DIR"])
-    kwargs.update(dict(threshold=config["CACHE_THRESHOLD"]))
+    kwargs.update(
+        dict(
+            threshold=config["CACHE_THRESHOLD"],
+            ignore_errors=config["CACHE_IGNORE_ERRORS"],
+        )
+    )
     return FileSystemCache(*args, **kwargs)
 
 
