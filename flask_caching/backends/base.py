@@ -21,13 +21,14 @@ class BaseCache(object):
     """Baseclass for the cache systems.  All the cache systems implement this
     API or a superset of it.
 
-    :param default_timeout: the default timeout (in seconds) that is used if
+    :param default_timeout: The default timeout (in seconds) that is used if
                             no timeout is specified on :meth:`set`. A timeout
                             of 0 indicates that the cache never expires.
     """
 
     def __init__(self, default_timeout=300):
         self.default_timeout = default_timeout
+        self.ignore_errors = False
 
     def _normalize_timeout(self, timeout):
         if timeout is None:
@@ -131,6 +132,8 @@ class BaseCache(object):
         :returns: Whether all given keys have been deleted.
         :rtype: boolean
         """
+        if self.ignore_errors:
+            return all([self.delete(key) for key in keys])
         return all(self.delete(key) for key in keys)
 
     def has(self, key):

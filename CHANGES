@@ -1,6 +1,18 @@
 Changelog
 ---------
 
+Version 1.6.0 Unreleased
+````````````````````````
+
+- The ``delete_many`` function is now able to ignore any errors and continue
+  deleting the cache. However, in order to preserve backwards compatibility,
+  the default mode is to abort the deletion process. In order to use the new
+  deletion mode, one has to flip the config setting ``CACHE_IGNORE_ERRORS`` to
+  ``True``. This was and still is only relevant for the **filesystem** and
+  **simple** cache backends.
+  PR `#94 <https://github.com/sh4nks/flask-caching/pull/94>`_.
+
+
 Version 1.5.0 2019-02-23
 ````````````````````````
 

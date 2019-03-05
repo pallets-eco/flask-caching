@@ -19,13 +19,19 @@ class SimpleCache(BaseCache):
     :param default_timeout: the default timeout that is used if no timeout is
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
+    :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
+                          method will ignore any errors that occured during the
+                          deletion process. However, if it is set to ``False``
+                          it will stop on the first error. Defaults to
+                          ``False``.
     """
 
-    def __init__(self, threshold=500, default_timeout=300):
+    def __init__(self, threshold=500, default_timeout=300, ignore_errors=False):
         super(SimpleCache, self).__init__(default_timeout)
         self._cache = {}
         self.clear = self._cache.clear
         self._threshold = threshold
+        self.ignore_errors = ignore_errors
 
     def _prune(self):
         if len(self._cache) > self._threshold:
