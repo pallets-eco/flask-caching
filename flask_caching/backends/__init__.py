@@ -34,6 +34,7 @@ __all__ = (
     "redissentinel",
     "uwsgi",
     "memcached",
+    "gaememcached",
     "saslmemcached",
     "spreadsaslmemcached",
 )
@@ -129,6 +130,12 @@ def uwsgi(app, config, args, kwargs):
 
 
 def memcached(app, config, args, kwargs):
+    args.append(config["CACHE_MEMCACHED_SERVERS"])
+    kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
+    return MemcachedCache(*args, **kwargs)
+
+
+def gaememcached(app, config, args, kwargs):
     args.append(config["CACHE_MEMCACHED_SERVERS"])
     kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
     return MemcachedCache(*args, **kwargs)

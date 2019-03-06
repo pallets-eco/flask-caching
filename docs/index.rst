@@ -282,6 +282,7 @@ The following configuration values exist for Flask-Caching:
                                 * **redissentinel**: RedisSentinelCache (redis required)
                                 * **uwsgi**: UWSGICache (uwsgi required)
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
+                                * **gaememcached**: same as memcached -- backwards compatibility)
                                 * **saslmemcached**: SASLMemcachedCache (pylibmc required)
                                 * **spreadsaslmemcached**: SpreadSASLMemcachedCache (pylibmc required)
 
