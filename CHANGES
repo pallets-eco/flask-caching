@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-Version 1.6.0 Unreleased
+Version 1.6.0 2019-03-06
 ````````````````````````
 
 - The ``delete_many`` function is now able to ignore any errors and continue
@@ -11,6 +11,8 @@ Version 1.6.0 Unreleased
   ``True``. This was and still is only relevant for the **filesystem** and
   **simple** cache backends.
   PR `#94 <https://github.com/sh4nks/flask-caching/pull/94>`_.
+- Re-added the ``gaememcached`` CACHE_TYPE for improved backwards compatibility.
+- Documentation improvements
 
 
 Version 1.5.0 2019-02-23
