@@ -31,7 +31,7 @@ Or through the factory method:
 Links
 =====
 
-* `Documentation <https://pythonhosted.org/Flask-Caching/>`_
+* `Documentation <https://flask-caching.readthedocs.io>`_
 * `Source Code <https://github.com/sh4nks/flask-caching>`_
 * `Issues <https://github.com/sh4nks/flask-caching/issues>`_
 * `original Flask-Cache Extension <https://github.com/thadeusb/flask-cache>`_
@@ -90,18 +90,18 @@ setup(
     ],
     cmdclass={"test": PyTest},
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
