@@ -30,9 +30,15 @@ Cache is managed through a ``Cache`` instance::
     from flask import Flask
     from flask_caching import Cache
 
+    config = {
+        "DEBUG": True,          # some Flask specific configs
+        "CACHE_TYPE": "simple", # Flask-Caching related configs
+        "CACHE_DEFAULT_TIMEOUT": 300
+    }
     app = Flask(__name__)
-    # Check Configuring Flask-Caching section for more details
-    cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+    # tell Flask to use the above defined config
+    app.config.from_mapping(config)
+    cache = Cache(app)
 
 You may also set up your ``Cache`` instance later at configuration time using
 **init_app** method::
@@ -42,8 +48,8 @@ You may also set up your ``Cache`` instance later at configuration time using
     app = Flask(__name__)
     cache.init_app(app)
 
-You may also provide an alternate configuration dictionary, useful if there will
-be multiple ``Cache`` instances each with a different backend::
+You may also provide an alternate configuration dictionary, useful if there
+will be multiple ``Cache`` instances each with a different backend::
 
     #: Method A: During instantiation of class
     cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -268,8 +274,9 @@ For example:
     def html(foo=None):
         if foo is not None:
             cache.set("foo", foo)
+        bar = cache.get("foo")
         return render_template_string(
-            "<html><body>foo cache: {{foo}}</body></html>", foo=cache.get("foo")
+            "<html><body>foo cache: {{bar}}</body></html>", bar=bar
         )
 
 
@@ -303,7 +310,7 @@ The following configuration values exist for Flask-Caching:
                                 * **redissentinel**: RedisSentinelCache (redis required)
                                 * **uwsgi**: UWSGICache (uwsgi required)
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
-                                * **gaememcached**: same as memcached -- backwards compatibility)
+                                * **gaememcached**: same as memcached (for backwards compatibility)
                                 * **saslmemcached**: SASLMemcachedCache (pylibmc required)
                                 * **spreadsaslmemcached**: SpreadSASLMemcachedCache (pylibmc required)
 
