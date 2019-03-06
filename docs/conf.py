@@ -53,6 +53,8 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
+autodoc_member_order = "bysource"
+
 # General information about the project.
 project = u'Flask-Caching'
 copyright = u'2016, Thadeus Burgess, Peter Justin'
