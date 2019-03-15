@@ -286,7 +286,7 @@ class Cache(object):
         timeout=None,
         key_prefix="view/%s",
         unless=None,
-        response_filter=None
+        response_filter=None,
         forced_update=None,
         query_string=False,
         hash_method=hashlib.md5,
