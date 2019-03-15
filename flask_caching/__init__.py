@@ -286,10 +286,10 @@ class Cache(object):
         timeout=None,
         key_prefix="view/%s",
         unless=None,
-        response_filter=None,
         forced_update=None,
         query_string=False,
         hash_method=hashlib.md5,
+        response_filter=None,
     ):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -396,7 +396,7 @@ class Cache(object):
                 if rv is None:
                     rv = f(*args, **kwargs)
 
-                    if response_filter is not None and response_filter(rv):
+                    if response_filter is None or response_filter(rv):
                         try:
                             self.cache.set(
                                 cache_key,
