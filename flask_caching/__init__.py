@@ -286,6 +286,7 @@ class Cache(object):
         timeout=None,
         key_prefix="view/%s",
         unless=None,
+        response_filter=None
         forced_update=None,
         query_string=False,
         hash_method=hashlib.md5,
@@ -394,18 +395,20 @@ class Cache(object):
 
                 if rv is None:
                     rv = f(*args, **kwargs)
-                    try:
-                        self.cache.set(
-                            cache_key,
-                            rv,
-                            timeout=decorated_function.cache_timeout,
-                        )
-                    except Exception:
-                        if self.app.debug:
-                            raise
-                        logger.exception(
-                            "Exception possibly due to " "cache backend."
-                        )
+
+                    if response_filter is not None and response_filter(rv):
+                        try:
+                            self.cache.set(
+                                cache_key,
+                                rv,
+                                timeout=decorated_function.cache_timeout,
+                            )
+                        except Exception:
+                            if self.app.debug:
+                                raise
+                            logger.exception(
+                                "Exception possibly due to " "cache backend."
+                            )
                 return rv
 
             def make_cache_key(*args, **kwargs):
