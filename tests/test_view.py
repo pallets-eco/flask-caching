@@ -97,7 +97,7 @@ def test_cached_view_forced_update(app, cache):
     @app.route('/a')
     @cache.cached(5, forced_update=lambda: forced_update)
     def view():
-        return str(time.time()), 
+        return str(time.time())
 
     tc = app.test_client()
 
