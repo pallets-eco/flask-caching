@@ -60,7 +60,6 @@ def test_cached_view_response_filter(app, cache):
     @app.route('/a')
     @cache.cached(5, response_filter=lambda x: x[1]<400)
     def cached_view():
-        print("app.rt",app.return_code)
         return (str(time.time()), app.return_code)
     
     tc = app.test_client()
