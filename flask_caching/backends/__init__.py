@@ -19,7 +19,7 @@ from flask_caching.backends.rediscache import RedisCache, RedisSentinelCache
 from flask_caching.backends.simple import SimpleCache
 
 try:
-    from flask_caching.backends.uwsgi import UWSGICache
+    from flask_caching.backends.uwsgicache import UWSGICache
 
     has_UWSGICache = True
 except ImportError:
