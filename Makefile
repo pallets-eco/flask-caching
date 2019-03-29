@@ -1,4 +1,4 @@
-.PHONY: test tox clean wheel upload docs
+.PHONY: test tox clean dist upload docs
 
 test:
 	pytest
@@ -12,7 +12,7 @@ clean:
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -rf {} +
 
-wheel:
+dist:
 	python setup.py sdist bdist_wheel
 
 upload:
