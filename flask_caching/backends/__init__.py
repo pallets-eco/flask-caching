@@ -136,9 +136,7 @@ def memcached(app, config, args, kwargs):
 
 
 def gaememcached(app, config, args, kwargs):
-    args.append(config["CACHE_MEMCACHED_SERVERS"])
-    kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
-    return MemcachedCache(*args, **kwargs)
+    return memcached(app, config, args, kwargs)
 
 
 def saslmemcached(app, config, args, kwargs):
