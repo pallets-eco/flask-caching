@@ -902,10 +902,9 @@ class Cache(object):
             backend.
         """
         if not callable(f):
-            raise DeprecationWarning(
-                "Deleting messages by relative name is "
-                "no longer reliable, please switch to a "
-                "function reference."
+            raise TypeError(
+                "Deleting messages by relative name is not supported, please"
+                "use a function reference."
             )
 
         if not (args or kwargs):
@@ -926,10 +925,9 @@ class Cache(object):
             in the cache backend.
         """
         if not callable(f):
-            raise DeprecationWarning(
-                "Deleting messages by relative name is "
-                "no longer reliable, please use a "
-                "function reference."
+            raise TypeError(
+                "Deleting messages by relative name is not supported, please"
+                "use a function reference."
             )
 
         self._memoize_version(f, delete=True)
