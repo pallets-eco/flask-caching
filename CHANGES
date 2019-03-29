@@ -1,6 +1,17 @@
 Changelog
 ---------
 
+Version 1.7.0 2019-03-29
+````````````````````````
+
+**This is the last version supporting Python 2!**
+
+- Added a feature called 'response_filter' which enables one to only
+  cache views depending on the response code.
+  PR `#99 <https://github.com/sh4nks/flask-caching/pull/99>`_.
+- A DeprecationWarning got turned into a TypeError.
+
+
 Version 1.6.0 2019-03-06
 ````````````````````````
 
