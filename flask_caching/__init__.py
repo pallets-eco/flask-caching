@@ -354,10 +354,12 @@ class Cache(object):
                               is expired or not. Useful for background
                               renewal of cached functions.
 
-        :param response_filter: Default None. If not None, the callable is invoked
-                              after the cached funtion evaluation, and is given one arguement,
-                              the response content. If the callable returns False, the content 
-                              will not be cached. Useful to prevent caching of code 500 responses.
+        :param response_filter: Default None. If not None, the callable is
+                                invoked after the cached funtion evaluation,
+                                and is given one arguement, the response
+                                content. If the callable returns False, the
+                                content will not be cached. Useful to prevent
+                                caching of code 500 responses.
 
         :param query_string: Default False. When True, the cache key
                              used will be the result of hashing the
@@ -396,7 +398,7 @@ class Cache(object):
                     if self.app.debug:
                         raise
                     logger.exception(
-                        "Exception possibly due to " "cache backend."
+                        "Exception possibly due to cache backend."
                     )
                     return f(*args, **kwargs)
 
@@ -414,7 +416,7 @@ class Cache(object):
                             if self.app.debug:
                                 raise
                             logger.exception(
-                                "Exception possibly due to " "cache backend."
+                                "Exception possibly due to cache backend."
                             )
                 return rv
 
@@ -759,7 +761,7 @@ class Cache(object):
                     if self.app.debug:
                         raise
                     logger.exception(
-                        "Exception possibly due to " "cache backend."
+                        "Exception possibly due to cache backend."
                     )
                     return f(*args, **kwargs)
 
@@ -775,7 +777,7 @@ class Cache(object):
                         if self.app.debug:
                             raise
                         logger.exception(
-                            "Exception possibly due to " "cache backend."
+                            "Exception possibly due to cache backend."
                         )
                 return rv
 
