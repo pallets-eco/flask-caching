@@ -55,6 +55,40 @@ def test_cached_view_unless(app, cache):
 
     assert the_time == rv.data.decode('utf-8')
 
+def test_cached_view_response_filter(app, cache):
+
+    @app.route('/a')
+    @cache.cached(5, response_filter=lambda x: x[1]<400)
+    def cached_view():
+        return (str(time.time()), app.return_code)
+    
+    tc = app.test_client()
+    
+    # 500 response does not cache
+
+    app.return_code = 500
+
+    rv = tc.get('/a')
+    the_time = rv.data.decode('utf-8')
+
+    time.sleep(1)
+
+    rv = tc.get('/a')
+    assert the_time != rv.data.decode('utf-8')
+
+    
+    # 200 response caches
+
+    app.return_code = 200
+
+    rv = tc.get('/a')
+    the_time = rv.data.decode('utf-8')
+
+    time.sleep(1)
+
+    rv = tc.get('/a')
+    assert the_time == rv.data.decode('utf-8')
+
 
 def test_cached_view_forced_update(app, cache):
     forced_update = False

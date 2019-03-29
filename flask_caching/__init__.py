@@ -287,6 +287,7 @@ class Cache(object):
         key_prefix="view/%s",
         unless=None,
         forced_update=None,
+        response_filter=None,
         query_string=False,
         hash_method=hashlib.md5,
     ):
@@ -352,6 +353,12 @@ class Cache(object):
                               cache value will be updated regardless cache
                               is expired or not. Useful for background
                               renewal of cached functions.
+
+        :param response_filter: Default None. If not None, the callable is invoked
+                              after the cached funtion evaluation, and is given one arguement,
+                              the response content. If the callable returns False, the content 
+                              will not be cached. Useful to prevent caching of code 500 responses.
+
         :param query_string: Default False. When True, the cache key
                              used will be the result of hashing the
                              ordered query string parameters. This
@@ -360,6 +367,7 @@ class Cache(object):
                              were passed in a different order. See
                              _make_cache_key_query_string() for more
                              details.
+
         :param hash_method: Default hashlib.md5. The hash method used to
                             generate the keys for cached results.
 
@@ -394,18 +402,20 @@ class Cache(object):
 
                 if rv is None:
                     rv = f(*args, **kwargs)
-                    try:
-                        self.cache.set(
-                            cache_key,
-                            rv,
-                            timeout=decorated_function.cache_timeout,
-                        )
-                    except Exception:
-                        if self.app.debug:
-                            raise
-                        logger.exception(
-                            "Exception possibly due to " "cache backend."
-                        )
+
+                    if response_filter is None or response_filter(rv):
+                        try:
+                            self.cache.set(
+                                cache_key,
+                                rv,
+                                timeout=decorated_function.cache_timeout,
+                            )
+                        except Exception:
+                            if self.app.debug:
+                                raise
+                            logger.exception(
+                                "Exception possibly due to " "cache backend."
+                            )
                 return rv
 
             def make_cache_key(*args, **kwargs):
