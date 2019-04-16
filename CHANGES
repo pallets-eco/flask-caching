@@ -1,5 +1,15 @@
 Changelog
 ---------
+Version 1.7.1 2019-04-16
+````````````````````````
+
+**This is the last version supporting Python 2!**
+
+- Fix introspecting Python 3 functions by using varkw.
+  PR `#101 <https://github.com/sh4nks/flask-caching/pull/101>`_.
+- Remove leftover files (``uwsgi.py``) in PyPI package. See issue
+  `#102 <https://github.com/sh4nks/flask-caching/issues/102>`_ for more details.
+
 
 Version 1.7.0 2019-03-29
 ````````````````````````
