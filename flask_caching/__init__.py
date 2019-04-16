@@ -660,11 +660,21 @@ class Cache(object):
             try:
                 # Python >= 3.0
                 argspec = inspect.getfullargspec(unless)
+                has_args = (
+                    len(argspec.args) > 0 or
+                    argspec.varargs or
+                    argspec.varkw
+                )
             except AttributeError:
                 argspec = inspect.getargspec(unless)
+                has_args = (
+                    len(argspec.args) > 0 or
+                    argspec.varargs or
+                    argspec.keywords
+                )
 
             # If unless() takes args, pass them in.
-            if len(argspec.args) > 0 and argspec.varargs and argspec.keywords:
+            if has_args:
                 if unless(f, *args, **kwargs) is True:
                     bypass_cache = True
             elif unless() is True:
