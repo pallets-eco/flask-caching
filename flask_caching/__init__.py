@@ -392,8 +392,16 @@ class Cache(object):
 
                     if callable(forced_update) and forced_update() is True:
                         rv = None
+                        found = False
                     else:
                         rv = self.cache.get(cache_key)
+                        found = True
+
+                        # If the value returned by cache.get() is None, it
+                        # might be because the key is not found in the cache
+                        # or because the cached value is actually None
+                        if rv is None:
+                            found = self.cache.has(cache_key)
                 except Exception:
                     if self.app.debug:
                         raise
@@ -402,7 +410,7 @@ class Cache(object):
                     )
                     return f(*args, **kwargs)
 
-                if rv is None:
+                if not found:
                     rv = f(*args, **kwargs)
 
                     if response_filter is None or response_filter(rv):
@@ -765,8 +773,16 @@ class Cache(object):
 
                     if callable(forced_update) and forced_update() is True:
                         rv = None
+                        found = False
                     else:
                         rv = self.cache.get(cache_key)
+                        found = True
+
+                        # If the value returned by cache.get() is None, it
+                        # might be because the key is not found in the cache
+                        # or because the cached value is actually None
+                        if rv is None:
+                            found = self.cache.has(cache_key)
                 except Exception:
                     if self.app.debug:
                         raise
@@ -775,7 +791,7 @@ class Cache(object):
                     )
                     return f(*args, **kwargs)
 
-                if rv is None:
+                if not found:
                     rv = f(*args, **kwargs)
                     try:
                         self.cache.set(
