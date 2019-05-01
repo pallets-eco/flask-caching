@@ -226,14 +226,14 @@ class TestRedisCache(GenericCacheTests):
         else:
             host = redis.Redis()
 
-        c = backends.RedisCache(host=host, key_prefix="werkzeug-test-case:")
+        c = backends.RedisCache(host=host, key_prefix=lambda: "werkzeug-test-case:")
         yield lambda: c
         c.clear()
 
     def test_compat(self, c):
-        assert c._write_client.set(c.key_prefix + "foo", "Awesome")
+        assert c._write_client.set(c.key_prefix() + "foo", "Awesome")
         assert c.get("foo") == b"Awesome"
-        assert c._write_client.set(c.key_prefix + "foo", "42")
+        assert c._write_client.set(c.key_prefix() + "foo", "42")
         assert c.get("foo") == 42
 
     def test_empty_host(self):
