@@ -77,3 +77,27 @@ def test_cache_accepts_multiple_ciphers(app, cache, hash_method):
         his_list = get_random_bits()
 
         assert my_list != his_list
+
+
+def test_cached_none(app, cache):
+    with app.test_request_context():
+        from collections import Counter
+
+        call_counter = Counter()
+
+        @cache.cached()
+        def cache_none(param):
+            call_counter[param] += 1
+
+            return None
+
+        cache_none(1)
+
+        assert call_counter[1] == 1
+        assert cache_none(1) is None
+        assert call_counter[1] == 1
+
+        cache.clear()
+
+        cache_none(1)
+        assert call_counter[1] == 2
