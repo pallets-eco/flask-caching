@@ -101,3 +101,84 @@ def test_cached_none(app, cache):
 
         cache_none(1)
         assert call_counter[1] == 2
+
+
+def test_cache_forced_update(app, cache):
+    from collections import Counter
+
+    with app.test_request_context():
+        need_update = False
+        call_counter = Counter()
+
+        @cache.cached(1, forced_update=lambda: need_update)
+        def cached_function(param):
+            call_counter[param] += 1
+
+            return 1
+
+        cached_function(1)
+        assert call_counter[1] == 1
+
+        assert cached_function(1) == 1
+        assert call_counter[1] == 1
+
+        need_update = True
+
+        assert cached_function(1) == 1
+        assert call_counter[1] == 2
+
+
+def test_cache_forced_update_params(app, cache):
+    from collections import Counter
+
+    with app.test_request_context():
+        cached_call_counter = Counter()
+        call_counter = Counter()
+        call_params = {}
+
+        def need_update(param):
+            """This helper function returns True if it has been called with
+            the same params for more than 2 times
+            """
+
+            call_counter[param] += 1
+            call_params[call_counter[param] - 1] = (param,)
+
+            return call_counter[param] > 2
+
+        @cache.cached(1, forced_update=need_update)
+        def cached_function(param):
+            cached_call_counter[param] += 1
+
+            return 1
+
+        assert cached_function(1) == 1
+        # need_update should have been called once
+        assert call_counter[1] == 1
+        # the parameters used to call need_update should be the same as the
+        # parameters used to call cached_function
+        assert call_params[0] == (1,)
+        # the cached function should have been called once
+        assert cached_call_counter[1] == 1
+
+        assert cached_function(1) == 1
+        # need_update should have been called twice by now as forced_update
+        # should be called regardless of the arguments
+        assert call_counter[1] == 2
+        # the parameters used to call need_update should be the same as the
+        # parameters used to call cached_function
+        assert call_params[1] == (1,)
+        # this time the forced_update should have returned False, so
+        # cached_function should not have been called again
+        assert cached_call_counter[1] == 1
+
+        assert cached_function(1) == 1
+        # need_update should have been called thrice by now as forced_update
+        # should be called regardless of the arguments
+        assert call_counter[1] == 3
+        # the parameters used to call need_update should be the same as the
+        # parameters used to call cached_function
+        assert call_params[1] == (1,)
+        # this time the forced_update should have returned True, so
+        # cached_function should have been called again
+        assert cached_call_counter[1] == 2
