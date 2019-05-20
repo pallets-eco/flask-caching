@@ -483,6 +483,7 @@ class Cache(object):
         self,
         f,
         args=None,
+        kwargs=None,
         reset=False,
         delete=False,
         timeout=None,
@@ -508,7 +509,12 @@ class Cache(object):
         version_data_list = list(self.cache.get_many(*fetch_keys))
         dirty = False
 
-        if callable(forced_update) and forced_update() is True:
+        if callable(forced_update) and \
+           (
+               forced_update(*(args or ()), **(kwargs or {}))
+               if wants_args(forced_update)
+               else forced_update()
+           ) is True:
             # Mark key as dirty to update its TTL
             dirty = True
 
@@ -746,7 +752,12 @@ class Cache(object):
                         f, *args, **kwargs
                     )
 
-                    if callable(forced_update) and forced_update() is True:
+                    if callable(forced_update) and \
+                       (
+                           forced_update(*args, **kwargs)
+                           if wants_args(forced_update)
+                           else forced_update()
+                       ) is True:
                         rv = None
                         found = False
                     else:
