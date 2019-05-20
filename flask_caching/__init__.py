@@ -41,6 +41,15 @@ delchars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = (dict((k, None) for k in delchars),)
 
 
+def wants_args(f):
+    """Check if the function wants any arguments
+    """
+
+    argspec = inspect.getfullargspec(f)
+
+    return bool(argspec.args or argspec.varargs or argspec.varkw)
+
+
 def get_arg_names(f):
     """Return arguments of function
 
@@ -364,7 +373,12 @@ class Cache(object):
                             args, kwargs, use_request=True
                         )
 
-                    if callable(forced_update) and forced_update() is True:
+                    if callable(forced_update) and \
+                       (
+                           forced_update(*args, **kwargs)
+                           if wants_args(forced_update)
+                           else forced_update()
+                       ) is True:
                         rv = None
                         found = False
                     else:
