@@ -564,3 +564,32 @@ def test_memoize_when_using_variable_mix_args_unpacking(app, cache):
 
         assert big_foo(1, 2, 3, 4, x=2, y=5) != result_a
         assert big_foo(4, 7, 7, 2, x=1, y=4) != result_b
+
+
+def test_memoize_none(app, cache):
+    with app.test_request_context():
+        from collections import Counter
+
+        call_counter = Counter()
+
+        @cache.memoize()
+        def memoize_none(param):
+            call_counter[param] += 1
+
+            return None
+
+        memoize_none(1)
+
+        # The memoized function should have been called
+        assert call_counter[1] == 1
+
+        # Next time we call the function, the value should be coming from the cache…
+        assert memoize_none(1) is None
+
+        # …thus, the call counter should remain 1
+        assert call_counter[1] == 1
+
+        cache.clear()
+
+        memoize_none(1)
+        assert call_counter[1] == 2
