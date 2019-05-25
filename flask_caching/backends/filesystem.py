@@ -6,7 +6,6 @@ from time import time
 
 from werkzeug.posixemulation import rename
 
-from flask_caching._compat import text_type
 from flask_caching.backends.base import BaseCache
 
 try:
@@ -133,7 +132,7 @@ class FileSystemCache(BaseCache):
         return True
 
     def _get_filename(self, key):
-        if isinstance(key, text_type):
+        if isinstance(key, str):
             key = key.encode("utf-8")  # XXX unicode review
         hash = self._hash_method(key).hexdigest()
         return os.path.join(self._path, hash)

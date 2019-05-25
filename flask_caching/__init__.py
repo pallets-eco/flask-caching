@@ -21,8 +21,6 @@ from collections import OrderedDict
 from flask import current_app, request, url_for
 from werkzeug.utils import import_string
 
-from flask_caching._compat import PY2, iteritems
-
 __version__ = "1.7.2"
 
 logger = logging.getLogger(__name__)
@@ -40,10 +38,7 @@ SUPPORTED_HASH_FUNCTIONS = [
 # Used to remove control characters and whitespace from cache keys.
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 delchars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
-if PY2:
-    null_control = (None, delchars)
-else:
-    null_control = (dict((k, None) for k in delchars),)
+null_control = (dict((k, None) for k in delchars),)
 
 
 def get_arg_names(f):
@@ -52,40 +47,19 @@ def get_arg_names(f):
     :param f:
     :return: String list of arguments
     """
-    try:
-        # Python >= 3.3
-        sig = inspect.signature(f)
-        return [
-            parameter.name
-            for parameter in sig.parameters.values()
-            if parameter.kind == parameter.POSITIONAL_OR_KEYWORD
-        ]
-    except AttributeError:
-        try:
-            # Python >= 3.0
-            return inspect.getfullargspec(f).args
-        except AttributeError:
-            return inspect.getargspec(f).args
+    sig = inspect.signature(f)
+    return [
+        parameter.name
+        for parameter in sig.parameters.values()
+        if parameter.kind == parameter.POSITIONAL_OR_KEYWORD
+    ]
 
 
 def get_arg_default(f, position):
-    try:
-        # Python >= 3.3
-        sig = inspect.signature(f)
-        arg = list(sig.parameters.values())[position]
-        arg_def = arg.default
-        return arg_def if arg_def != inspect.Parameter.empty else None
-    except AttributeError:
-        try:
-            spec = inspect.getfullargspec(f)
-        except AttributeError:
-            spec = inspect.getargspec(f)
-
-        args_len = len(spec.args)
-        if spec.defaults and abs(position - args_len) <= len(spec.defaults):
-            return spec.defaults[position - args_len]
-        else:
-            return None
+    sig = inspect.signature(f)
+    arg = list(sig.parameters.values())[position]
+    arg_def = arg.default
+    return arg_def if arg_def != inspect.Parameter.empty else None
 
 
 def function_namespace(f, args=None):
@@ -432,11 +406,7 @@ class Cache(object):
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
-                try:
-                    # Python >= 3.0
-                    argspec_args = inspect.getfullargspec(f).args
-                except AttributeError:
-                    argspec_args = inspect.getargspec(f).args
+                argspec_args = inspect.getfullargspec(f).args
 
                 for arg_name, arg in zip(argspec_args, args):
                     kwargs[arg_name] = arg
@@ -651,7 +621,7 @@ class Cache(object):
             OrderedDict(
                 sorted(
                     (k, v)
-                    for k, v in iteritems(kwargs)
+                    for k, v in kwargs.items()
                     if k in kw_keys_remaining
                 )
             ),
@@ -665,21 +635,12 @@ class Cache(object):
         bypass_cache = False
 
         if callable(unless):
-            try:
-                # Python >= 3.0
-                argspec = inspect.getfullargspec(unless)
-                has_args = (
-                    len(argspec.args) > 0 or
-                    argspec.varargs or
-                    argspec.varkw
-                )
-            except AttributeError:
-                argspec = inspect.getargspec(unless)
-                has_args = (
-                    len(argspec.args) > 0 or
-                    argspec.varargs or
-                    argspec.keywords
-                )
+            argspec = inspect.getfullargspec(unless)
+            has_args = (
+                len(argspec.args) > 0 or
+                argspec.varargs or
+                argspec.varkw
+            )
 
             # If unless() takes args, pass them in.
             if has_args:
