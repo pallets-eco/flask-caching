@@ -9,6 +9,11 @@ various backends to any Flask application. Besides providing support for all
 it is also possible to develop your own caching backend by subclassing
 :class:`flask_caching.backends.base.BaseCache` class.
 
+Version support
+---------------
+
+Since 1.8, Flask-Caching supports only Python 3.5+.
+
 
 Installation
 ------------

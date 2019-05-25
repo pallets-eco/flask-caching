@@ -14,7 +14,6 @@ import time
 import pytest
 
 from flask_caching import backends
-from flask_caching._compat import text_type
 
 try:
     import redis
@@ -240,7 +239,7 @@ class TestRedisCache(GenericCacheTests):
         with pytest.raises(ValueError) as exc_info:
             backends.RedisCache(host=None)
         assert (
-            text_type(exc_info.value)
+            str(exc_info.value)
             == "RedisCache host parameter may not be None"
         )
 

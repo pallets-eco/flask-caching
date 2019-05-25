@@ -1,7 +1,7 @@
 import re
 from time import time
 
-from flask_caching._compat import PY2, iteritems, range_type, to_native
+from flask_caching._compat import to_native
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
 
 try:
@@ -97,7 +97,7 @@ class MemcachedCache(BaseCache):
         d = rv = self._client.get_multi(_keys)
         if have_encoded_keys or self.key_prefix:
             rv = {}
-            for key, value in iteritems(d):
+            for key, value in d.items():
                 rv[key_mapping[key]] = value
         if len(rv) < len(keys):
             for key in keys:
@@ -264,7 +264,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         serialized = pickle.dumps(value, 2)
         values = {}
         len_ser = len(serialized)
-        chks = range_type(0, len_ser, self.chunksize)
+        chks = range(0, len_ser, self.chunksize)
 
         if len(chks) > self.maxchunk:
             raise ValueError(
@@ -290,16 +290,12 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
             return super(SpreadSASLMemcachedCache, self).get(key)
 
     def _genkeys(self, key):
-        return ["%s.%s" % (key, i) for i in range_type(self.maxchunk)]
+        return ["%s.%s" % (key, i) for i in range(self.maxchunk)]
 
     def _get(self, key):
-        to_get = ["%s.%s" % (key, i) for i in range_type(self.maxchunk)]
+        to_get = ["%s.%s" % (key, i) for i in range(self.maxchunk)]
         result = super(SpreadSASLMemcachedCache, self).get_many(*to_get)
-
-        if PY2:
-            serialized = "".join(v for v in result if v is not None)
-        else:
-            serialized = b"".join(v for v in result if v is not None)
+        serialized = b"".join(v for v in result if v is not None)
 
         if not serialized:
             return None
