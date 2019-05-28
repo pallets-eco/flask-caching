@@ -23,7 +23,7 @@ from werkzeug.utils import import_string
 
 from flask_caching._compat import PY2, iteritems
 
-__version__ = "1.7.1"
+__version__ = "1.7.2"
 
 logger = logging.getLogger(__name__)
 
