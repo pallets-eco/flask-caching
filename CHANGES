@@ -1,9 +1,16 @@
 Changelog
 ---------
-Version 1.7.1 2019-04-16
+Version 1.7.2 2019-05-28
 ````````````````````````
 
 **This is the last version supporting Python 2!**
+
+- Do not run a cached/memoized function if the cached return value is None.
+  PR `#108 <https://github.com/sh4nks/flask-caching/pull/108>`_.
+
+
+Version 1.7.1 2019-04-16
+````````````````````````
 
 - Fix introspecting Python 3 functions by using varkw.
   PR `#101 <https://github.com/sh4nks/flask-caching/pull/101>`_.
@@ -13,8 +20,6 @@ Version 1.7.1 2019-04-16
 
 Version 1.7.0 2019-03-29
 ````````````````````````
-
-**This is the last version supporting Python 2!**
 
 - Added a feature called 'response_filter' which enables one to only
   cache views depending on the response code.
