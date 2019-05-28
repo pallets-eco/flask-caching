@@ -929,7 +929,7 @@ class Cache(object):
         """
         if not callable(f):
             raise TypeError(
-                "Deleting messages by relative name is not supported, please"
+                "Deleting messages by relative name is not supported, please "
                 "use a function reference."
             )
 
