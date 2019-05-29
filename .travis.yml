@@ -1,10 +1,12 @@
+os: linux
+dist: xenial
 sudo: false
 language: python
 python:
  - "2.7"
  - "3.5"
  - "3.6"
- - "3.7-dev"
+ - "3.7"
  - "pypy"
  - "pypy3"
 install:
