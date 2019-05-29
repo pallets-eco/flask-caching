@@ -56,6 +56,10 @@ Python import lines like:
 
  ```from flask_caching import Cache```
 
+Python versions
+-----
+
+Starting with version 1.8, Flask-Caching dropped Python 2 support. The library is tested against Python 3.5, 3.6, and PyPy 3.5.
 
 Links
 =====

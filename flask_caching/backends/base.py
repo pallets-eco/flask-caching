@@ -1,6 +1,3 @@
-from flask_caching._compat import iteritems
-
-
 def iteritems_wrapper(mappingorseq):
     """Wrapper for efficient iteration over mappings represented by dicts
     or sequences::
@@ -13,7 +10,7 @@ def iteritems_wrapper(mappingorseq):
 
     """
     if hasattr(mappingorseq, "items"):
-        return iteritems(mappingorseq)
+        return mappingorseq.items()
     return mappingorseq
 
 

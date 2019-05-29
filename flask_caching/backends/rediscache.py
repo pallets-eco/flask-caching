@@ -1,4 +1,3 @@
-from flask_caching._compat import integer_types, string_types
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
 
 try:
@@ -42,7 +41,7 @@ class RedisCache(BaseCache):
         super(RedisCache, self).__init__(default_timeout)
         if host is None:
             raise ValueError("RedisCache host parameter may not be None")
-        if isinstance(host, string_types):
+        if isinstance(host, str):
             try:
                 import redis
             except ImportError:
@@ -71,7 +70,7 @@ class RedisCache(BaseCache):
         integers as regular string and pickle dumps everything else.
         """
         t = type(value)
-        if t in integer_types:
+        if t == int:
             return str(value).encode("ascii")
         return b"!" + pickle.dumps(value)
 
