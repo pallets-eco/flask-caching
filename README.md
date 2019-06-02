@@ -6,6 +6,7 @@ Flask-Caching
 [![PyPI Version](https://img.shields.io/pypi/v/Flask-Caching.svg)](https://pypi.python.org/pypi/Flask-Caching)
 [![Documentation Status](https://readthedocs.org/projects/flask-caching/badge/?version=latest)](https://flask-caching.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/license-BSD-yellow.svg)](https://github.com/sh4nks/flask-caching)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
 Adds easy cache support to Flask.
 
