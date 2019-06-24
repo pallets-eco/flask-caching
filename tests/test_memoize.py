@@ -339,6 +339,30 @@ def test_memoize_classfunc(app, cache):
     assert adder1.add(3) != adder2.add(3)
 
 
+def test_memoize_classfunc_repr(app, cache):
+    class Adder(object):
+        def __init__(self, initial):
+            self.initial = initial
+
+        @cache.memoize()
+        def add(self, b):
+            return self.initial + b
+
+        def __repr__(self):
+            return "42"
+
+        def __caching_id__(self):
+            return self.initial
+
+    adder1 = Adder(1)
+    adder2 = Adder(2)
+
+    x = adder1.add(3)
+    assert adder1.add(3) == x
+    assert adder1.add(4) != x
+    assert adder1.add(3) != adder2.add(3)
+
+
 def test_memoize_classfunc_delete(app, cache):
     with app.test_request_context():
         class Adder(object):

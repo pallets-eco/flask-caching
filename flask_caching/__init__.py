@@ -71,6 +71,14 @@ def get_arg_default(f, position):
     return arg_def if arg_def != inspect.Parameter.empty else None
 
 
+def get_id_func(obj):
+    return getattr(obj, "__caching_id__", repr)
+
+
+def get_id(obj):
+    return get_id_func(obj)(obj)
+
+
 def function_namespace(f, args=None):
     """Attempts to returns unique namespace for function"""
     m_args = get_arg_names(f)
@@ -79,10 +87,11 @@ def function_namespace(f, args=None):
 
     instance_self = getattr(f, "__self__", None)
 
+
     if instance_self and not inspect.isclass(instance_self):
-        instance_token = repr(f.__self__)
+        instance_token = get_id(f.__self__)
     elif m_args and m_args[0] == "self" and args:
-        instance_token = repr(args[0])
+        instance_token = get_id(args[0])
 
     module = f.__module__
 
@@ -604,11 +613,11 @@ class Cache(object):
         for i in range(args_len):
             arg_default = get_arg_default(f, i)
             if i == 0 and arg_names[i] in ("self", "cls"):
-                #: use the repr of the class instance
+                #: use the id func of the class instance
                 #: this supports instance methods for
                 #: the memoized functions, giving more
                 #: flexibility to developers
-                arg = repr(args[0])
+                arg = get_id(args[0])
                 arg_num += 1
             elif arg_names[i] in kwargs:
                 arg = kwargs[arg_names[i]]
@@ -631,7 +640,7 @@ class Cache(object):
             #     try:
             #         arg = hash(arg)
             #     except:
-            #         arg = repr(arg)
+            #         arg = get_id(arg)
 
             #: Or what about a special __cacherepr__ function
             #: on an object, this allows objects to act normal
