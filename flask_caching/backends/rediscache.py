@@ -57,6 +57,7 @@ class RedisCache(BaseCache):
             client = host
 
         self._write_client = self._read_clients = client
+        self._version = redis.__version__
         self.key_prefix = key_prefix or ""
 
     def _normalize_timeout(self, timeout):
@@ -163,6 +164,14 @@ class RedisCache(BaseCache):
 
     def dec(self, key, delta=1):
         return self._write_client.decr(name=self.key_prefix + key, amount=delta)
+
+    def unlink(self, *keys):
+        if self._version >= "3.0.0":
+            return self._write_client.unlink(*keys)
+        raise ValueError(
+            "Current Redis Version doesn't support this operation, "
+            "please upgrade redis-py to 3.0.0 at least"
+        )
 
 
 class RedisSentinelCache(RedisCache):
