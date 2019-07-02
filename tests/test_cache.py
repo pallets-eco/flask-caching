@@ -41,6 +41,14 @@ def test_cache_delete_many_ignored(app):
     assert cache.get("hi") is None
 
 
+def test_cache_unlink(app):
+    cache = Cache(config={"CACHE_TYPE": "redis"})
+    cache.init_app(app)
+    cache.set("biggerkey", "test" * 100)
+    cache.unlink("biggerkey")
+    assert cache.get("bigger_key") is None
+
+
 def test_cache_cached_function(app, cache):
     with app.test_request_context():
 
