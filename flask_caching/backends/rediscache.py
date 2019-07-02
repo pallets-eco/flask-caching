@@ -168,6 +168,10 @@ class RedisCache(BaseCache):
         """
         when redis-py >= 3.0.0 and redis > 4, support this operation
         """
+        if not keys:
+            return
+        if self.key_prefix:
+            keys = [self.key_prefix + key for key in keys]
         unlink = getattr(self._write_client, "unlink", None)
         if unlink is not None and callable(unlink):
             return self._write_client.unlink(*keys)

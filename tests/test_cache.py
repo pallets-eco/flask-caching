@@ -182,18 +182,3 @@ def test_cache_forced_update_params(app, cache):
         # this time the forced_update should have returned True, so
         # cached_function should have been called again
         assert cached_call_counter[1] == 2
-
-
-def test_unlink_keys(app, cache):
-    config = {
-        "CACHE_TYPE": "redis",
-        "CACHE_REDIS_URL": "redis://localhost:6379/2",
-    }
-    cache.init_app(app, config=config)
-    cache.add("biggerkey", [0] * 100)
-    try:
-        cache.unlink("biggerkey")
-    except ValueError:
-        return
-    else:
-        assert cache.get("bigger_key") is None
