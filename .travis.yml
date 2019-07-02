@@ -15,3 +15,5 @@ script: py.test
 after_success:
   - coveralls
 cache: pip
+services:
+ - redis-server
