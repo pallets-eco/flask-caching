@@ -269,7 +269,9 @@ class Cache(object):
         only support Redis
         """
         unlink = getattr(self.cache, "unlink", None)
-        return unlink(*args, **kwargs) if unlink is not None else None
+        if unlink is not None and callable(unlink):
+            return unlink(*args, **kwargs)
+        return self.delete(*args, **kwargs)
 
     def cached(
         self,
