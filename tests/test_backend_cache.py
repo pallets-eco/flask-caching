@@ -244,7 +244,7 @@ class TestRedisCache(GenericCacheTests):
         )
 
     def test_unlink_keys(self, c):
-        c._write_client.set(c.key_prefix + "biggerkey", [0] * 100)
+        c._write_client.set(c.key_prefix + "biggerkey", "test" * 100)
         c._write_client.unlink(c.key_prefix + "biggerkey")
         assert c.get("bigger_key") is None
 
