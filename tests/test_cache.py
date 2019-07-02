@@ -39,6 +39,15 @@ def test_cache_unlink(app, redis_server):
     assert cache.get("biggerkey") is None
 
 
+def test_cache_unlink_if_not(app):
+    cache = Cache(config={"CACHE_TYPE": "simple"})
+    cache.init_app(app)
+
+    cache.set("biggerkey", "test" * 100)
+    cache.unlink("biggerkey")
+    assert cache.get("biggerkey") is None
+
+
 def test_cache_delete_many_ignored(app):
     cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_IGNORE_ERRORS": True})
     cache.init_app(app)
