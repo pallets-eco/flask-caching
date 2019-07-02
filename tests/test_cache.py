@@ -36,7 +36,7 @@ def test_cache_unlink(app, redis_server):
     cache.init_app(app)
     cache.set("biggerkey", "test" * 100)
     cache.unlink("biggerkey")
-    assert cache.get("bigger_key") is None
+    assert cache.get("biggerkey") is None
 
 
 def test_cache_delete_many_ignored(app):
