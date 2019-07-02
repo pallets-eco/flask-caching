@@ -57,7 +57,6 @@ class RedisCache(BaseCache):
             client = host
 
         self._write_client = self._read_clients = client
-        self._version = redis.__version__
         self.key_prefix = key_prefix or ""
 
     def _normalize_timeout(self, timeout):
@@ -166,7 +165,11 @@ class RedisCache(BaseCache):
         return self._write_client.decr(name=self.key_prefix + key, amount=delta)
 
     def unlink(self, *keys):
-        if self._version >= "3.0.0":
+        """
+        when redis-py >= 3.0.0 and redis > 4, support this operation
+        """
+        unlink = getattr(self._write_client, "unlink", None)
+        if unlink is not None and callable(unlink):
             return self._write_client.unlink(*keys)
         raise ValueError(
             "Current Redis Version doesn't support this operation, "
