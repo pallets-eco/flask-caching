@@ -264,6 +264,13 @@ class Cache(object):
         """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
+    def unlink(self, *args, **kwargs):
+        """Proxy function for internal cache object
+        only support Redis
+        """
+        unlink = getattr(self.cache, "unlink", None)
+        return unlink(*args, **kwargs) if unlink is not None else None
+
     def cached(
         self,
         timeout=None,
