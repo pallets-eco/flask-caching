@@ -271,7 +271,7 @@ class Cache(object):
         unlink = getattr(self.cache, "unlink", None)
         if unlink is not None and callable(unlink):
             return unlink(*args, **kwargs)
-        return self.delete(*args, **kwargs)
+        return self.delete_many(*args, **kwargs)
 
     def cached(
         self,
