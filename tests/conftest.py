@@ -6,7 +6,6 @@ import flask
 import pytest
 
 import flask_caching as fsc
-from xprocess import ProcessStarter
 
 # build the path to the uwsgi marker file
 # when running in tox, this will be relative to the tox env
@@ -16,6 +15,7 @@ filename = os.path.join(
 
 try:
     __import__("pytest_xprocess")
+    from xprocess import ProcessStarter
 except ImportError:
 
     @pytest.fixture(scope="session")
