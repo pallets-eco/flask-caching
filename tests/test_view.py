@@ -27,6 +27,26 @@ def test_cached_view(app, cache):
     assert the_time != rv.data.decode('utf-8')
 
 
+def test_not_enabled_cached_view(app, cache):
+    cache._enabled = False
+
+    @app.route("/no")
+    @cache.cached(5)
+    def cached_view():
+        return str(time.time())
+
+    tc = app.test_client()
+
+    rv = tc.get('/no')
+    the_time = rv.data.decode('utf-8')
+
+    time.sleep(1)
+
+    rv = tc.get('/no')
+
+    assert the_time != rv.data.decode('utf-8')
+
+
 def test_cached_view_unless(app, cache):
     @app.route('/a')
     @cache.cached(5, unless=lambda: True)

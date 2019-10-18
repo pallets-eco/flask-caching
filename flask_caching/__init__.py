@@ -16,7 +16,6 @@ import logging
 import string
 import uuid
 import warnings
-from collections import OrderedDict
 
 from flask import current_app, request, url_for
 from werkzeug.utils import import_string
@@ -144,6 +143,7 @@ class Cache(object):
 
         self.with_jinja2_ext = with_jinja2_ext
         self.config = config
+        self._enabled = False
 
         if app is not None:
             self.init_app(app, config)
@@ -176,6 +176,10 @@ class Cache(object):
         config.setdefault("CACHE_ARGS", [])
         config.setdefault("CACHE_TYPE", "null")
         config.setdefault("CACHE_NO_NULL_WARNING", False)
+        # Turn off cache conveniently, if use the more cached cases
+        # If you have the multi instances,
+        # you can turn off the cache which is in any instance
+        self._enabled = config.get("CACHE_ENABLED", True)
 
         if (
             config["CACHE_TYPE"] == "null"
@@ -193,6 +197,10 @@ class Cache(object):
             app.jinja_env.add_extension(CacheExtension)
 
         self._set_cache(app, config)
+
+    @property
+    def enabled(self):
+        return self._enabled
 
     def _set_cache(self, app, config):
         import_me = config["CACHE_TYPE"]
@@ -371,9 +379,11 @@ class Cache(object):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
-                if self._bypass_cache(unless, f, *args, **kwargs):
+                if (
+                    self._bypass_cache(unless, f, *args, **kwargs) or
+                    not self.enabled
+                ):
                     return f(*args, **kwargs)
-
                 try:
                     if query_string:
                         cache_key = _make_cache_key_query_string()
@@ -647,7 +657,7 @@ class Cache(object):
         new_args.extend(args[len(arg_names):])
         return (
             tuple(new_args),
-            OrderedDict(
+            dict(
                 sorted(
                     (k, v)
                     for k, v in kwargs.items()
@@ -753,9 +763,11 @@ class Cache(object):
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: bypass cache
-                if self._bypass_cache(unless, f, *args, **kwargs):
+                if (
+                    self._bypass_cache(unless, f, *args, **kwargs) or
+                    not self.enabled
+                ):
                     return f(*args, **kwargs)
-
                 try:
                     cache_key = decorated_function.make_cache_key(
                         f, *args, **kwargs
