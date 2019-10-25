@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+    flask_caching.backends.base
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    This module contains the BaseCache that other caching
+    backends have to implement.
+
+    :copyright: (c) 2018 by Peter Justin.
+    :copyright: (c) 2010 by Thadeus Burgess.
+    :license: BSD, see LICENSE for more details.
+"""
+
+
 def iteritems_wrapper(mappingorseq):
     """Wrapper for efficient iteration over mappings represented by dicts
     or sequences::

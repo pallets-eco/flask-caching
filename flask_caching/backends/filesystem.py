@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+    flask_caching.backends.filesystem
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    The filesystem caching backend.
+
+    :copyright: (c) 2018 by Peter Justin.
+    :copyright: (c) 2010 by Thadeus Burgess.
+    :license: BSD, see LICENSE for more details.
+"""
 import errno
 import hashlib
 import os
@@ -50,7 +61,7 @@ class FileSystemCache(BaseCache):
         default_timeout=300,
         mode=0o600,
         hash_method=hashlib.md5,
-        ignore_errors=False
+        ignore_errors=False,
     ):
         super(FileSystemCache, self).__init__(default_timeout)
         self._path = cache_dir

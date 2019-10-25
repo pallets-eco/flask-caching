@@ -10,10 +10,13 @@
     :license: BSD, see LICENSE for more details.
 """
 from flask_caching.backends.filesystem import FileSystemCache
-from flask_caching.backends.memcache import (MemcachedCache,
-                                             SASLMemcachedCache,
-                                             SpreadSASLMemcachedCache)
+from flask_caching.backends.memcache import (
+    MemcachedCache,
+    SASLMemcachedCache,
+    SpreadSASLMemcachedCache,
+)
 from flask_caching.backends.null import NullCache
+
 # TODO: Rename to "redis" when python2 support is removed
 from flask_caching.backends.rediscache import RedisCache, RedisSentinelCache
 from flask_caching.backends.simple import SimpleCache

@@ -1,4 +1,16 @@
 import re
+
+# -*- coding: utf-8 -*-
+"""
+    flask_caching.backends.memcache
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    The memcache caching backend.
+
+    :copyright: (c) 2018 by Peter Justin.
+    :copyright: (c) 2010 by Thadeus Burgess.
+    :license: BSD, see LICENSE for more details.
+"""
 from time import time
 
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
@@ -272,7 +284,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
         for i in chks:
             values["%s.%s" % (key, i // self.chunksize)] = serialized[
-                i:i + self.chunksize
+                i : i + self.chunksize
             ]
 
         super(SpreadSASLMemcachedCache, self).set_many(values, timeout)

@@ -83,7 +83,6 @@ def function_namespace(f, args=None):
 
     instance_self = getattr(f, "__self__", None)
 
-
     if instance_self and not inspect.isclass(instance_self):
         instance_token = get_id(f.__self__)
     elif m_args and m_args[0] == "self" and args:
@@ -191,10 +190,7 @@ class Cache(object):
                 "caching is effectively disabled."
             )
 
-        if (
-            config["CACHE_TYPE"] == "filesystem"
-            and config["CACHE_DIR"] is None
-        ):
+        if config["CACHE_TYPE"] == "filesystem" and config["CACHE_DIR"] is None:
             warnings.warn(
                 "Flask-Caching: CACHE_TYPE is set to filesystem but no "
                 "CACHE_DIR is set."
@@ -396,12 +392,15 @@ class Cache(object):
                             args, kwargs, use_request=True
                         )
 
-                    if callable(forced_update) and \
-                       (
-                           forced_update(*args, **kwargs)
-                           if wants_args(forced_update)
-                           else forced_update()
-                       ) is True:
+                    if (
+                        callable(forced_update)
+                        and (
+                            forced_update(*args, **kwargs)
+                            if wants_args(forced_update)
+                            else forced_update()
+                        )
+                        is True
+                    ):
                         rv = None
                         found = False
                     else:
@@ -416,9 +415,7 @@ class Cache(object):
                 except Exception:
                     if self.app.debug:
                         raise
-                    logger.exception(
-                        "Exception possibly due to cache backend."
-                    )
+                    logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
 
                 if not found:
@@ -532,12 +529,15 @@ class Cache(object):
         version_data_list = list(self.cache.get_many(*fetch_keys))
         dirty = False
 
-        if callable(forced_update) and \
-           (
-               forced_update(*(args or ()), **(kwargs or {}))
-               if wants_args(forced_update)
-               else forced_update()
-           ) is True:
+        if (
+            callable(forced_update)
+            and (
+                forced_update(*(args or ()), **(kwargs or {}))
+                if wants_args(forced_update)
+                else forced_update()
+            )
+            is True
+        ):
             # Mark key as dirty to update its TTL
             dirty = True
 
@@ -658,14 +658,12 @@ class Cache(object):
 
             new_args.append(arg)
 
-        new_args.extend(args[len(arg_names):])
+        new_args.extend(args[len(arg_names) :])
         return (
             tuple(new_args),
             OrderedDict(
                 sorted(
-                    (k, v)
-                    for k, v in kwargs.items()
-                    if k in kw_keys_remaining
+                    (k, v) for k, v in kwargs.items() if k in kw_keys_remaining
                 )
             ),
         )
@@ -679,11 +677,7 @@ class Cache(object):
 
         if callable(unless):
             argspec = inspect.getfullargspec(unless)
-            has_args = (
-                len(argspec.args) > 0 or
-                argspec.varargs or
-                argspec.varkw
-            )
+            has_args = len(argspec.args) > 0 or argspec.varargs or argspec.varkw
 
             # If unless() takes args, pass them in.
             if has_args:
@@ -775,12 +769,15 @@ class Cache(object):
                         f, *args, **kwargs
                     )
 
-                    if callable(forced_update) and \
-                       (
-                           forced_update(*args, **kwargs)
-                           if wants_args(forced_update)
-                           else forced_update()
-                       ) is True:
+                    if (
+                        callable(forced_update)
+                        and (
+                            forced_update(*args, **kwargs)
+                            if wants_args(forced_update)
+                            else forced_update()
+                        )
+                        is True
+                    ):
                         rv = None
                         found = False
                     else:
@@ -795,9 +792,7 @@ class Cache(object):
                 except Exception:
                     if self.app.debug:
                         raise
-                    logger.exception(
-                        "Exception possibly due to cache backend."
-                    )
+                    logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
 
                 if not found:

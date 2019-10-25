@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+    flask_caching.backends.rediscache
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    The redis caching backend.
+
+    :copyright: (c) 2018 by Peter Justin.
+    :copyright: (c) 2010 by Thadeus Burgess.
+    :license: BSD, see LICENSE for more details.
+"""
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
 
 try:
@@ -60,7 +71,11 @@ class RedisCache(BaseCache):
         self.key_prefix = key_prefix or ""
 
     def _get_prefix(self):
-        return self.key_prefix if isinstance(self.key_prefix, str) else self.key_prefix()
+        return (
+            self.key_prefix
+            if isinstance(self.key_prefix, str)
+            else self.key_prefix()
+        )
 
     def _normalize_timeout(self, timeout):
         timeout = BaseCache._normalize_timeout(self, timeout)
@@ -95,7 +110,9 @@ class RedisCache(BaseCache):
             return value
 
     def get(self, key):
-        return self.load_object(self._read_clients.get(self._get_prefix() + key))
+        return self.load_object(
+            self._read_clients.get(self._get_prefix() + key)
+        )
 
     def get_many(self, *keys):
         if self.key_prefix:
@@ -135,7 +152,9 @@ class RedisCache(BaseCache):
             if timeout == -1:
                 pipe.set(name=self._get_prefix() + key, value=dump)
             else:
-                pipe.setex(name=self._get_prefix() + key, value=dump, time=timeout)
+                pipe.setex(
+                    name=self._get_prefix() + key, value=dump, time=timeout
+                )
         return pipe.execute()
 
     def delete(self, key):
@@ -162,10 +181,14 @@ class RedisCache(BaseCache):
         return status
 
     def inc(self, key, delta=1):
-        return self._write_client.incr(name=self._get_prefix() + key, amount=delta)
+        return self._write_client.incr(
+            name=self._get_prefix() + key, amount=delta
+        )
 
     def dec(self, key, delta=1):
-        return self._write_client.decr(name=self._get_prefix() + key, amount=delta)
+        return self._write_client.decr(
+            name=self._get_prefix() + key, amount=delta
+        )
 
     def unlink(self, *keys):
         """when redis-py >= 3.0.0 and redis > 4, support this operation

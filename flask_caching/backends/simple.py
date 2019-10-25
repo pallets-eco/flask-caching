@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+    flask_caching.backends.simple
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    The simple cache backend.
+
+    :copyright: (c) 2018 by Peter Justin.
+    :copyright: (c) 2010 by Thadeus Burgess.
+    :license: BSD, see LICENSE for more details.
+"""
 from time import time
 
 from flask_caching.backends.base import BaseCache
