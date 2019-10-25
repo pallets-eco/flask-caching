@@ -1,7 +1,6 @@
 import re
 from time import time
 
-from flask_caching._compat import to_native
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
 
 try:
@@ -62,10 +61,10 @@ class MemcachedCache(BaseCache):
             # client.
             self._client = servers
 
-        self.key_prefix = to_native(key_prefix)
+        self.key_prefix = key_prefix or None
 
     def _normalize_key(self, key):
-        key = to_native(key, "utf-8")
+        key = str(key)
         if self.key_prefix:
             key = self.key_prefix + key
         return key
