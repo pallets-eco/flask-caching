@@ -191,6 +191,15 @@ class Cache(object):
                 "caching is effectively disabled."
             )
 
+        if (
+            config["CACHE_TYPE"] == "filesystem"
+            and config["CACHE_DIR"] is None
+        ):
+            warnings.warn(
+                "Flask-Caching: CACHE_TYPE is set to filesystem but no "
+                "CACHE_DIR is set."
+            )
+
         if self.with_jinja2_ext:
             from .jinja2ext import CacheExtension, JINJA_CACHE_ATTR_NAME
 
