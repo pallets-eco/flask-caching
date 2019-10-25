@@ -1,5 +1,15 @@
 Changelog
 ---------
+
+Version 1.8.0 Unreleased
+````````````````````````
+
+- Allow to use ``__caching_id__`` rather than ``__repr__`` as an object
+  caching key.
+  PR `#123 <https://github.com/sh4nks/flask-caching/pull/123>`_.
+
+
+
 Version 1.7.2 2019-05-28
 ````````````````````````
 
