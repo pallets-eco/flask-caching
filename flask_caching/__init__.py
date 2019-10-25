@@ -71,12 +71,8 @@ def get_arg_default(f, position):
     return arg_def if arg_def != inspect.Parameter.empty else None
 
 
-def get_id_func(obj):
-    return getattr(obj, "__caching_id__", repr)
-
-
 def get_id(obj):
-    return get_id_func(obj)(obj)
+    return getattr(obj, "__caching_id__", repr)(obj)
 
 
 def function_namespace(f, args=None):
