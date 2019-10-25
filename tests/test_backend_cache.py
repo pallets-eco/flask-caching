@@ -212,27 +212,34 @@ class TestFileSystemCache(GenericCacheTests):
 class TestRedisCache(GenericCacheTests):
     _can_use_fast_sleep = False
 
+    def gen_key_prefix():
+        return "werkzeug-test-case:"
+
     @pytest.fixture(scope="class", autouse=True)
     def requirements(self, redis_server):
         pass
 
-    @pytest.fixture(params=(None, False, True))
+    @pytest.fixture(params=(None, False, True, gen_key_prefix))
     def make_cache(self, request):
+        key_prefix = "werkzeug-test-case:"
         if request.param is None:
             host = "localhost"
         elif request.param:
             host = redis.StrictRedis()
+        elif callable(request.param):
+            key_prefix = gen_key_prefix
+            host = redis.Redis()
         else:
             host = redis.Redis()
 
-        c = backends.RedisCache(host=host, key_prefix=lambda: "werkzeug-test-case:")
+        c = backends.RedisCache(host=host, key_prefix=key_prefix)
         yield lambda: c
         c.clear()
 
     def test_compat(self, c):
-        assert c._write_client.set(c.key_prefix() + "foo", "Awesome")
+        assert c._write_client.set(c._get_prefix() + "foo", "Awesome")
         assert c.get("foo") == b"Awesome"
-        assert c._write_client.set(c.key_prefix() + "foo", "42")
+        assert c._write_client.set(c._get_prefix() + "foo", "42")
         assert c.get("foo") == 42
 
     def test_empty_host(self):
