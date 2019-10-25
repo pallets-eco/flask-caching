@@ -59,6 +59,9 @@ class RedisCache(BaseCache):
         self._write_client = self._read_clients = client
         self.key_prefix = key_prefix or ""
 
+    def _get_prefix(self):
+        return self.key_prefix if isinstance(self.key_prefix, str) else self.key_prefix()
+
     def _normalize_timeout(self, timeout):
         timeout = BaseCache._normalize_timeout(self, timeout)
         if timeout == 0:
@@ -92,11 +95,11 @@ class RedisCache(BaseCache):
             return value
 
     def get(self, key):
-        return self.load_object(self._read_clients.get(self.key_prefix + key))
+        return self.load_object(self._read_clients.get(self._get_prefix() + key))
 
     def get_many(self, *keys):
         if self.key_prefix:
-            keys = [self.key_prefix + key for key in keys]
+            keys = [self._get_prefix() + key for key in keys]
         return [self.load_object(x) for x in self._read_clients.mget(keys)]
 
     def set(self, key, value, timeout=None):
@@ -104,11 +107,11 @@ class RedisCache(BaseCache):
         dump = self.dump_object(value)
         if timeout == -1:
             result = self._write_client.set(
-                name=self.key_prefix + key, value=dump
+                name=self._get_prefix() + key, value=dump
             )
         else:
             result = self._write_client.setex(
-                name=self.key_prefix + key, value=dump, time=timeout
+                name=self._get_prefix() + key, value=dump, time=timeout
             )
         return result
 
@@ -116,9 +119,9 @@ class RedisCache(BaseCache):
         timeout = self._normalize_timeout(timeout)
         dump = self.dump_object(value)
         return self._write_client.setnx(
-            name=self.key_prefix + key, value=dump
+            name=self._get_prefix() + key, value=dump
         ) and self._write_client.expire(
-            name=self.key_prefix + key, time=timeout
+            name=self._get_prefix() + key, time=timeout
         )
 
     def set_many(self, mapping, timeout=None):
@@ -130,28 +133,28 @@ class RedisCache(BaseCache):
         for key, value in iteritems_wrapper(mapping):
             dump = self.dump_object(value)
             if timeout == -1:
-                pipe.set(name=self.key_prefix + key, value=dump)
+                pipe.set(name=self._get_prefix() + key, value=dump)
             else:
-                pipe.setex(name=self.key_prefix + key, value=dump, time=timeout)
+                pipe.setex(name=self._get_prefix() + key, value=dump, time=timeout)
         return pipe.execute()
 
     def delete(self, key):
-        return self._write_client.delete(self.key_prefix + key)
+        return self._write_client.delete(self._get_prefix() + key)
 
     def delete_many(self, *keys):
         if not keys:
             return
         if self.key_prefix:
-            keys = [self.key_prefix + key for key in keys]
+            keys = [self._get_prefix() + key for key in keys]
         return self._write_client.delete(*keys)
 
     def has(self, key):
-        return self._read_clients.exists(self.key_prefix + key)
+        return self._read_clients.exists(self._get_prefix() + key)
 
     def clear(self):
         status = False
         if self.key_prefix:
-            keys = self._read_clients.keys(self.key_prefix + "*")
+            keys = self._read_clients.keys(self._get_prefix() + "*")
             if keys:
                 status = self._write_client.delete(*keys)
         else:
@@ -159,10 +162,23 @@ class RedisCache(BaseCache):
         return status
 
     def inc(self, key, delta=1):
-        return self._write_client.incr(name=self.key_prefix + key, amount=delta)
+        return self._write_client.incr(name=self._get_prefix() + key, amount=delta)
 
     def dec(self, key, delta=1):
-        return self._write_client.decr(name=self.key_prefix + key, amount=delta)
+        return self._write_client.decr(name=self._get_prefix() + key, amount=delta)
+
+    def unlink(self, *keys):
+        """when redis-py >= 3.0.0 and redis > 4, support this operation
+        """
+        if not keys:
+            return
+        if self.key_prefix:
+            keys = [self.key_prefix + key for key in keys]
+
+        unlink = getattr(self._write_client, "unlink", None)
+        if unlink is not None and callable(unlink):
+            return self._write_client.unlink(*keys)
+        return self._write_client.delete(*keys)
 
     def unlink(self, *keys):
         """when redis-py >= 3.0.0 and redis > 4, support this operation
