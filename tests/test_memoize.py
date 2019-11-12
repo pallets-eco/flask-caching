@@ -677,3 +677,36 @@ def test_memoize_none(app, cache):
 
         memoize_none(1)
         assert call_counter[1] == 2
+
+
+def test_memoize_never_accept_none(app, cache):
+    """Asserting that when returns_none is True, we always
+       assume a None value returned from .get() means the key is not found
+    """
+    with app.test_request_context():
+        from collections import Counter
+
+        call_counter = Counter()
+
+        @cache.memoize(returns_none=False)
+        def memoize_none(param):
+            call_counter[param] += 1
+
+            return None
+
+        memoize_none(1)
+
+        # The memoized function should have been called
+        assert call_counter[1] == 1
+
+        # Next time we call the function, the value should be coming from the cache…
+        # But the value is None and so we treat it as uncached.
+        assert memoize_none(1) is None
+
+        # …thus, the call counter should increment to 2
+        assert call_counter[1] == 2
+
+        cache.clear()
+
+        memoize_none(1)
+        assert call_counter[1] == 3

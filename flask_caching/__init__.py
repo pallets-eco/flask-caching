@@ -695,6 +695,7 @@ class Cache(object):
         unless=None,
         forced_update=None,
         hash_method=hashlib.md5,
+        returns_none=True,
     ):
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
@@ -788,7 +789,16 @@ class Cache(object):
                         # might be because the key is not found in the cache
                         # or because the cached value is actually None
                         if rv is None:
-                            found = self.cache.has(cache_key)
+                            # If we're sure the function never returns None
+                            # (returns_none=True), don't bother checking for
+                            # key existence as it can lead to false positives
+                            # if a concurrent call already cached
+                            # the key between steps. This would cause us to
+                            # return None when we shouldn't
+                            if not returns_none:
+                                found = False
+                            else:
+                                found = self.cache.has(cache_key)
                 except Exception:
                     if self.app.debug:
                         raise
