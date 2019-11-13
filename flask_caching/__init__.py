@@ -753,6 +753,10 @@ class Cache(object):
                               renewal of cached functions.
         :param hash_method: Default hashlib.md5. The hash method used to
                             generate the keys for cached results.
+        :param cache_none: Default False. If set to True, add a key exists
+                           check when cache.get returns None. This will likely
+                           lead to wrongly returned None values in concurrent
+                           situations and is not recommended to use.
 
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
