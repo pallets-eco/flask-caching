@@ -656,7 +656,7 @@ def test_memoize_none(app, cache):
 
         call_counter = Counter()
 
-        @cache.memoize()
+        @cache.memoize(cache_none=True)
         def memoize_none(param):
             call_counter[param] += 1
 
@@ -680,7 +680,7 @@ def test_memoize_none(app, cache):
 
 
 def test_memoize_never_accept_none(app, cache):
-    """Asserting that when returns_none is True, we always
+    """Asserting that when cache_none is False, we always
        assume a None value returned from .get() means the key is not found
     """
     with app.test_request_context():
@@ -688,7 +688,7 @@ def test_memoize_never_accept_none(app, cache):
 
         call_counter = Counter()
 
-        @cache.memoize(returns_none=False)
+        @cache.memoize()
         def memoize_none(param):
             call_counter[param] += 1
 
