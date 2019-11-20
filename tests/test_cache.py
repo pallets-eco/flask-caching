@@ -113,7 +113,7 @@ def test_cached_none(app, cache):
 
         call_counter = Counter()
 
-        @cache.cached()
+        @cache.cached(cache_none=True)
         def cache_none(param):
             call_counter[param] += 1
 
@@ -129,6 +129,39 @@ def test_cached_none(app, cache):
 
         cache_none(1)
         assert call_counter[1] == 2
+
+
+def test_cached_doesnt_cache_none(app, cache):
+    """Asserting that when cache_none is False, we always
+       assume a None value returned from .get() means the key is not found
+    """
+    with app.test_request_context():
+        from collections import Counter
+
+        call_counter = Counter()
+
+        @cache.cached()
+        def cache_none(param):
+            call_counter[param] += 1
+
+            return None
+
+        cache_none(1)
+
+        # The cached function should have been called
+        assert call_counter[1] == 1
+
+        # Next time we call the function, the value should be coming from the cache…
+        # But the value is None and so we treat it as uncached.
+        assert cache_none(1) is None
+
+        # …thus, the call counter should increment to 2
+        assert call_counter[1] == 2
+
+        cache.clear()
+
+        cache_none(1)
+        assert call_counter[1] == 3
 
 
 def test_cache_forced_update(app, cache):
