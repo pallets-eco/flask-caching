@@ -292,6 +292,7 @@ class Cache(object):
         response_filter=None,
         query_string=False,
         hash_method=hashlib.md5,
+        cache_none=False,
     ):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -374,6 +375,10 @@ class Cache(object):
 
         :param hash_method: Default hashlib.md5. The hash method used to
                             generate the keys for cached results.
+        :param cache_none: Default False. If set to True, add a key exists
+                           check when cache.get returns None. This will likely
+                           lead to wrongly returned None values in concurrent
+                           situations and is not recommended to use.
 
         """
 
@@ -411,7 +416,16 @@ class Cache(object):
                         # might be because the key is not found in the cache
                         # or because the cached value is actually None
                         if rv is None:
-                            found = self.cache.has(cache_key)
+                            # If we're sure we don't need to cache None values
+                            # (cache_none=False), don't bother checking for
+                            # key existence, as it can lead to false positives
+                            # if a concurrent call already cached the
+                            # key between steps. This would cause us to
+                            # return None when we shouldn't
+                            if not cache_none:
+                                found = False
+                            else:
+                                found = self.cache.has(cache_key)
                 except Exception:
                     if self.app.debug:
                         raise
