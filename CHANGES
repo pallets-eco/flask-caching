@@ -4,11 +4,22 @@ Changelog
 Version 1.8.0 Unreleased
 ````````````````````````
 
+- **BREAKING:** Removed support for Python 2. Python 3.5 and upwards are
+  supported as of now.
+- Add option to specify if ``None`` is a cached value or not. See
+  PR `#140 <https://github.com/sh4nks/flask-caching/pull/140>`_ and
+  `#141 <https://github.com/sh4nks/flask-caching/pull/141>`_.
 - Allow to use ``__caching_id__`` rather than ``__repr__`` as an object
   caching key.
   PR `#123 <https://github.com/sh4nks/flask-caching/pull/123>`_.
 - The RedisCache backend now support generating the key_prefix via a callable.
   PR `#109 <https://github.com/sh4nks/flask-caching/pull/109>`_.
+- Emit a warning if the ``CACHE_TYPE`` is set to ``filesystem`` but no
+  ``CACHE_DIR`` is set.
+- Fixes Google App Engine Memcache backend.
+  See issue `#120 <https://github.com/sh4nks/flask-caching/issues/120>`_ for
+  more details.
+- Various documentation updates and fixes.
 
 
 Version 1.7.2 2019-05-28
