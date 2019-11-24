@@ -200,13 +200,13 @@ can be used to avoid the same block evaluating in different templates.
 
 Set the timeout to ``None`` for no timeout, but with custom keys::
 
-    {% cache None "key" %}
+    {% cache None, "key" %}
     ...
     {% endcache %}
 
 Set timeout to ``del`` to delete cached value::
 
-    {% cache 'del' key1 %}
+    {% cache 'del', key1 %}
     ...
     {% endcache %}
 

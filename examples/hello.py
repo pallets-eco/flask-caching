@@ -65,5 +65,17 @@ def html(foo=None):
     )
 
 
+@app.route("/template")
+def template():
+    dt = str(datetime.now())
+    return render_template_string(
+        """<html><body>foo cache:
+            {% cache 60, "random" %}
+                {{ range(1, 42) | random }}
+            {% endcache %}
+        </body></html>"""
+    )
+
+
 if __name__ == "__main__":
     app.run()
