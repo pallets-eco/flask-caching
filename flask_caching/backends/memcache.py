@@ -156,7 +156,11 @@ class MemcachedCache(BaseCache):
     def has(self, key):
         key = self._normalize_key(key)
         if _test_memcached_key(key):
-            return self._client.append(key, "")
+            try:
+                return self._client.append(key, "")
+            except AttributeError:
+                # GAEMemecache has no 'append' function
+                return True if self._client.get(key) is not None else False
         return False
 
     def clear(self):
