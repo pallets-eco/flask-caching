@@ -375,10 +375,6 @@ The following configuration values exist for Flask-Caching:
 =============================== ==================================================================
 
 
-In addition the standard Flask ``TESTING`` configuration option is used. If this
-is True then **Flask-Caching** will use NullCache only.
-
-
 Built-in Cache Backends
 -----------------------
 
