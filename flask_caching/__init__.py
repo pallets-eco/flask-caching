@@ -708,6 +708,7 @@ class Cache(object):
         make_name=None,
         unless=None,
         forced_update=None,
+        response_filter=None,
         hash_method=hashlib.md5,
         cache_none=False,
     ):
@@ -765,6 +766,12 @@ class Cache(object):
                               cache value will be updated regardless cache
                               is expired or not. Useful for background
                               renewal of cached functions.
+        :param response_filter: Default None. If not None, the callable is
+                                invoked after the cached funtion evaluation,
+                                and is given one arguement, the response
+                                content. If the callable returns False, the
+                                content will not be cached. Useful to prevent
+                                caching of code 500 responses.
         :param hash_method: Default hashlib.md5. The hash method used to
                             generate the keys for cached results.
         :param cache_none: Default False. If set to True, add a key exists
@@ -825,18 +832,20 @@ class Cache(object):
 
                 if not found:
                     rv = f(*args, **kwargs)
-                    try:
-                        self.cache.set(
-                            cache_key,
-                            rv,
-                            timeout=decorated_function.cache_timeout,
-                        )
-                    except Exception:
-                        if self.app.debug:
-                            raise
-                        logger.exception(
-                            "Exception possibly due to cache backend."
-                        )
+
+                    if response_filter is None or response_filter(rv):
+                        try:
+                            self.cache.set(
+                                cache_key,
+                                rv,
+                                timeout=decorated_function.cache_timeout,
+                            )
+                        except Exception:
+                            if self.app.debug:
+                                raise
+                            logger.exception(
+                                "Exception possibly due to cache backend."
+                            )
                 return rv
 
             decorated_function.uncached = f
