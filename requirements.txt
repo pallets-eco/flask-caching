@@ -1,8 +1,8 @@
 Flask
 Werkzeug
 Sphinx
-pytest<5.0.0
-pytest-cov<2.6.0
+pytest
+pytest-cov
 pytest-xprocess
 redis
 pylibmc

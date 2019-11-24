@@ -82,8 +82,8 @@ setup(
     platforms="any",
     install_requires=["Flask"],
     tests_require=[
-        "pytest<5.0.0",
-        "pytest-cov<2.6.0",
+        "pytest",
+        "pytest-cov",
         "pytest-xprocess",
         "pylibmc",
         "redis"
