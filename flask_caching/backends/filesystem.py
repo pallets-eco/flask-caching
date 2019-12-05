@@ -180,8 +180,7 @@ class FileSystemCache(BaseCache):
             )
             with os.fdopen(fd, "wb") as f:
                 pickle.dump(timeout, f, 1)
-                # 4 was the highest protocol
-                pickle.dump(value, f, 4)
+                pickle.dump(value, f, 4)  # 4 was the highest protocol
             rename(tmp, filename)
             os.chmod(filename, self._mode)
         except (IOError, OSError):

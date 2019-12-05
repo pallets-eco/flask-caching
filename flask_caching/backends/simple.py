@@ -77,8 +77,7 @@ class SimpleCache(BaseCache):
     def add(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        # 4 was the highest protocol
-        item = (expires, pickle.dumps(value, 4))
+        item = (expires, pickle.dumps(value, 4))  # 4 was the highest protocol
         if key in self._cache:
             return False
         self._cache.setdefault(key, item)
