@@ -13,16 +13,12 @@ import errno
 import hashlib
 import os
 import tempfile
+import _pickle as pickle
 from time import time
 
 from werkzeug.posixemulation import rename
 
 from flask_caching.backends.base import BaseCache
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle
 
 
 class FileSystemCache(BaseCache):
