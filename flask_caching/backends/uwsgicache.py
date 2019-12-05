@@ -10,13 +10,9 @@
     :license: BSD, see LICENSE for more details.
 """
 import platform
+import _pickle as pickle
 
 from flask_caching.backends.base import BaseCache
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle
 
 
 class UWSGICache(BaseCache):

@@ -9,14 +9,11 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+import _pickle as pickle
+
 from time import time
 
 from flask_caching.backends.base import BaseCache
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle
 
 
 class SimpleCache(BaseCache):
@@ -73,14 +70,14 @@ class SimpleCache(BaseCache):
         self._prune()
         self._cache[key] = (
             expires,
-            pickle.dumps(value, pickle.HIGHEST_PROTOCOL),
+            pickle.dumps(value, 4),  # 4 was the highest protocol
         )
         return True
 
     def add(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        item = (expires, pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+        item = (expires, pickle.dumps(value, 4))  # 4 was the highest protocol
         if key in self._cache:
             return False
         self._cache.setdefault(key, item)

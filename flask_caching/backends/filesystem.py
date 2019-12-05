@@ -13,16 +13,12 @@ import errno
 import hashlib
 import os
 import tempfile
+import _pickle as pickle
 from time import time
 
 from werkzeug.posixemulation import rename
 
 from flask_caching.backends.base import BaseCache
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle
 
 
 class FileSystemCache(BaseCache):
@@ -184,7 +180,7 @@ class FileSystemCache(BaseCache):
             )
             with os.fdopen(fd, "wb") as f:
                 pickle.dump(timeout, f, 1)
-                pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
+                pickle.dump(value, f, 4)  # 4 was the highest protocol
             rename(tmp, filename)
             os.chmod(filename, self._mode)
         except (IOError, OSError):

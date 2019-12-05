@@ -11,10 +11,7 @@
 """
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle
+import _pickle as pickle
 
 
 class RedisCache(BaseCache):
