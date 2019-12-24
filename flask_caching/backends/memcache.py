@@ -86,6 +86,14 @@ class MemcachedCache(BaseCache):
         if timeout > 0:
             # NOTE: pylibmc expect the timeout as delta time up to
             # 2592000 seconds (30 days)
+            if not hasattr(self, 'mc_library'):
+                try:
+                    import pylibmc
+                except ImportError:
+                    self.mc_library = None
+                else:
+                    self.mc_library = 'pylibmc'
+
             if self.mc_library != 'pylibmc':
                 timeout = int(time()) + timeout
             elif timeout > 2592000:
