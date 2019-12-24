@@ -86,13 +86,7 @@ class MemcachedCache(BaseCache):
         if timeout > 0:
             # NOTE: pylibmc expect the timeout as delta time up to
             # 2592000 seconds (30 days)
-            try:
-                import pylibmc
-                using_pylibmc = True
-            except ImportError:
-                using_pylibmc = False
-
-            if not using_pylibmc:
+            if self.mc_library != 'pylibmc':
                 timeout = int(time()) + timeout
             elif timeout > 2592000:
                 timeout = 0
@@ -193,6 +187,7 @@ class MemcachedCache(BaseCache):
         except ImportError:
             pass
         else:
+            self.mc_library = 'pylibmc'
             return pylibmc.Client(servers)
 
         try:
@@ -200,6 +195,7 @@ class MemcachedCache(BaseCache):
         except ImportError:
             pass
         else:
+            self.mc_library = 'google.appengine.api'
             return memcache.Client()
 
         try:
@@ -207,6 +203,7 @@ class MemcachedCache(BaseCache):
         except ImportError:
             pass
         else:
+            self.mc_library = 'memcache'
             return memcache.Client(servers)
 
         try:
@@ -214,6 +211,7 @@ class MemcachedCache(BaseCache):
         except ImportError:
             pass
         else:
+            self.mc_library = 'libmc'
             return libmc.Client(servers)
 
 
