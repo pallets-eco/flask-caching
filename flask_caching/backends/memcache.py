@@ -84,7 +84,19 @@ class MemcachedCache(BaseCache):
     def _normalize_timeout(self, timeout):
         timeout = BaseCache._normalize_timeout(self, timeout)
         if timeout > 0:
-            timeout = int(time()) + timeout
+            # NOTE: pylibmc expect the timeout as delta time up to
+            # 2592000 seconds (30 days)
+            try:
+                import pylibmc
+                using_pylibmc = True
+            except ImportError:
+                using_pylibmc = False
+
+            if not using_pylibmc:
+                timeout = int(time()) + timeout
+            elif timeout > 2592000:
+                timeout = 0
+
         return timeout
 
     def get(self, key):

@@ -276,6 +276,12 @@ class TestMemcachedCache(GenericCacheTests):
         c.set("foo", "bar", epoch + 100)
         assert c.get("foo") == "bar"
 
+    def test_timeouts(self, c):
+        c.set("foo", "bar", 1)
+        assert c.get("foo") == "bar"
+        time.sleep(1)
+        assert c.has("foo") is False
+
 
 class TestUWSGICache(GenericCacheTests):
     _can_use_fast_sleep = False
