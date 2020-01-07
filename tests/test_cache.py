@@ -88,6 +88,62 @@ def test_cache_cached_function(app, cache):
         assert my_list != his_list
 
 
+def test_cache_cached_function_with_source_check_enabled(app, cache):
+    with app.test_request_context():
+
+        @cache.cached(key_prefix="MyBits", source_check=True)
+        def get_random_bits():
+            return [random.randrange(0, 2) for i in range(50)]
+
+        first_attempt = get_random_bits()
+        second_attempt = get_random_bits()
+
+        assert second_attempt == first_attempt
+
+        #... change the source  to see if the return value changes when called
+        @cache.cached(key_prefix="MyBits", source_check=True)
+        def get_random_bits():
+            return {"val": [random.randrange(0, 2) for i in range(50)]}
+
+        third_attempt = get_random_bits()
+
+        assert third_attempt != first_attempt
+        # We changed the return data type so we do a check to be sure
+        assert isinstance(third_attempt, dict)
+
+        #... change the source back to what it was original and the data should
+        # be the same
+        @cache.cached(key_prefix="MyBits", source_check=True)
+        def get_random_bits():
+            return [random.randrange(0, 2) for i in range(50)]
+
+        forth_attempt = get_random_bits()
+
+        assert forth_attempt == first_attempt
+
+
+def test_cache_cached_function_with_source_check_disabled(app, cache):
+    with app.test_request_context():
+
+        @cache.cached(key_prefix="MyBits", source_check=False)
+        def get_random_bits():
+            return [random.randrange(0, 2) for i in range(50)]
+
+        first_attempt = get_random_bits()
+        second_attempt = get_random_bits()
+
+        assert second_attempt == first_attempt
+
+        #... change the source  to see if the return value changes when called
+        @cache.cached(key_prefix="MyBits", source_check=False)
+        def get_random_bits():
+            return {"val": [random.randrange(0, 2) for i in range(50)]}
+
+        third_attempt = get_random_bits()
+
+        assert third_attempt == first_attempt
+
+
 def test_cache_accepts_multiple_ciphers(app, cache, hash_method):
     with app.test_request_context():
 

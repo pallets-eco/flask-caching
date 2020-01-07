@@ -149,6 +149,8 @@ class Cache(object):
         self.with_jinja2_ext = with_jinja2_ext
         self.config = config
 
+        self.source_check = None
+
         if app is not None:
             self.init_app(app, config)
 
@@ -180,6 +182,7 @@ class Cache(object):
         config.setdefault("CACHE_ARGS", [])
         config.setdefault("CACHE_TYPE", "null")
         config.setdefault("CACHE_NO_NULL_WARNING", False)
+        config.setdefault("CACHE_SOURCE_CHECK", False)
 
         if (
             config["CACHE_TYPE"] == "null"
@@ -195,6 +198,8 @@ class Cache(object):
                 "Flask-Caching: CACHE_TYPE is set to filesystem but no "
                 "CACHE_DIR is set."
             )
+
+        self.source_check = config["CACHE_SOURCE_CHECK"]
 
         if self.with_jinja2_ext:
             from .jinja2ext import CacheExtension, JINJA_CACHE_ATTR_NAME
@@ -293,6 +298,7 @@ class Cache(object):
         query_string=False,
         hash_method=hashlib.md5,
         cache_none=False,
+        source_check=None
     ):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -380,6 +386,15 @@ class Cache(object):
                            lead to wrongly returned None values in concurrent
                            situations and is not recommended to use.
 
+        :param source_check: Default None. If None will use the value set by
+                             CACHE_SOURCE_CHECK.
+                             If True, include the function's source code in the
+                             hash to avoid using cached values when the source
+                             code has changed and the input values remain the
+                             same. This ensures that the cache_key will be
+                             formed with the function's source code hash in
+                             addition to other parameters that may be included
+                             in the formation of the key.
         """
 
         def decorator(f):
@@ -388,6 +403,10 @@ class Cache(object):
                 #: Bypass the cache entirely.
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
+
+                nonlocal source_check
+                if source_check is None:
+                    source_check = self.source_check
 
                 try:
                     if query_string:
@@ -467,6 +486,10 @@ class Cache(object):
                 Produces the same cache key regardless of argument order, e.g.,
                 both `?limit=10&offset=20` and `?offset=20&limit=10` will
                 always produce the same exact cache key.
+
+                If func is provided and is callable it will be used to hash
+                the function's source code and include it in the cache key.
+                This will only be done is source_check is True.
                 """
 
                 # Create a tuple of (key, value) pairs, where the key is the
@@ -475,6 +498,7 @@ class Cache(object):
                 # is always the same for query string args whose keys/values
                 # are the same, regardless of the order in which they are
                 # provided.
+
                 args_as_sorted_tuple = tuple(
                     sorted((pair for pair in request.args.items(multi=True)))
                 )
@@ -482,8 +506,19 @@ class Cache(object):
                 # used as a key for cache. Turn them into bytes so that the
                 # hash function will accept them
                 args_as_bytes = str(args_as_sorted_tuple).encode()
-                hashed_args = str(hash_method(args_as_bytes).hexdigest())
-                cache_key = request.path + hashed_args
+                cache_hash = hash_method(args_as_bytes)
+
+                # Use the source code if source_check is True and update the
+                # cache_hash before generating the hashing and using it in
+                # cache_key
+                if source_check and callable(f):
+                    func_source_code = inspect.getsource(f)
+                    cache_hash.update(func_source_code.encode("utf-8"))
+
+                cache_hash = str(cache_hash.hexdigest())
+
+                cache_key = request.path + cache_hash
+
                 return cache_key
 
             def _make_cache_key(args, kwargs, use_request):
@@ -496,6 +531,14 @@ class Cache(object):
                         cache_key = key_prefix % url_for(f.__name__, **kwargs)
                 else:
                     cache_key = key_prefix
+
+                if source_check and callable(f):
+                    func_source_code = inspect.getsource(f)
+                    func_source_hash = hash_method(
+                        func_source_code.encode("utf-8"))
+                    func_source_hash = str(func_source_hash.hexdigest())
+
+                    cache_key += func_source_hash
 
                 return cache_key
 
