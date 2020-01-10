@@ -626,6 +626,7 @@ class Cache(object):
         timeout=None,
         forced_update=False,
         hash_method=hashlib.md5,
+        source_check=False
     ):
         """Function used to create the cache_key for memoized functions."""
 
@@ -650,6 +651,13 @@ class Cache(object):
 
             cache_key = hash_method()
             cache_key.update(updated.encode("utf-8"))
+
+            # Use the source code if source_check is True and update the
+            # cache_key with the function's source.
+            if source_check and callable(f):
+                func_source_code = inspect.getsource(f)
+                cache_key.update(func_source_code.encode("utf-8"))
+
             cache_key = base64.b64encode(cache_key.digest())[:16]
             cache_key = cache_key.decode("utf-8")
             cache_key += version_data
@@ -754,6 +762,7 @@ class Cache(object):
         response_filter=None,
         hash_method=hashlib.md5,
         cache_none=False,
+        source_check=None
     ):
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
@@ -822,6 +831,16 @@ class Cache(object):
                            lead to wrongly returned None values in concurrent
                            situations and is not recommended to use.
 
+        :param source_check: Default None. If None will use the value set by
+                             CACHE_SOURCE_CHECK.
+                             If True, include the function's source code in the
+                             hash to avoid using cached values when the source
+                             code has changed and the input values remain the
+                             same. This ensures that the cache_key will be
+                             formed with the function's source code hash in
+                             addition to other parameters that may be included
+                             in the formation of the key.
+
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
         """
@@ -832,6 +851,10 @@ class Cache(object):
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return f(*args, **kwargs)
+
+                nonlocal source_check
+                if source_check is None:
+                    source_check = self.source_check
 
                 try:
                     cache_key = decorated_function.make_cache_key(
@@ -898,6 +921,7 @@ class Cache(object):
                 timeout=decorated_function,
                 forced_update=forced_update,
                 hash_method=hash_method,
+                source_check=source_check
             )
             decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
