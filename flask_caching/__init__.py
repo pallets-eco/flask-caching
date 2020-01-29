@@ -447,7 +447,7 @@ class Cache(object):
                             )
                 return rv
 
-            def make_cache_key(*args, **kwargs):
+            def make_cache_key(*args, use_request=False, **kwargs):
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
@@ -456,7 +456,7 @@ class Cache(object):
                 for arg_name, arg in zip(argspec_args, args):
                     kwargs[arg_name] = arg
 
-                return _make_cache_key(args, kwargs, use_request=False)
+                return _make_cache_key(args, kwargs, use_request=use_request)
 
             def _make_cache_key_query_string():
                 """Create consistent keys for query string arguments.
