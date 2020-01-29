@@ -332,3 +332,61 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
     # ... making sure that different query parameter values
     # don't yield the same cache!
     assert not third_time == second_time
+
+
+def test_generate_cache_key_from_request_body(app, cache):
+    """Test a user supplied cache key maker.
+    Create three requests to verify that the same request body
+    always reference the same cache
+    Also test to make sure that the same cache isn't being used for
+    any/all query string parameters.
+    Caching functionality is verified by a `@cached` route `/works` which
+    produces a time in its response. The time in the response can verify that
+    two requests with the same request body produce responses with the same time.
+    """
+
+    def _make_cache_key_request_body():
+        """Create keys based on request body."""
+        # now hash the request body so it can be
+        # used as a key for cache.
+        request_body = request.get_data(as_text=False)
+        hashed_body = str(hashlib.md5(request_body).hexdigest())
+        cache_key = request.path + hashed_body
+        return cache_key
+
+    cache_decorator = cache.cached()
+    cache_decorator.make_cache_key = _make_cache_key_request_body
+
+    @app.route('/works', methods=['POST'])
+    @cache_decorator
+    def view_works():
+        return str(time.time()) + request.get_data().decode()
+
+    tc = app.test_client()
+
+    # Make our request...
+    first_response = tc.post(
+        '/works', data=dict(mock=True, value=1, test=2)
+    )
+    first_time = first_response.get_data(as_text=True)
+
+    # Make the request...
+    second_response = tc.post(
+        '/works', data=dict(mock=True, value=1, test=2)
+    )
+    second_time = second_response.get_data(as_text=True)
+
+    # Now make sure the time for the first and second
+    # requests are the same!
+    assert second_time == first_time
+
+    # Last/third request with different body should
+    # produce a different time.
+    third_response = tc.get(
+        '/v1/works', data=dict(mock=True, value=2, test=3)
+    )
+    third_time = third_response.get_data(as_text=True)
+
+    # ... making sure that different request bodies
+    # don't yield the same cache!
+    assert not third_time == second_time
