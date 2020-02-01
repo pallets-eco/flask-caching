@@ -293,6 +293,7 @@ class Cache(object):
         query_string=False,
         hash_method=hashlib.md5,
         cache_none=False,
+        make_cache_key=None,
     ):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -381,6 +382,8 @@ class Cache(object):
                            check when cache.get returns None. This will likely
                            lead to wrongly returned None values in concurrent
                            situations and is not recommended to use.
+        :param make_cache_key: Default None. If set to a callable object,
+                           it will be called to generate the cache key
 
         """
 
@@ -392,7 +395,11 @@ class Cache(object):
                     return f(*args, **kwargs)
 
                 try:
-                    cache_key = decorated_function.make_cache_key(args, kwargs, use_request=True)
+                    if make_cache_key is not None and callable(make_cache_key):
+                        cache_key = make_cache_key(*args, **kwargs)
+                    else:
+                        cache_key = _make_cache_key(args, kwargs, use_request=True)
+
 
                     if (
                         callable(forced_update)
@@ -447,7 +454,7 @@ class Cache(object):
                             )
                 return rv
 
-            def make_cache_key(*args, use_request=False, **kwargs):
+            def default_make_cache_key(*args, **kwargs):
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
@@ -456,7 +463,7 @@ class Cache(object):
                 for arg_name, arg in zip(argspec_args, args):
                     kwargs[arg_name] = arg
 
-                return _make_cache_key(args, kwargs, use_request=use_request)
+                return _make_cache_key(args, kwargs, use_request=False)
 
             def _make_cache_key_query_string():
                 """Create consistent keys for query string arguments.
@@ -501,7 +508,7 @@ class Cache(object):
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = make_cache_key
+            decorated_function.make_cache_key = default_make_cache_key
 
             return decorated_function
 

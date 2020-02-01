@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+import hashlib
 
 from flask import request
 
@@ -345,7 +346,7 @@ def test_generate_cache_key_from_request_body(app, cache):
     two requests with the same request body produce responses with the same time.
     """
 
-    def _make_cache_key_request_body():
+    def _make_cache_key_request_body(argument):
         """Create keys based on request body."""
         # now hash the request body so it can be
         # used as a key for cache.
@@ -354,25 +355,22 @@ def test_generate_cache_key_from_request_body(app, cache):
         cache_key = request.path + hashed_body
         return cache_key
 
-    cache_decorator = cache.cached()
-    cache_decorator.make_cache_key = _make_cache_key_request_body
-
-    @app.route('/works', methods=['POST'])
-    @cache_decorator
-    def view_works():
+    @app.route('/works/<argument>', methods=['POST'])
+    @cache.cached(make_cache_key=_make_cache_key_request_body)
+    def view_works(argument):
         return str(time.time()) + request.get_data().decode()
 
     tc = app.test_client()
 
     # Make our request...
     first_response = tc.post(
-        '/works', data=dict(mock=True, value=1, test=2)
+        '/works/arg', data=dict(mock=True, value=1, test=2)
     )
     first_time = first_response.get_data(as_text=True)
 
     # Make the request...
     second_response = tc.post(
-        '/works', data=dict(mock=True, value=1, test=2)
+        '/works/arg', data=dict(mock=True, value=1, test=2)
     )
     second_time = second_response.get_data(as_text=True)
 
@@ -382,8 +380,8 @@ def test_generate_cache_key_from_request_body(app, cache):
 
     # Last/third request with different body should
     # produce a different time.
-    third_response = tc.get(
-        '/v1/works', data=dict(mock=True, value=2, test=3)
+    third_response = tc.post(
+        '/works/arg', data=dict(mock=True, value=2, test=3)
     )
     third_time = third_response.get_data(as_text=True)
 
