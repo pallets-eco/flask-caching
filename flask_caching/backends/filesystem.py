@@ -76,7 +76,10 @@ class FileSystemCache(BaseCache):
             if ex.errno != errno.EEXIST:
                 raise
 
-        self._update_count(value=len(self._list_dir()))
+        # If there are many files and a zero threshold,
+        # the list_dir can slow initialisation massively
+        if self._threshold != 0:
+            self._update_count(value=len(self._list_dir()))
 
     @property
     def _file_count(self):
