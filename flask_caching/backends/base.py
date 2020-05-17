@@ -96,7 +96,7 @@ class BaseCache(object):
         :param value: the value for the key
         :param timeout: the cache timeout for the key in seconds (if not
                         specified, it uses the default timeout). A timeout of
-                        0 idicates that the cache never expires.
+                        0 indicates that the cache never expires.
         :returns: ``True`` if key has been updated, ``False`` for backend
                   errors. Pickling errors, however, will raise a subclass of
                   ``pickle.PickleError``.
