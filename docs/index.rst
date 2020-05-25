@@ -163,8 +163,8 @@ Deleting memoize cache
 
 .. versionadded:: 0.2
 
-You might need to delete the cache on a per-function bases. Using the above
-example, lets say you change the users permissions and assign them to a role,
+You might need to delete the cache on a per-function basis. Using the above
+example, lets say you change the user's permissions and assign them to a role,
 but now you need to re-calculate if they have certain memberships or not.
 You can do this with the :meth:`~Cache.delete_memoized` function::
 
