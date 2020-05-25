@@ -43,7 +43,7 @@ class FileSystemCache(BaseCache):
     :param hash_method: Default hashlib.md5. The hash method used to
                         generate the filename for cached results.
     :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
-                          method will ignore any errors that occured during the
+                          method will ignore any errors that occurred during the
                           deletion process. However, if it is set to ``False``
                           it will stop on the first error. Defaults to
                           ``False``.
