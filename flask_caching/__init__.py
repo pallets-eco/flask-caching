@@ -293,6 +293,7 @@ class Cache(object):
         query_string=False,
         hash_method=hashlib.md5,
         cache_none=False,
+        make_cache_key=None,
     ):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -332,6 +333,8 @@ class Cache(object):
 
                 **make_cache_key**
                     A function used in generating the cache_key used.
+
+                    readable and writable
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
@@ -379,6 +382,8 @@ class Cache(object):
                            check when cache.get returns None. This will likely
                            lead to wrongly returned None values in concurrent
                            situations and is not recommended to use.
+        :param make_cache_key: Default None. If set to a callable object,
+                           it will be called to generate the cache key
 
         """
 
@@ -390,12 +395,11 @@ class Cache(object):
                     return f(*args, **kwargs)
 
                 try:
-                    if query_string:
-                        cache_key = _make_cache_key_query_string()
+                    if make_cache_key is not None and callable(make_cache_key):
+                        cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = _make_cache_key(
-                            args, kwargs, use_request=True
-                        )
+                        cache_key = _make_cache_key(args, kwargs, use_request=True)
+
 
                     if (
                         callable(forced_update)
@@ -450,7 +454,7 @@ class Cache(object):
                             )
                 return rv
 
-            def make_cache_key(*args, **kwargs):
+            def default_make_cache_key(*args, **kwargs):
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
@@ -487,21 +491,24 @@ class Cache(object):
                 return cache_key
 
             def _make_cache_key(args, kwargs, use_request):
-                if callable(key_prefix):
-                    cache_key = key_prefix()
-                elif "%s" in key_prefix:
-                    if use_request:
-                        cache_key = key_prefix % request.path
-                    else:
-                        cache_key = key_prefix % url_for(f.__name__, **kwargs)
+                if query_string:
+                    return _make_cache_key_query_string()
                 else:
-                    cache_key = key_prefix
+                    if callable(key_prefix):
+                        cache_key = key_prefix()
+                    elif "%s" in key_prefix:
+                        if use_request:
+                            cache_key = key_prefix % request.path
+                        else:
+                            cache_key = key_prefix % url_for(f.__name__, **kwargs)
+                    else:
+                        cache_key = key_prefix
 
-                return cache_key
+                    return cache_key
 
             decorated_function.uncached = f
             decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = make_cache_key
+            decorated_function.make_cache_key = default_make_cache_key
 
             return decorated_function
 
