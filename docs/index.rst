@@ -358,6 +358,14 @@ The following configuration values exist for Flask-Caching:
                                 This makes it possible to use the same
                                 memcached server for different apps.
                                 Used only for RedisCache and MemcachedCache
+``CACHE_SOURCE_CHECK``          The default condition applied to function
+                                decorators which controls if the source code of
+                                the function should be included when forming the
+                                hash which is used as the cache key. This
+                                ensures that if the source code changes, the
+                                cached value will not be returned when the new
+                                function is called even if the arguments are the
+                                same. Defaults to ``False``.
 ``CACHE_UWSGI_NAME``            The name of the uwsgi caching instance to
                                 connect to, for example: mycache@localhost:3031,
                                 defaults to an empty string, which means uWSGI

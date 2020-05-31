@@ -710,3 +710,53 @@ def test_memoize_never_accept_none(app, cache):
 
         memoize_none(1)
         assert call_counter[1] == 3
+
+
+def test_memoize_with_source_check_enabled(app, cache):
+    with app.test_request_context():
+        @cache.memoize(source_check=True)
+        def big_foo(a, b):
+            return str(time.time())
+
+        first_try = big_foo(5, 2)
+
+        second_try = big_foo(5, 2)
+
+        assert second_try == first_try
+
+        @cache.memoize(source_check=True)
+        def big_foo(a, b):
+            return (str(time.time()))
+
+        third_try = big_foo(5, 2)
+
+        assert third_try[0] != first_try
+
+        @cache.memoize(source_check=True)
+        def big_foo(a, b):
+            return str(time.time())
+
+        forth_try = big_foo(5, 2)
+
+        assert forth_try == first_try
+
+
+def test_memoize_with_source_check_disabled(app, cache):
+    with app.test_request_context():
+        @cache.memoize(source_check=False)
+        def big_foo(a, b):
+            return str(time.time())
+
+        first_try = big_foo(5, 2)
+
+        second_try = big_foo(5, 2)
+
+        assert second_try == first_try
+
+        @cache.memoize(source_check=False)
+        def big_foo(a, b):
+            return (time.time())
+
+        third_try = big_foo(5, 2)
+
+        assert third_try == first_try
