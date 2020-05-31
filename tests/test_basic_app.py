@@ -3,7 +3,7 @@ import pytest
 from flask import Flask
 
 from flask_caching import Cache
-from flask_caching.backends.simple import SimpleCache
+from flask_caching.backends.simplecache import SimpleCache
 
 try:
     import redis
