@@ -2,6 +2,7 @@ Flask-Caching
 =============
 
 .. module:: flask_caching
+   :noindex:
 
 Flask-Caching is an extension to `Flask`_ that adds caching support for
 various backends to any Flask application. Besides providing support for all
@@ -183,6 +184,21 @@ You can do this with the :meth:`~Cache.delete_memoized` function::
      user_has_membership('demo', 'user')
 
      cache.delete_memoized(user_has_membership, 'demo', 'user')
+
+.. warning::
+
+  If a classmethod is memoized, you must provide the ``class`` as the first
+  ``*args`` argument.
+
+  .. code-block:: python
+
+    class Foobar(object):
+        @classmethod
+        @cache.memoize(5)
+        def big_foo(cls, a, b):
+            return a + b + random.randrange(0, 100000)
+
+    cache.delete_memoized(Foobar.big_foo, Foobar, 5, 2)
 
 
 Caching Jinja2 Snippets
