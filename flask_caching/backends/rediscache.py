@@ -49,7 +49,7 @@ class RedisCache(BaseCache):
         key_prefix=None,
         **kwargs
     ):
-        super(RedisCache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
         if host is None:
             raise ValueError("RedisCache host parameter may not be None")
         if isinstance(host, str):
@@ -237,7 +237,7 @@ class RedisSentinelCache(RedisCache):
         key_prefix=None,
         **kwargs
     ):
-        super(RedisSentinelCache, self).__init__(default_timeout)
+        super().__init__(default_timeout=default_timeout)
 
         try:
             import redis.sentinel
