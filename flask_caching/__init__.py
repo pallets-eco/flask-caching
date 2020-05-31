@@ -935,9 +935,9 @@ class Cache(object):
             3.72341788
 
         :param fname: The memoized function.
-        :param \*args: A list of positional parameters used with
+        :param \\*args: A list of positional parameters used with
                        memoized function.
-        :param \**kwargs: A dict of named parameters used with
+        :param \\**kwargs: A dict of named parameters used with
                           memoized function.
 
         .. note::
