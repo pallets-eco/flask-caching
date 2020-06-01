@@ -1,6 +1,27 @@
 Changelog
 =========
 
+Version 1.9.0
+-------------
+
+Unreleased
+
+- Add an option to include the functions source code when generating the cache
+  key. PR `#156 <https://github.com/sh4nks/flask-caching/pull/156>`_.
+- Add an feature that allows one to completely control the way how cache keys
+  are generating. For example, one can now implement a function that generates
+  cache the keys based on the POST-based requests.
+  PR `#159 <https://github.com/sh4nks/flask-caching/pull/159>`_.
+- Fix the cache backend naming collisions by renaming them from ``simple`` to
+  ``simplecache``, ``null`` to ``nullcache`` and ``filesystem`` to
+  ``filesystemcache``.
+- Explicitly pass the ``default_timeout`` to ``RedisCache`` from
+  ``RedisSentinelCache``.
+- Use ``os.replace`` instead of werkzeug's ``rename`` due to Windows raising an
+  ``OSError`` if the dst file already exist.
+- Documentation updates and fixes.
+
+
 Version 1.8.0
 -------------
 
