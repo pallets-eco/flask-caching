@@ -3,7 +3,7 @@ import pytest
 from flask import Flask
 
 from flask_caching import Cache
-from flask_caching.backends.simple import SimpleCache
+from flask_caching.backends.simplecache import SimpleCache
 
 try:
     import redis
@@ -30,7 +30,7 @@ def test_dict_config(app):
 def test_dict_config_initapp(app):
     cache = Cache()
     cache.init_app(app, config={"CACHE_TYPE": "simple"})
-    from flask_caching.backends.simple import SimpleCache
+    from flask_caching.backends.simplecache import SimpleCache
 
     assert isinstance(app.extensions["cache"][cache], SimpleCache)
 
@@ -38,7 +38,7 @@ def test_dict_config_initapp(app):
 def test_dict_config_both(app):
     cache = Cache(config={"CACHE_TYPE": "null"})
     cache.init_app(app, config={"CACHE_TYPE": "simple"})
-    from flask_caching.backends.simple import SimpleCache
+    from flask_caching.backends.simplecache import SimpleCache
 
     assert isinstance(app.extensions["cache"][cache], SimpleCache)
 

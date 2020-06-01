@@ -2,6 +2,7 @@ Flask-Caching
 =============
 
 .. module:: flask_caching
+   :noindex:
 
 Flask-Caching is an extension to `Flask`_ that adds caching support for
 various backends to any Flask application. Besides providing support for all
@@ -184,6 +185,21 @@ You can do this with the :meth:`~Cache.delete_memoized` function::
 
      cache.delete_memoized(user_has_membership, 'demo', 'user')
 
+.. warning::
+
+  If a classmethod is memoized, you must provide the ``class`` as the first
+  ``*args`` argument.
+
+  .. code-block:: python
+
+    class Foobar(object):
+        @classmethod
+        @cache.memoize(5)
+        def big_foo(cls, a, b):
+            return a + b + random.randrange(0, 100000)
+
+    cache.delete_memoized(Foobar.big_foo, Foobar, 5, 2)
+
 
 Caching Jinja2 Snippets
 -----------------------
@@ -342,6 +358,14 @@ The following configuration values exist for Flask-Caching:
                                 This makes it possible to use the same
                                 memcached server for different apps.
                                 Used only for RedisCache and MemcachedCache
+``CACHE_SOURCE_CHECK``          The default condition applied to function
+                                decorators which controls if the source code of
+                                the function should be included when forming the
+                                hash which is used as the cache key. This
+                                ensures that if the source code changes, the
+                                cached value will not be returned when the new
+                                function is called even if the arguments are the
+                                same. Defaults to ``False``.
 ``CACHE_UWSGI_NAME``            The name of the uwsgi caching instance to
                                 connect to, for example: mycache@localhost:3031,
                                 defaults to an empty string, which means uWSGI

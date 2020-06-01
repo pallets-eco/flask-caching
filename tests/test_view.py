@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import hashlib
 import time
 
 from flask import request
@@ -332,3 +333,179 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
     # ... making sure that different query parameter values
     # don't yield the same cache!
     assert not third_time == second_time
+
+
+def test_generate_cache_key_from_request_body(app, cache):
+    """Test a user supplied cache key maker.
+    Create three requests to verify that the same request body
+    always reference the same cache
+    Also test to make sure that the same cache isn't being used for
+    any/all query string parameters.
+    Caching functionality is verified by a `@cached` route `/works` which
+    produces a time in its response. The time in the response can verify that
+    two requests with the same request body produce responses with the same time.
+    """
+
+    def _make_cache_key_request_body(argument):
+        """Create keys based on request body."""
+        # now hash the request body so it can be
+        # used as a key for cache.
+        request_body = request.get_data(as_text=False)
+        hashed_body = str(hashlib.md5(request_body).hexdigest())
+        cache_key = request.path + hashed_body
+        return cache_key
+
+    @app.route('/works/<argument>', methods=['POST'])
+    @cache.cached(make_cache_key=_make_cache_key_request_body)
+    def view_works(argument):
+        return str(time.time()) + request.get_data().decode()
+
+    tc = app.test_client()
+
+    # Make our request...
+    first_response = tc.post(
+        '/works/arg', data=dict(mock=True, value=1, test=2)
+    )
+    first_time = first_response.get_data(as_text=True)
+
+    # Make the request...
+    second_response = tc.post(
+        '/works/arg', data=dict(mock=True, value=1, test=2)
+    )
+    second_time = second_response.get_data(as_text=True)
+
+    # Now make sure the time for the first and second
+    # requests are the same!
+    assert second_time == first_time
+
+    # Last/third request with different body should
+    # produce a different time.
+    third_response = tc.post(
+        '/works/arg', data=dict(mock=True, value=2, test=3)
+    )
+    third_time = third_response.get_data(as_text=True)
+
+    # ... making sure that different request bodies
+    # don't yield the same cache!
+    assert not third_time == second_time
+
+
+def test_cache_with_query_string_and_source_check_enabled(app, cache):
+    """Test the _make_cache_key_query_string() cache key maker with
+    source_check set to True to include the view's function's source code as
+    part of the cache hash key.
+    """
+
+    @cache.cached(query_string=True, source_check=True)
+    def view_works():
+        return str(time.time())
+
+    app.add_url_rule('/works', 'works', view_works)
+
+    tc = app.test_client()
+
+    # Make our first query...
+    first_response = tc.get(
+        '/works?mock=true&offset=20&limit=15'
+    )
+    first_time = first_response.get_data(as_text=True)
+
+    # Make our second query...
+    second_response = tc.get(
+        '/works?mock=true&offset=20&limit=15'
+    )
+    second_time = second_response.get_data(as_text=True)
+
+    # The cache should yield the same data first and second time
+    assert first_time == second_time
+
+    # Change the source of the function attached to the view
+    @cache.cached(query_string=True, source_check=True)
+    def view_works():
+        return (str(time.time()))
+
+    #... and we overide the function attached to the view
+    app.view_functions['works'] = view_works
+
+    tc = app.test_client()
+
+    # Make the second query...
+    third_response = tc.get(
+        '/works?mock=true&offset=20&limit=15'
+    )
+    third_time = third_response.get_data(as_text=True)
+
+    # Now make sure the time for the first and third
+    # responses are not the same i.e. cached is not used!
+    assert third_time[0] != first_time
+
+    # Change the source of the function to what it was originally
+    @cache.cached(query_string=True, source_check=True)
+    def view_works():
+        return str(time.time())
+
+    app.view_functions['works'] = view_works
+
+    tc = app.test_client()
+
+    # Last/third query with different parameters/values should
+    # produce a different time.
+    forth_response = tc.get(
+        '/works?mock=true&offset=20&limit=15'
+    )
+    forth_time = forth_response.get_data(as_text=True)
+
+    # ... making sure that the first value and the forth value are the same
+    # since the source is the same
+    assert forth_time == first_time
+
+
+def test_cache_with_query_string_and_source_check_disabled(app, cache):
+    """Test the _make_cache_key_query_string() cache key maker with
+    source_check set to False to exclude the view's function's source code as
+    part of the cache hash key and to see if changing the source changes the
+    data.
+    """
+
+    @cache.cached(query_string=True, source_check=False)
+    def view_works():
+        return str(time.time())
+
+    app.add_url_rule('/works', 'works', view_works)
+
+    tc = app.test_client()
+
+    # Make our first query...
+    first_response = tc.get(
+        '/works?mock=true&offset=20&limit=15'
+    )
+    first_time = first_response.get_data(as_text=True)
+
+    # Make our second query...
+    second_response = tc.get(
+        '/works?mock=true&offset=20&limit=15'
+    )
+    second_time = second_response.get_data(as_text=True)
+
+    # The cache should yield the same data first and second time
+    assert first_time == second_time
+
+    # Change the source of the function attached to the view
+    @cache.cached(query_string=True, source_check=False)
+    def view_works():
+        return (str(time.time()))
+
+    #... and we overide the function attached to the view
+    app.view_functions['works'] = view_works
+
+    tc = app.test_client()
+
+    # Make the second query...
+    third_response = tc.get(
+        '/works?mock=true&offset=20&limit=15'
+    )
+    third_time = third_response.get_data(as_text=True)
+
+    # Now make sure the time for the first and third responses are the same
+    # i.e. cached is used since cache will not check for source changes!
+    assert third_time == first_time
