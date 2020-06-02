@@ -105,7 +105,7 @@ def memcache_server(xprocess):
 
     class Starter(ProcessStarter):
         pattern = ""
-        args = ["memcached"]
+        args = ["memcached", "-vv"]
 
     try:
         xprocess.ensure("memcached", Starter)
@@ -118,3 +118,4 @@ def memcache_server(xprocess):
 
     yield
     xprocess.getinfo("memcached").terminate()
+
