@@ -273,3 +273,58 @@ class RedisSentinelCache(RedisCache):
         self._read_clients = sentinel.slave_for(master)
 
         self.key_prefix = key_prefix or ""
+        
+class RedisClusterCache(RedisCache):
+    """Uses the Redis key-value store as a cache backend.
+
+    The first argument can be either a string denoting address of the Redis
+    server or an object resembling an instance of a rediscluster.RedisCluster class.
+
+    Note: Python Redis API already takes care of encoding unicode strings on
+    the fly.
+
+
+    :param cluster: The redis cluster nodes address separated by comma.
+                    e.g. host1:port,host2:port2,host3:port3 .
+    :param password: password authentication for the Redis server.
+    :param default_timeout: the default timeout that is used if no timeout is
+                            specified on :meth:`~BaseCache.set`. A timeout of
+                            0 indicates that the cache never expires.
+    :param key_prefix: A prefix that should be added to all keys.
+
+    Any additional keyword arguments will be passed to
+    ``rediscluster.RedisCluster``.
+    """
+    def __init__(self,
+                 cluster="",
+                 password="",
+                 default_timeout=300,
+                 key_prefix="",
+                 **kwargs):
+        super().__init__(default_timeout=default_timeout)
+
+        if kwargs.get("decode_responses", None):
+            raise ValueError("decode_responses is not supported by "
+                             "RedisCache.")
+
+        try:
+            from rediscluster import RedisCluster
+        except ImportError:
+            raise RuntimeError("no rediscluster module found")
+        HOST = 0
+        PORT = 1
+        try:
+            nodes = [(node.split(':')) for node in cluster.split(',')]
+            startup_nodes = [{
+                'host': node[HOST].strip(),
+                'port': node[PORT].strip()
+            } for node in nodes]
+        except IndexError:
+            raise ValueError("Please give the correct cluster argument "
+                             "e.g. host1:port,host2:port2,host3:port3")
+        cluster = RedisCluster(startup_nodes=startup_nodes,
+                               password=password,
+                               skip_full_coverage_check=True,
+                               **kwargs)
+        self._write_client = self._read_clients = cluster
+        self.key_prefix = key_prefix
