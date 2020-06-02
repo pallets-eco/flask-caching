@@ -18,7 +18,7 @@ from flask_caching.backends.memcache import (
 from flask_caching.backends.nullcache import NullCache
 
 # TODO: Rename to "redis" when python2 support is removed
-from flask_caching.backends.rediscache import RedisCache, RedisSentinelCache
+from flask_caching.backends.rediscache import RedisCache, RedisSentinelCache, RedisClusterCache
 from flask_caching.backends.simplecache import SimpleCache
 
 try:
@@ -35,6 +35,7 @@ __all__ = (
     "filesystem",
     "redis",
     "redissentinel",
+    "rediscluster",
     "uwsgi",
     "memcached",
     "gaememcached",
@@ -114,6 +115,15 @@ def redissentinel(app, config, args, kwargs):
     )
 
     return RedisSentinelCache(*args, **kwargs)
+
+
+def rediscluster(app, config, args, kwargs):
+    kwargs.update(
+        dict(cluster=config.get("CACHE_REDIS_CLUSTER", ""),
+             password=config.get("CACHE_REDIS_PASSWORD", ""),
+             default_timeout=config.get("CACHE_DEFAULT_TIMEOUT", 300),
+             key_prefix=config.get("CACHE_KEY_PREFIX", "")))
+    return RedisClusterCache(*args, **kwargs)
 
 
 def uwsgi(app, config, args, kwargs):
