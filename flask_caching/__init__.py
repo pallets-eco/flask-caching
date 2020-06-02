@@ -21,7 +21,7 @@ from collections import OrderedDict
 from flask import current_app, request, url_for
 from werkzeug.utils import import_string
 
-__version__ = "1.8.0"
+__version__ = "1.9.0"
 
 logger = logging.getLogger(__name__)
 

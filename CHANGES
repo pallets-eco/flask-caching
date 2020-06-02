@@ -4,7 +4,7 @@ Changelog
 Version 1.9.0
 -------------
 
-Unreleased
+Released 2020-06-02
 
 - Add an option to include the functions source code when generating the cache
   key. PR `#156 <https://github.com/sh4nks/flask-caching/pull/156>`_.
