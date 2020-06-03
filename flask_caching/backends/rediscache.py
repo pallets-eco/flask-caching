@@ -311,8 +311,7 @@ class RedisClusterCache(RedisCache):
             from rediscluster import RedisCluster
         except ImportError:
             raise RuntimeError("no rediscluster module found")
-        HOST = 0
-        PORT = 1
+        HOST, PORT = 0, 1
         try:
             nodes = [(node.split(':')) for node in cluster.split(',')]
             startup_nodes = [{
@@ -321,7 +320,7 @@ class RedisClusterCache(RedisCache):
             } for node in nodes]
         except IndexError:
             raise ValueError("Please give the correct cluster argument "
-                             "e.g. host1:port,host2:port2,host3:port3")
+                             "e.g. host1:port1,host2:port2,host3:port3")
         cluster = RedisCluster(startup_nodes=startup_nodes,
                                password=password,
                                skip_full_coverage_check=True,
