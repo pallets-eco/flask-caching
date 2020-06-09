@@ -29,9 +29,9 @@ class UWSGICache(BaseCache):
     :param default_timeout: The default timeout in seconds.
     :param cache: The name of the caching instance to connect to, for
         example: mycache@localhost:3031, defaults to an empty string, which
-        means uWSGI will cache in the local instance. If the cache is in the
-        same instance as the werkzeug app, you only have to provide the name of
-        the cache.
+        means uWSGI will use the first cache instance initialized.
+        If the cache is in the same instance as the werkzeug app,
+        you only have to provide the name of the cache.
     """
 
     def __init__(self, default_timeout=300, cache=""):
@@ -45,12 +45,16 @@ class UWSGICache(BaseCache):
 
         try:
             import uwsgi
-
             self._uwsgi = uwsgi
         except ImportError:
             raise RuntimeError(
-                "uWSGI could not be imported, are you " "running under uWSGI?"
+                "uWSGI could not be imported, are you running under uWSGI?"
             )
+
+        if 'cache2' not in uwsgi.opt:
+            raise RuntimeError(
+                "You must enable cache2 in uWSGI configuration: "
+                "https://uwsgi-docs.readthedocs.io/en/latest/Caching.html")
 
         self.cache = cache
 
