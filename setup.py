@@ -61,6 +61,7 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import shlex
+
         # import here, cause outside the eggs aren't loaded
         import pytest
 
@@ -80,14 +81,9 @@ setup(
     packages=find_packages(exclude=("tests",)),
     zip_safe=False,
     platforms="any",
+    python_requires=">=3.5",
     install_requires=["Flask"],
-    tests_require=[
-        "pytest",
-        "pytest-cov",
-        "pytest-xprocess",
-        "pylibmc",
-        "redis"
-    ],
+    tests_require=["pytest", "pytest-cov", "pytest-xprocess", "pylibmc", "redis"],
     cmdclass={"test": PyTest},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
