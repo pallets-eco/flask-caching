@@ -285,7 +285,7 @@ class RedisClusterCache(RedisCache):
 
 
     :param cluster: The redis cluster nodes address separated by comma.
-                    e.g. host1:port,host2:port2,host3:port3 .
+                    e.g. host1:port1,host2:port2,host3:port3 .
     :param password: password authentication for the Redis server.
     :param default_timeout: the default timeout that is used if no timeout is
                             specified on :meth:`~BaseCache.set`. A timeout of
@@ -311,19 +311,23 @@ class RedisClusterCache(RedisCache):
             from rediscluster import RedisCluster
         except ImportError:
             raise RuntimeError("no rediscluster module found")
-        HOST, PORT = 0, 1
+
         try:
             nodes = [(node.split(':')) for node in cluster.split(',')]
             startup_nodes = [{
-                'host': node[HOST].strip(),
-                'port': node[PORT].strip()
+                'host': node[0].strip(),
+                'port': node[1].strip()
             } for node in nodes]
         except IndexError:
             raise ValueError("Please give the correct cluster argument "
                              "e.g. host1:port1,host2:port2,host3:port3")
+        # Skips the check of cluster-require-full-coverage config,
+        # useful for clusters without the CONFIG command (like aws)
+        skip_full_coverage_check = kwargs.pop('skip_full_coverage_check', True)
+        
         cluster = RedisCluster(startup_nodes=startup_nodes,
                                password=password,
-                               skip_full_coverage_check=True,
+                               skip_full_coverage_check=skip_full_coverage_check,
                                **kwargs)
         self._write_client = self._read_clients = cluster
         self.key_prefix = key_prefix
