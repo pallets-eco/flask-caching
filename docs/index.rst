@@ -387,7 +387,7 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_REDIS_DB``              A Redis db (zero-based number index). Default is 0.
                                 Used only for RedisCache and RedisSentinelCache.
 ``CACHE_REDIS_SENTINELS``       A list or a tuple of Redis sentinel addresses. Used only for
-                                RedisClusterCache.
+                                RedisSentinelCache.
 ``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
                                 only for RedisSentinelCache.
 ``CACHE_REDIS_CLUSTER ``        A string of comma-separated Redis cluster node addresses. 
