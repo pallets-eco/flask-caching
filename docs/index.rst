@@ -390,7 +390,7 @@ The following configuration values exist for Flask-Caching:
                                 RedisSentinelCache.
 ``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
                                 only for RedisSentinelCache.
-``CACHE_REDIS_CLUSTER``        A string of comma-separated Redis cluster node addresses. 
+``CACHE_REDIS_CLUSTER``         A string of comma-separated Redis cluster node addresses. 
                                 e.g. host1:port1,host2:port2,host3:port3 . Used only for RedisClusterCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
@@ -544,82 +544,4 @@ Relevant configuration values
 SpreadSASLMemcachedCache
 ````````````````````````
 
-Set ``CACHE_TYPE`` to ``spreadsaslmemcached`` to use this type.
-
-Same as SASLMemcachedCache however, it has the ablity to spread value across
-multiple keys if it is bigger than the memcached treshold which by
-default is 1M. Uses pickle.
-
-.. versionadded:: 0.11
-
-.. versionchanged::  1.1.0
-    Renamed ``spreadsaslmemcachedcache`` to ``spreadsaslmemcached`` for
-    the sake of consistency.
-
-
-Custom Cache Backends
----------------------
-
-You are able to easily add your own custom cache backends by exposing a function
-that can instantiate and return a cache object. ``CACHE_TYPE`` will be the
-import string to your custom function. It should expect to receive three
-arguments.
-
-* ``app``
-* ``args``
-* ``kwargs``
-
-Your custom cache object must also subclass the
-:class:`flask_caching.backends.cache.BaseCache` class. Flask-Caching will make sure
-that ``threshold`` is already included in the kwargs options dictionary since
-it is common to all BaseCache classes.
-
-An example Redis cache implementation::
-
-    #: the_app/custom.py
-    class RedisCache(BaseCache):
-        def __init__(self, servers, default_timeout=500):
-            pass
-
-    def redis(app, config, args, kwargs):
-       args.append(app.config['REDIS_SERVERS'])
-       return RedisCache(*args, **kwargs)
-
-With this example, your ``CACHE_TYPE`` might be ``the_app.custom.redis``
-
-An example PylibMC cache implementation to change binary setting and provide
-username/password if SASL is enabled on the library::
-
-    #: the_app/custom.py
-    def pylibmccache(app, config, args, kwargs):
-        return pylibmc.Client(servers=config['CACHE_MEMCACHED_SERVERS'],
-                              username=config['CACHE_MEMCACHED_USERNAME'],
-                              password=config['CACHE_MEMCACHED_PASSWORD'],
-                              binary=True)
-
-With this example, your ``CACHE_TYPE`` might be ``the_app.custom.pylibmccache``
-
-
-API
----
-
-.. toctree::
-   :maxdepth: 2
-
-   api
-
-
-Additional Information
-----------------------
-
-.. toctree::
-   :maxdepth: 2
-
-   changelog
-   license
-
-* :ref:`search`
-
-
-.. _Flask: http://flask.pocoo.org/
-.. _werkzeug: http://werkzeug.pocoo.org/
+Set ``CACHE_TYPE`` to ``spreadsaslmemcached
