@@ -329,6 +329,7 @@ The following configuration values exist for Flask-Caching:
                                 * **filesystem**: FileSystemCache
                                 * **redis**: RedisCache (redis required)
                                 * **redissentinel**: RedisSentinelCache (redis required)
+                                * **rediscluster**: RedisClusterCache (redis required)
                                 * **uwsgi**: UWSGICache (uwsgi required)
                                 * **memcached**: MemcachedCache (pylibmc or memcache required)
                                 * **gaememcached**: same as memcached (for backwards compatibility)
@@ -389,6 +390,8 @@ The following configuration values exist for Flask-Caching:
                                 RedisSentinelCache.
 ``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
                                 only for RedisSentinelCache.
+``CACHE_REDIS_CLUSTER ``        A string of comma-separated Redis cluster node addresses. 
+                                e.g. host1:port1,host2:port2,host3:port3 . Used only for RedisClusterCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
 ``CACHE_REDIS_URL``             URL to connect to Redis server.
@@ -469,6 +472,17 @@ Set ``CACHE_TYPE`` to ``redissentinel`` to use this type.
 - CACHE_REDIS_SENTINEL_MASTER
 - CACHE_REDIS_PASSWORD
 - CACHE_REDIS_DB
+
+Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
+
+RedisClusterCache
+``````````````````
+
+Set ``CACHE_TYPE`` to ``rediscluster`` to use this type.
+
+- CACHE_KEY_PREFIX
+- CACHE_REDIS_CLUSTER
+- CACHE_REDIS_PASSWORD
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
