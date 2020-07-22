@@ -640,7 +640,7 @@ class Cache(object):
         def make_cache_key(f, *args, **kwargs):
             _timeout = getattr(timeout, "cache_timeout", timeout)
             fname, version_data = self._memoize_version(
-                f, args=args, timeout=_timeout, forced_update=forced_update
+                f, args=args, kwargs=kwargs, timeout=_timeout, forced_update=forced_update
             )
 
             #: this should have to be after version_data, so that it
