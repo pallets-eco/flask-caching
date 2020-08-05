@@ -119,17 +119,16 @@ class RedisCache(BaseCache):
             keys = [self._get_prefix() + key for key in keys]
         return [self.load_object(x) for x in self._read_clients.mget(keys)]
 
-    def set(self, key, value, timeout=None):
+    def set(self, key, value, timeout=None, keepttl=False):
         timeout = self._normalize_timeout(timeout)
         dump = self.dump_object(value)
+        name = self._get_prefix() + key
         if timeout == -1:
-            result = self._write_client.set(
-                name=self._get_prefix() + key, value=dump
-            )
+            result = self._write_client.set(name=name, value=dump)
+        elif keepttl:
+            result = self._write_client.set(name=name, value=dump, keepttl=keepttl)
         else:
-            result = self._write_client.setex(
-                name=self._get_prefix() + key, value=dump, time=timeout
-            )
+            result = self._write_client.setex(name=name, value=dump, time=timeout)
         return result
 
     def add(self, key, value, timeout=None):
