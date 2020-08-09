@@ -233,7 +233,7 @@ class SASLMemcachedCache(MemcachedCache):
         password=None,
         **kwargs
     ):
-        super(SASLMemcachedCache, self).__init__(default_timeout)
+        super(SASLMemcachedCache, self).__init__(default_timeout=default_timeout)
 
         if servers is None:
             servers = ["127.0.0.1:11211"]
