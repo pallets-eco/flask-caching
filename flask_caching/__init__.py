@@ -16,7 +16,6 @@ import logging
 import string
 import uuid
 import warnings
-from collections import OrderedDict
 
 from flask import current_app, request, url_for
 from werkzeug.utils import import_string
@@ -130,6 +129,20 @@ def function_namespace(f, args=None):
         ins = None
 
     return ns, ins
+
+
+def to_str(str_or_byte):
+    if isinstance(str_or_byte, bytes):
+        return str_or_byte.decode("utf8")
+    return str(str_or_byte)
+
+
+def to_bytes(str_or_byte):
+    if isinstance(str_or_byte, str):
+        return str_or_byte.encode("utf8")
+    elif isinstance(str_or_byte, int):
+        return str(str_or_byte).encode("utf8")
+    return bytes(str_or_byte)
 
 
 def make_template_fragment_key(fragment_name, vary_on=[]):
@@ -504,7 +517,7 @@ class Cache(object):
                 # provided.
 
                 args_as_sorted_tuple = tuple(
-                    sorted((pair for pair in request.args.items(multi=True)))
+                    sorted(pair for pair in request.args.items(multi=True))
                 )
                 # ... now hash the sorted (key, value) tuple so it can be
                 # used as a key for cache. Turn them into bytes so that the
@@ -519,7 +532,7 @@ class Cache(object):
                     func_source_code = inspect.getsource(f)
                     cache_hash.update(func_source_code.encode("utf-8"))
 
-                cache_hash = str(cache_hash.hexdigest())
+                cache_hash = to_str(cache_hash.hexdigest())
 
                 cache_key = request.path + cache_hash
 
@@ -541,9 +554,8 @@ class Cache(object):
 
                 if source_check and callable(f):
                     func_source_code = inspect.getsource(f)
-                    func_source_hash = hash_method(
-                        func_source_code.encode("utf-8"))
-                    func_source_hash = str(func_source_hash.hexdigest())
+                    func_source_hash = hash_method(to_bytes(func_source_code))
+                    func_source_hash = to_str(func_source_hash.hexdigest())
 
                     cache_key += func_source_hash
 
@@ -561,7 +573,7 @@ class Cache(object):
         return funcname + "_memver"
 
     def _memoize_make_version_hash(self):
-        return base64.b64encode(uuid.uuid4().bytes)[:6].decode("utf-8")
+        return to_str(base64.b64encode(uuid.uuid4().bytes)[:6])
 
     def _memoize_version(
         self,
@@ -657,16 +669,16 @@ class Cache(object):
             updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
 
             cache_key = hash_method()
-            cache_key.update(updated.encode("utf-8"))
+            cache_key.update(to_bytes(updated))
 
             # Use the source code if source_check is True and update the
             # cache_key with the function's source.
             if source_check and callable(f):
                 func_source_code = inspect.getsource(f)
-                cache_key.update(func_source_code.encode("utf-8"))
+                cache_key.update(to_bytes(func_source_code))
 
             cache_key = base64.b64encode(cache_key.digest())[:16]
-            cache_key = cache_key.decode("utf-8")
+            cache_key = to_str(cache_key)
             cache_key += version_data
 
             return cache_key
@@ -733,7 +745,7 @@ class Cache(object):
         new_args.extend(args[len(arg_names) :])
         return (
             tuple(new_args),
-            OrderedDict(
+            dict(
                 sorted(
                     (k, v) for k, v in kwargs.items() if k in kw_keys_remaining
                 )

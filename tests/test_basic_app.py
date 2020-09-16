@@ -2,7 +2,7 @@
 import pytest
 from flask import Flask
 
-from flask_caching import Cache
+from flask_caching import Cache, to_str, to_bytes
 from flask_caching.backends.simplecache import SimpleCache
 
 try:
@@ -122,3 +122,21 @@ def test_app_custom_cache_backend(app):
 
     with app.app_context():
         assert isinstance(cache.cache, CustomSimpleCache)
+
+
+def test_to_str():
+    a = 1
+    assert to_str(a) == "1"
+    a = "1"
+    assert to_str(a) == "1"
+    a = b"1"
+    assert to_str(a) == "1"
+
+
+def test_to_bytes():
+    a = 1
+    assert to_bytes(a) == b"1"
+    a = "1"
+    assert to_bytes(a) == b"1"
+    a = b"1"
+    assert to_bytes(a) == b"1"
