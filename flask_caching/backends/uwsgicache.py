@@ -16,7 +16,7 @@ from flask_caching.backends.base import BaseCache
 try:
     import cPickle as pickle
 except ImportError:  # pragma: no cover
-    import pickle
+    import pickle  # type: ignore
 
 
 class UWSGICache(BaseCache):
