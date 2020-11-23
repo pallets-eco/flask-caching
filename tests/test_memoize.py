@@ -760,3 +760,23 @@ def test_memoize_with_source_check_disabled(app, cache):
         third_try = big_foo(5, 2)
 
         assert third_try == first_try
+
+
+def test_memoize_ignore_args(app, cache):
+    with app.test_request_context():
+        @cache.memoize(50, args_to_ignore=["b"])
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+        assert big_foo(5, 3) == result
+
+
+def test_memoize_method_ignore_self_arg(app, cache):
+    with app.test_request_context():
+        class Foo(object):
+            @cache.memoize(50, args_to_ignore=["self"])
+            def big_foo(self, a, b):
+                return a + b + random.randrange(0, 100000)
+
+        assert Foo().big_foo(5, 2) == Foo().big_foo(5, 2)
