@@ -2,7 +2,14 @@
 import random
 import time
 
+import pytest
 from flask_caching import Cache
+
+try:
+    import redis
+    HAS_NOT_REDIS = False
+except ImportError:
+    HAS_NOT_REDIS = True
 
 
 def test_cache_set(app, cache):
@@ -31,6 +38,7 @@ def test_cache_delete_many(app, cache):
     assert cache.get("hi") is not None
 
 
+@pytest.mark.skipif(HAS_NOT_REDIS, reason="requires Redis")
 def test_cache_unlink(app, redis_server):
     cache = Cache(config={"CACHE_TYPE": "redis"})
     cache.init_app(app)
