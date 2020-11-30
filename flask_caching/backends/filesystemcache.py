@@ -11,6 +11,7 @@
 """
 import errno
 import hashlib
+import logging
 import os
 import tempfile
 from time import time
@@ -21,6 +22,9 @@ try:
     import cPickle as pickle
 except ImportError:  # pragma: no cover
     import pickle
+
+
+logger = logging.getLogger(__name__)
 
 
 class FileSystemCache(BaseCache):
@@ -119,6 +123,7 @@ class FileSystemCache(BaseCache):
             return
 
         entries = self._list_dir()
+        nremoved = 0
         now = time()
         for idx, fname in enumerate(entries):
             try:
@@ -126,12 +131,13 @@ class FileSystemCache(BaseCache):
                 with open(fname, "rb") as f:
                     expires = pickle.load(f)
                 remove = (expires != 0 and expires <= now) or idx % 3 == 0
-
                 if remove:
                     os.remove(fname)
+                    nremoved +=1
             except (IOError, OSError):
                 pass
         self._update_count(value=len(self._list_dir()))
+        logger.debug("evicted %d key(s)", nremoved)
 
     def clear(self):
         for fname in self._list_dir():
@@ -150,25 +156,40 @@ class FileSystemCache(BaseCache):
         return os.path.join(self._path, hash)
 
     def get(self, key):
+        result = None
+        expired = False
+        hit_or_miss = "miss"
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
                 pickle_time = pickle.load(f)
-                if pickle_time == 0 or pickle_time >= time():
-                    return pickle.load(f)
-                else:
+                expired = pickle_time != 0 and pickle_time < time()
+                if expired:
                     os.remove(filename)
-                    return None
-        except (IOError, OSError, pickle.PickleError):
-            return None
+                else:
+                    hit_or_miss = "hit"
+                    result = pickle.load(f)
+        except FileNotFoundError:
+            pass
+        except (IOError, OSError, pickle.PickleError) as exc:
+            logger.error("get key %r -> %s", key, exc)
+        expiredstr = "(expired)" if expired else ""
+        logger.debug("get key %r -> %s %s", key, hit_or_miss, expiredstr)
+        return result
 
     def add(self, key, value, timeout=None):
         filename = self._get_filename(key)
-        if not os.path.exists(filename):
-            return self.set(key, value, timeout)
-        return False
+        added = False
+        should_add = not os.path.exists(filename)
+        if should_add:
+            added = self.set(key, value, timeout)
+        addedstr = "added" if added else "not added"
+        logger.debug("add key %r -> %s", key, addedstr)
+        return should_add
 
     def set(self, key, value, timeout=None, mgmt_element=False):
+        result = False
+
         # Management elements have no timeout
         if mgmt_element:
             timeout = 0
@@ -188,34 +209,48 @@ class FileSystemCache(BaseCache):
                 pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
             os.replace(tmp, filename)
             os.chmod(filename, self._mode)
-        except (IOError, OSError):
-            return False
+        except (IOError, OSError) as exc:
+            logger.error("set key %r -> %s", key, exc)
         else:
+            result = True
+            logger.debug("set key %r", key)
             # Management elements should not count towards threshold
             if not mgmt_element:
                 self._update_count(delta=1)
-            return True
+        return result
 
     def delete(self, key, mgmt_element=False):
+        deleted = False
         try:
             os.remove(self._get_filename(key))
-        except (IOError, OSError):
-            return False
+        except FileNotFoundError:
+            logger.debug("delete key %r -> no such key")
+        except (IOError, OSError) as exc:
+            logger.error("delete key %r -> %s", key, exc)
         else:
+            deleted = True
+            logger.debug("deleted key %r", key)
             # Management elements should not count towards threshold
             if not mgmt_element:
                 self._update_count(delta=-1)
-            return True
+        return deleted
 
     def has(self, key):
+        result = False
+        expired = False
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
                 pickle_time = pickle.load(f)
-                if pickle_time == 0 or pickle_time >= time():
-                    return True
-                else:
+                expired = pickle_time != 0 and pickle_time < time()
+                if expired:
                     os.remove(filename)
-                    return False
-        except (IOError, OSError, pickle.PickleError):
-            return False
+                else:
+                    result = True
+        except FileNotFoundError:
+            pass
+        except (IOError, OSError, pickle.PickleError) as exc:
+            logger.error("get key %r -> %s", key, exc)
+        expiredstr = "(expired)" if expired else ""
+        logger.debug("has key %r -> %s %s", key, result, expiredstr)
+        return result
