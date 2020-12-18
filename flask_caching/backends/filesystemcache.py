@@ -207,6 +207,7 @@ class FileSystemCache(BaseCache):
             with os.fdopen(fd, "wb") as f:
                 pickle.dump(timeout, f, 1)
                 pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
+            is_new_file = not os.path.exists(filename)
             os.replace(tmp, filename)
             os.chmod(filename, self._mode)
         except (IOError, OSError) as exc:
@@ -215,8 +216,8 @@ class FileSystemCache(BaseCache):
             result = True
             logger.debug("set key %r", key)
             # Management elements should not count towards threshold
-            if not mgmt_element:
-                self._update_count(value=len(self._list_dir()))
+            if not mgmt_element and is_new_file:
+                self._update_count(delta=1)
         return result
 
     def delete(self, key, mgmt_element=False):
