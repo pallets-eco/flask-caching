@@ -18,7 +18,7 @@ from flask_caching.backends.base import BaseCache, iteritems_wrapper
 try:
     import cPickle as pickle
 except ImportError:  # pragma: no cover
-    import pickle
+    import pickle  # type: ignore
 
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match

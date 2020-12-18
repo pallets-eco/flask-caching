@@ -47,8 +47,9 @@ from setuptools.command.test import test as TestCommand
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
 with open("flask_caching/__init__.py", "rb") as f:
+    content = f.read().decode("utf-8")
     version = str(
-        ast.literal_eval(_version_re.search(f.read().decode("utf-8")).group(1))
+        ast.literal_eval(_version_re.search(content).group(1))  # type: ignore
     )
 
 
@@ -97,5 +98,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Topic :: Software Development :: Libraries :: Python Modules",
+        "Typing :: Typed",
     ],
 )

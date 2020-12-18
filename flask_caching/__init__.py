@@ -18,8 +18,12 @@ import uuid
 import warnings
 from collections import OrderedDict
 
-from flask import current_app, request, url_for
+from flask import current_app, request, url_for, Flask
 from werkzeug.utils import import_string
+from datetime import timedelta
+from flask_caching.backends.simplecache import SimpleCache
+from markupsafe import Markup
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 __version__ = "1.9.0"
 
@@ -41,7 +45,7 @@ delchars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = (dict((k, None) for k in delchars),)
 
 
-def wants_args(f):
+def wants_args(f: Callable) -> bool:
     """Check if the function wants any arguments"""
 
     argspec = inspect.getfullargspec(f)
@@ -49,7 +53,7 @@ def wants_args(f):
     return bool(argspec.args or argspec.varargs or argspec.varkw)
 
 
-def get_arg_names(f):
+def get_arg_names(f: Callable) -> List[str]:
     """Return arguments of function
 
     :param f:
@@ -63,7 +67,7 @@ def get_arg_names(f):
     ]
 
 
-def get_arg_default(f, position):
+def get_arg_default(f: Callable, position: int):
     sig = inspect.signature(f)
     arg = list(sig.parameters.values())[position]
     arg_def = arg.default
@@ -131,7 +135,7 @@ def function_namespace(f, args=None):
     return ns, ins
 
 
-def make_template_fragment_key(fragment_name, vary_on=[]):
+def make_template_fragment_key(fragment_name: str, vary_on: List[str]=[]) -> str:
     """Make a cache key for a specific fragment name."""
     if vary_on:
         fragment_name = "%s_" % fragment_name
@@ -141,7 +145,7 @@ def make_template_fragment_key(fragment_name, vary_on=[]):
 class Cache(object):
     """This class is used to control the cache objects."""
 
-    def __init__(self, app=None, with_jinja2_ext=True, config=None):
+    def __init__(self, app: Optional[Flask]=None, with_jinja2_ext: bool=True, config=None) -> None:
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
 
@@ -153,7 +157,7 @@ class Cache(object):
         if app is not None:
             self.init_app(app, config)
 
-    def init_app(self, app, config=None):
+    def init_app(self, app: Flask, config=None) -> None:
         """This is used to initialize cache with your app object"""
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
@@ -208,7 +212,7 @@ class Cache(object):
 
         self._set_cache(app, config)
 
-    def _set_cache(self, app, config):
+    def _set_cache(self, app: Flask, config) -> None:
         import_me = config["CACHE_TYPE"]
         if "." not in import_me:
             from . import backends
@@ -238,31 +242,31 @@ class Cache(object):
         self.app = app
 
     @property
-    def cache(self):
+    def cache(self) -> SimpleCache:
         app = current_app or self.app
         return app.extensions["cache"][self]
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> Optional[Union[str, Markup]]:
         """Proxy function for internal cache object."""
         return self.cache.get(*args, **kwargs)
 
-    def set(self, *args, **kwargs):
+    def set(self, *args, **kwargs) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.set(*args, **kwargs)
 
-    def add(self, *args, **kwargs):
+    def add(self, *args, **kwargs) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.add(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.delete(*args, **kwargs)
 
-    def delete_many(self, *args, **kwargs):
+    def delete_many(self, *args, **kwargs) -> bool:
         """Proxy function for internal cache object."""
-        return self.cache.delete_many(*args, **kwargs)
+        return self.cache.delete_many(*args, **kwargs)  # type: ignore
 
-    def clear(self):
+    def clear(self) -> None:
         """Proxy function for internal cache object."""
         return self.cache.clear()
 
@@ -278,7 +282,7 @@ class Cache(object):
         """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
-    def unlink(self, *args, **kwargs):
+    def unlink(self, *args, **kwargs) -> bool:
         """Proxy function for internal cache object
         only support Redis
         """
@@ -289,17 +293,17 @@ class Cache(object):
 
     def cached(
         self,
-        timeout=None,
-        key_prefix="view/%s",
-        unless=None,
-        forced_update=None,
-        response_filter=None,
-        query_string=False,
-        hash_method=hashlib.md5,
-        cache_none=False,
-        make_cache_key=None,
-        source_check=None,
-    ):
+        timeout: Optional[int]=None,
+        key_prefix: str="view/%s",
+        unless: Optional[Callable]=None,
+        forced_update: Optional[Callable]=None,
+        response_filter: Optional[Callable]=None,
+        query_string: bool=False,
+        hash_method: Callable=hashlib.md5,
+        cache_none: bool=False,
+        make_cache_key: Optional[Callable]=None,
+        source_check: Optional[bool]=None,
+    ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
@@ -560,23 +564,23 @@ class Cache(object):
 
         return decorator
 
-    def _memvname(self, funcname):
+    def _memvname(self, funcname: str) -> str:
         return funcname + "_memver"
 
-    def _memoize_make_version_hash(self):
+    def _memoize_make_version_hash(self) -> str:
         return base64.b64encode(uuid.uuid4().bytes)[:6].decode("utf-8")
 
     def _memoize_version(
         self,
-        f,
-        args=None,
+        f: Callable,
+        args: Optional[Any]=None,
         kwargs=None,
-        reset=False,
-        delete=False,
-        timeout=None,
-        forced_update=False,
-        args_to_ignore=None,
-    ):
+        reset: bool=False,
+        delete: bool=False,
+        timeout: Optional[int]=None,
+        forced_update: Optional[Union[bool, Callable]]=False,
+        args_to_ignore: Optional[Any]=None,
+    ) -> Union[Tuple[str, str], Tuple[str, None]]:
         """Updates the hash version associated with a memoized function or
         method.
         """
@@ -637,13 +641,13 @@ class Cache(object):
 
     def _memoize_make_cache_key(
         self,
-        make_name=None,
-        timeout=None,
-        forced_update=False,
-        hash_method=hashlib.md5,
-        source_check=False,
-        args_to_ignore=None,
-    ):
+        make_name: None=None,
+        timeout: Optional[Callable]=None,
+        forced_update: bool=False,
+        hash_method: Callable=hashlib.md5,
+        source_check: Optional[bool]=False,
+        args_to_ignore: Optional[Any]=None,
+    ) -> Callable:
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f, *args, **kwargs):
@@ -687,7 +691,7 @@ class Cache(object):
 
         return make_cache_key
 
-    def _memoize_kwargs_to_args(self, f, *args, **kwargs):
+    def _memoize_kwargs_to_args(self, f: Callable, *args, **kwargs) -> Any:
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
@@ -758,7 +762,7 @@ class Cache(object):
             ),
         )
 
-    def _bypass_cache(self, unless, f, *args, **kwargs):
+    def _bypass_cache(self, unless: Optional[Callable], f: Callable, *args, **kwargs) -> bool:
         """Determines whether or not to bypass the cache by calling unless().
         Supports both unless() that takes in arguments and unless()
         that doesn't.
@@ -780,16 +784,16 @@ class Cache(object):
 
     def memoize(
         self,
-        timeout=None,
-        make_name=None,
-        unless=None,
-        forced_update=None,
-        response_filter=None,
-        hash_method=hashlib.md5,
-        cache_none=False,
-        source_check=None,
-        args_to_ignore=None,
-    ):
+        timeout: Optional[int]=None,
+        make_name: None=None,
+        unless: None=None,
+        forced_update: Optional[Callable]=None,
+        response_filter: None=None,
+        hash_method: Callable=hashlib.md5,
+        cache_none: bool=False,
+        source_check: Optional[bool]=None,
+        args_to_ignore: Optional[Any]=None,
+    ) -> Callable:
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
 
@@ -964,7 +968,7 @@ class Cache(object):
 
         return memoize
 
-    def delete_memoized(self, f, *args, **kwargs):
+    def delete_memoized(self, f, *args, **kwargs) -> None:
         """Deletes the specified functions caches, based by given parameters.
         If parameters are given, only the functions that were memoized
         with them will be erased. Otherwise all versions of the caches
@@ -1082,7 +1086,7 @@ class Cache(object):
             cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
             self.cache.delete(cache_key)
 
-    def delete_memoized_verhash(self, f, *args):
+    def delete_memoized_verhash(self, f: Callable, *args) -> None:
         """Delete the version hash associated with the function.
 
         .. warning::
