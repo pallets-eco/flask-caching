@@ -42,8 +42,7 @@ null_control = (dict((k, None) for k in delchars),)
 
 
 def wants_args(f):
-    """Check if the function wants any arguments
-    """
+    """Check if the function wants any arguments"""
 
     argspec = inspect.getfullargspec(f)
 
@@ -299,7 +298,7 @@ class Cache(object):
         hash_method=hashlib.md5,
         cache_none=False,
         make_cache_key=None,
-        source_check=None
+        source_check=None,
     ):
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -417,8 +416,9 @@ class Cache(object):
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = _make_cache_key(args, kwargs, use_request=True)
-
+                        cache_key = _make_cache_key(
+                            args, kwargs, use_request=True
+                        )
 
                     if (
                         callable(forced_update)
@@ -535,14 +535,17 @@ class Cache(object):
                         if use_request:
                             cache_key = key_prefix % request.path
                         else:
-                            cache_key = key_prefix % url_for(f.__name__, **kwargs)
+                            cache_key = key_prefix % url_for(
+                                f.__name__, **kwargs
+                            )
                     else:
                         cache_key = key_prefix
 
                 if source_check and callable(f):
                     func_source_code = inspect.getsource(f)
                     func_source_hash = hash_method(
-                        func_source_code.encode("utf-8"))
+                        func_source_code.encode("utf-8")
+                    )
                     func_source_hash = str(func_source_hash.hexdigest())
 
                     cache_key += func_source_hash
@@ -572,6 +575,7 @@ class Cache(object):
         delete=False,
         timeout=None,
         forced_update=False,
+        args_to_ignore=None,
     ):
         """Updates the hash version associated with a memoized function or
         method.
@@ -579,6 +583,10 @@ class Cache(object):
         fname, instance_fname = function_namespace(f, args=args)
         version_key = self._memvname(fname)
         fetch_keys = [version_key]
+
+        args_to_ignore = args_to_ignore or []
+        if "self" in args_to_ignore:
+            instance_fname = None
 
         if instance_fname:
             instance_version_key = self._memvname(instance_fname)
@@ -633,14 +641,20 @@ class Cache(object):
         timeout=None,
         forced_update=False,
         hash_method=hashlib.md5,
-        source_check=False
+        source_check=False,
+        args_to_ignore=None,
     ):
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f, *args, **kwargs):
             _timeout = getattr(timeout, "cache_timeout", timeout)
             fname, version_data = self._memoize_version(
-                f, args=args, kwargs=kwargs, timeout=_timeout, forced_update=forced_update
+                f,
+                args=args,
+                kwargs=kwargs,
+                timeout=_timeout,
+                forced_update=forced_update,
+                args_to_ignore=args_to_ignore,
             )
 
             #: this should have to be after version_data, so that it
@@ -649,7 +663,7 @@ class Cache(object):
 
             if callable(f):
                 keyargs, keykwargs = self._memoize_kwargs_to_args(
-                    f, *args, **kwargs
+                    f, *args, **kwargs, args_to_ignore=args_to_ignore
                 )
             else:
                 keyargs, keykwargs = args, kwargs
@@ -680,6 +694,7 @@ class Cache(object):
         #: 1, b=2 is equivilant to a=1, b=2, etc.
         new_args = []
         arg_num = 0
+        args_to_ignore = kwargs.pop("args_to_ignore", None) or []
 
         # If the function uses VAR_KEYWORD type of parameters,
         # we need to pass these further
@@ -689,7 +704,10 @@ class Cache(object):
 
         for i in range(args_len):
             arg_default = get_arg_default(f, i)
-            if i == 0 and arg_names[i] in ("self", "cls"):
+            if arg_names[i] in args_to_ignore:
+                arg = None
+                arg_num += 1
+            elif i == 0 and arg_names[i] in ("self", "cls"):
                 #: use the id func of the class instance
                 #: this supports instance methods for
                 #: the memoized functions, giving more
@@ -769,7 +787,8 @@ class Cache(object):
         response_filter=None,
         hash_method=hashlib.md5,
         cache_none=False,
-        source_check=None
+        source_check=None,
+        args_to_ignore=None,
     ):
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
@@ -847,9 +866,17 @@ class Cache(object):
                              formed with the function's source code hash in
                              addition to other parameters that may be included
                              in the formation of the key.
+        :param args_to_ignore: List of arguments that will be ignored while
+                               generating the cache key. Default to None.
+                               This means that those arguments may change
+                               without affecting the cache value that will be
+                               returned.
 
         .. versionadded:: 0.5
             params ``make_name``, ``unless``
+
+        .. versionadded:: 1.10
+            params ``args_to_ignore``
         """
 
         def memoize(f):
@@ -928,7 +955,8 @@ class Cache(object):
                 timeout=decorated_function,
                 forced_update=forced_update,
                 hash_method=hash_method,
-                source_check=source_check
+                source_check=source_check,
+                args_to_ignore=args_to_ignore,
             )
             decorated_function.delete_memoized = lambda: self.delete_memoized(f)
 
