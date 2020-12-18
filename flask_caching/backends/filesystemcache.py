@@ -165,7 +165,7 @@ class FileSystemCache(BaseCache):
                 pickle_time = pickle.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
-                    os.remove(filename)
+                    self.delete(key)
                 else:
                     hit_or_miss = "hit"
                     result = pickle.load(f)
@@ -216,7 +216,7 @@ class FileSystemCache(BaseCache):
             logger.debug("set key %r", key)
             # Management elements should not count towards threshold
             if not mgmt_element:
-                self._update_count(delta=1)
+                self._update_count(value=len(self._list_dir()))
         return result
 
     def delete(self, key, mgmt_element=False):
@@ -244,7 +244,7 @@ class FileSystemCache(BaseCache):
                 pickle_time = pickle.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
-                    os.remove(filename)
+                    self.delete(key)
                 else:
                     result = True
         except FileNotFoundError:
