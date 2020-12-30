@@ -88,7 +88,7 @@ class SimpleCache(BaseCache):
     def set(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        item = (expires, pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+        item = (expires, pickle.dumps(value))
         self._cache[key] = item
         logger.debug("set key %r", key)
         return True
@@ -96,7 +96,7 @@ class SimpleCache(BaseCache):
     def add(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        item = (expires, pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+        item = (expires, pickle.dumps(value))
         updated = False
         should_add = key not in self._cache
         if should_add:

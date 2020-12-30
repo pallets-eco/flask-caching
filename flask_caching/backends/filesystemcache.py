@@ -205,8 +205,8 @@ class FileSystemCache(BaseCache):
                 suffix=self._fs_transaction_suffix, dir=self._path
             )
             with os.fdopen(fd, "wb") as f:
-                pickle.dump(timeout, f, 1)
-                pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
+                pickle.dump(timeout, f)
+                pickle.dump(value, f)
             os.replace(tmp, filename)
             os.chmod(filename, self._mode)
         except (IOError, OSError) as exc:
