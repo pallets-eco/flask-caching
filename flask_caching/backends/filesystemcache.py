@@ -16,7 +16,7 @@ import os
 import tempfile
 from time import time
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 
 logger = logging.getLogger(__name__)
@@ -59,8 +59,11 @@ class FileSystemCache(BaseCache):
         mode=0o600,
         hash_method=hashlib.md5,
         ignore_errors=False,
+        **kwargs
     ):
-        super(FileSystemCache, self).__init__(default_timeout)
+        super(FileSystemCache, self).__init__(
+            default_timeout, **extract_serializer_args(kwargs)
+        )
         self._path = cache_dir
         self._threshold = threshold
         self._mode = mode

@@ -13,7 +13,11 @@ import re
 """
 from time import time
 
-from flask_caching.backends.base import BaseCache, iteritems_wrapper
+from flask_caching.backends.base import (
+    BaseCache,
+    extract_serializer_args,
+    iteritems_wrapper,
+)
 
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
@@ -55,8 +59,10 @@ class MemcachedCache(BaseCache):
                        different prefix.
     """
 
-    def __init__(self, servers=None, default_timeout=300, key_prefix=None):
-        super(MemcachedCache, self).__init__(default_timeout)
+    def __init__(self, servers=None, default_timeout=300, key_prefix=None, **kwargs):
+        super(MemcachedCache, self).__init__(
+            default_timeout, **extract_serializer_args(kwargs)
+        )
         if servers is None or isinstance(servers, (list, tuple)):
             if servers is None:
                 servers = ["127.0.0.1:11211"]

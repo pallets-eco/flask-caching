@@ -11,7 +11,7 @@
 """
 import platform
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 
 class UWSGICache(BaseCache):
@@ -29,8 +29,10 @@ class UWSGICache(BaseCache):
         you only have to provide the name of the cache.
     """
 
-    def __init__(self, default_timeout=300, cache=""):
-        super(UWSGICache, self).__init__(default_timeout)
+    def __init__(self, default_timeout=300, cache="", **kwargs):
+        super(UWSGICache, self).__init__(
+            default_timeout, extract_serializer_args(kwargs)
+        )
 
         if platform.python_implementation() == "PyPy":
             raise RuntimeError(

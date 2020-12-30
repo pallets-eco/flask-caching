@@ -32,6 +32,15 @@ def iteritems_wrapper(mappingorseq):
     return mappingorseq
 
 
+def extract_serializer_args(data):
+    result = dict()
+    serializer_prefix = "serializer_"
+    for key in tuple(data.keys()):
+        if key.startswith(serializer_prefix):
+            result[key] = data.pop(key)
+    return result
+
+
 class BaseCache(object):
     """Baseclass for the cache systems.  All the cache systems implement this
     API or a superset of it.

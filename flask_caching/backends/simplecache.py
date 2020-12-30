@@ -12,7 +12,7 @@
 import logging
 from time import time
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 
 logger = logging.getLogger(__name__)
@@ -36,8 +36,12 @@ class SimpleCache(BaseCache):
                           ``False``.
     """
 
-    def __init__(self, threshold=500, default_timeout=300, ignore_errors=False):
-        super(SimpleCache, self).__init__(default_timeout)
+    def __init__(
+        self, threshold=500, default_timeout=300, ignore_errors=False, **kwargs
+    ):
+        super(SimpleCache, self).__init__(
+            default_timeout, **extract_serializer_args(kwargs)
+        )
         self._cache = {}
         self.clear = self._cache.clear
         self._threshold = threshold

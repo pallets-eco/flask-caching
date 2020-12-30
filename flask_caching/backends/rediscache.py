@@ -9,7 +9,9 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from flask_caching.backends.base import BaseCache, iteritems_wrapper
+from flask_caching.backends.base import (
+    BaseCache, extract_serializer_args, iteritems_wrapper
+)
 
 
 class RedisCache(BaseCache):
@@ -44,7 +46,7 @@ class RedisCache(BaseCache):
         key_prefix=None,
         **kwargs
     ):
-        super().__init__(default_timeout)
+        super().__init__(default_timeout, **extract_serializer_args(kwargs))
         if host is None:
             raise ValueError("RedisCache host parameter may not be None")
         if isinstance(host, str):
@@ -268,7 +270,7 @@ class RedisSentinelCache(RedisCache):
         self._read_clients = sentinel.slave_for(master)
 
         self.key_prefix = key_prefix or ""
-        
+
 class RedisClusterCache(RedisCache):
     """Uses the Redis key-value store as a cache backend.
 
@@ -319,7 +321,7 @@ class RedisClusterCache(RedisCache):
         # Skips the check of cluster-require-full-coverage config,
         # useful for clusters without the CONFIG command (like aws)
         skip_full_coverage_check = kwargs.pop('skip_full_coverage_check', True)
-        
+
         cluster = RedisCluster(startup_nodes=startup_nodes,
                                password=password,
                                skip_full_coverage_check=skip_full_coverage_check,
