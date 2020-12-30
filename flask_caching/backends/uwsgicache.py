@@ -13,11 +13,6 @@ import platform
 
 from flask_caching.backends.base import BaseCache
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
-
 
 class UWSGICache(BaseCache):
     """ Implements the cache using uWSGI's caching framework.
@@ -62,7 +57,7 @@ class UWSGICache(BaseCache):
         rv = self._uwsgi.cache_get(key, self.cache)
         if rv is None:
             return
-        return pickle.loads(rv)
+        return self._serializer.loads(rv)
 
     def delete(self, key):
         return self._uwsgi.cache_del(key, self.cache)
@@ -70,7 +65,7 @@ class UWSGICache(BaseCache):
     def set(self, key, value, timeout=None):
         return self._uwsgi.cache_update(
             key,
-            pickle.dumps(value),
+            self._serializer.dumps(value),
             self._normalize_timeout(timeout),
             self.cache,
         )
@@ -78,7 +73,7 @@ class UWSGICache(BaseCache):
     def add(self, key, value, timeout=None):
         return self._uwsgi.cache_set(
             key,
-            pickle.dumps(value),
+            self._serializer.dumps(value),
             self._normalize_timeout(timeout),
             self.cache,
         )

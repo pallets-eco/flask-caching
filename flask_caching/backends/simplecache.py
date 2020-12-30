@@ -14,11 +14,6 @@ from time import time
 
 from flask_caching.backends.base import BaseCache
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
-
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +73,7 @@ class SimpleCache(BaseCache):
             if not expired:
                 hit_or_miss = "hit"
                 try:
-                    result = pickle.loads(value)
+                    result = self._serializer.loads(value)
                 except Exception as exc:
                     logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
@@ -88,7 +83,7 @@ class SimpleCache(BaseCache):
     def set(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        item = (expires, pickle.dumps(value))
+        item = (expires, self._serializer.dumps(value))
         self._cache[key] = item
         logger.debug("set key %r", key)
         return True
@@ -96,7 +91,7 @@ class SimpleCache(BaseCache):
     def add(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        item = (expires, pickle.dumps(value))
+        item = (expires, self._serializer.dumps(value))
         updated = False
         should_add = key not in self._cache
         if should_add:

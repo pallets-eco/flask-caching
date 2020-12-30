@@ -18,11 +18,6 @@ from time import time
 
 from flask_caching.backends.base import BaseCache
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
-
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +124,7 @@ class FileSystemCache(BaseCache):
             try:
                 remove = False
                 with open(fname, "rb") as f:
-                    expires = pickle.load(f)
+                    expires = self._serializer.load(f)
                 remove = (expires != 0 and expires <= now) or idx % 3 == 0
                 if remove:
                     os.remove(fname)
@@ -162,16 +157,16 @@ class FileSystemCache(BaseCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = pickle.load(f)
+                pickle_time = self._serializer.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
                     os.remove(filename)
                 else:
                     hit_or_miss = "hit"
-                    result = pickle.load(f)
+                    result = self._serializer.load(f)
         except FileNotFoundError:
             pass
-        except (IOError, OSError, pickle.PickleError) as exc:
+        except (IOError, OSError, self._serialization_error) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("get key %r -> %s %s", key, hit_or_miss, expiredstr)
@@ -205,8 +200,8 @@ class FileSystemCache(BaseCache):
                 suffix=self._fs_transaction_suffix, dir=self._path
             )
             with os.fdopen(fd, "wb") as f:
-                pickle.dump(timeout, f)
-                pickle.dump(value, f)
+                self._serializer.dump(timeout, f)
+                self._serializer.dump(value, f)
             os.replace(tmp, filename)
             os.chmod(filename, self._mode)
         except (IOError, OSError) as exc:
@@ -241,7 +236,7 @@ class FileSystemCache(BaseCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = pickle.load(f)
+                pickle_time = self._serializer.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
                     os.remove(filename)
@@ -249,7 +244,7 @@ class FileSystemCache(BaseCache):
                     result = True
         except FileNotFoundError:
             pass
-        except (IOError, OSError, pickle.PickleError) as exc:
+        except (IOError, OSError, self._serialization_error) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("has key %r -> %s %s", key, result, expiredstr)

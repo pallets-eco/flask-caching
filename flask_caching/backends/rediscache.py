@@ -11,11 +11,6 @@
 """
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
-
 
 class RedisCache(BaseCache):
     """Uses the Redis key-value store as a cache backend.
@@ -90,7 +85,7 @@ class RedisCache(BaseCache):
         t = type(value)
         if t == int:
             return str(value).encode("ascii")
-        return b"!" + pickle.dumps(value)
+        return b"!" + self._serializer.dumps(value)
 
     def load_object(self, value):
         """The reversal of :meth:`dump_object`.  This might be called with
@@ -100,8 +95,8 @@ class RedisCache(BaseCache):
             return None
         if value.startswith(b"!"):
             try:
-                return pickle.loads(value[1:])
-            except pickle.PickleError:
+                return self._serializer.loads(value[1:])
+            except self._serialization_error:
                 return None
         try:
             return int(value)

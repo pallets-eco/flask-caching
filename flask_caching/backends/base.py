@@ -10,6 +10,10 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+try:
+    import cPickle as pickle
+except ImportError:  # pragma: no cover
+    import pickle  # type: ignore
 
 
 def iteritems_wrapper(mappingorseq):
@@ -37,9 +41,17 @@ class BaseCache(object):
                             of 0 indicates that the cache never expires.
     """
 
-    def __init__(self, default_timeout=300):
+    def __init__(
+        self,
+        default_timeout=300,
+        serializer_impl=pickle,
+        serializer_error=pickle.PickleError,
+    ):
         self.default_timeout = default_timeout
         self.ignore_errors = False
+
+        self._serializer = serializer_impl
+        self._serialization_error = serializer_error
 
     def _normalize_timeout(self, timeout):
         if timeout is None:

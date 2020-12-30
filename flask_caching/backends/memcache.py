@@ -15,11 +15,6 @@ from time import time
 
 from flask_caching.backends.base import BaseCache, iteritems_wrapper
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
-
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
 
@@ -294,7 +289,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         # I didn't found a good way to avoid pickling/unpickling if
         # key is smaller than chunksize, because in case or <werkzeug.requests>
         # getting the length consume the data iterator.
-        serialized = pickle.dumps(value)
+        serialized = self._serializer.dumps(value)
         values = {}
         len_ser = len(serialized)
         chks = range(0, len_ser, self.chunksize)
@@ -333,4 +328,4 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if not serialized:
             return None
 
-        return pickle.loads(serialized)
+        return self._serializer.loads(serialized)
