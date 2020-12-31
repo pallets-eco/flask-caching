@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 import errno
+import json
 import os
+try:
+    import cPickle as pickle
+except ImportError:  # pragma: no cover
+    import pickle  # type: ignore
 
 import flask
 import pytest
 
 import flask_caching as fsc
+from flask_caching.serialization import json_bytes
 
 # build the path to the uwsgi marker file
 # when running in tox, this will be relative to the tox env
@@ -40,13 +46,23 @@ def pytest_runtest_makereport(item, call):
             f.write(item.name + "\n")
 
 
+@pytest.fixture(params=[
+    {},
+    {'serializer_impl': pickle, 'serializer_error': pickle.PickleError},
+    {'serializer_impl': json_bytes, 'serializer_error': json.JSONDecodeError}
+])
+def serialization_args(request):
+    return request.param.copy()
+
+
 @pytest.fixture
-def app(request):
+def app(request, serialization_args):
     app = flask.Flask(
         request.module.__name__, template_folder=os.path.dirname(__file__)
     )
     app.testing = True
     app.config["CACHE_TYPE"] = "simple"
+    app.config["CACHE_OPTIONS"] = serialization_args
     return app
 
 

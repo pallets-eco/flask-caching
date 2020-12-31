@@ -135,8 +135,8 @@ class GenericCacheTests(CacheTestsBase):
 
 class TestSimpleCache(GenericCacheTests):
     @pytest.fixture
-    def make_cache(self):
-        return backends.SimpleCache
+    def make_cache(self, serialization_args):
+        return lambda: backends.SimpleCache(**serialization_args)
 
     def test_purge(self):
         c = backends.SimpleCache(threshold=2)
@@ -150,9 +150,9 @@ class TestSimpleCache(GenericCacheTests):
 
 class TestFileSystemCache(GenericCacheTests):
     @pytest.fixture
-    def make_cache(self, tmpdir):
+    def make_cache(self, tmpdir, serialization_args):
         return lambda **kw: backends.FileSystemCache(
-            cache_dir=str(tmpdir), **kw
+            cache_dir=str(tmpdir), **{**kw, **serialization_args}
         )
 
     def test_filesystemcache_hashes(self, make_cache, hash_method):
@@ -220,7 +220,7 @@ class TestRedisCache(GenericCacheTests):
         pass
 
     @pytest.fixture(params=(None, False, True, gen_key_prefix))
-    def make_cache(self, request):
+    def make_cache(self, request, serialization_args):
         key_prefix = "werkzeug-test-case:"
         if request.param is None:
             host = "localhost"
@@ -232,7 +232,7 @@ class TestRedisCache(GenericCacheTests):
         else:
             host = redis.Redis()
 
-        c = backends.RedisCache(host=host, key_prefix=key_prefix)
+        c = backends.RedisCache(host=host, key_prefix=key_prefix, **serialization_args)
         yield lambda: c
         c.clear()
 
@@ -260,8 +260,8 @@ class TestMemcachedCache(GenericCacheTests):
         pass
 
     @pytest.fixture
-    def make_cache(self):
-        c = backends.MemcachedCache(key_prefix="werkzeug-test-case:")
+    def make_cache(self, serialization_args):
+        c = backends.MemcachedCache(key_prefix="werkzeug-test-case:", **serialization_args)
         yield lambda: c
         c.clear()
 
@@ -298,8 +298,8 @@ class TestUWSGICache(GenericCacheTests):
             )
 
     @pytest.fixture
-    def make_cache(self):
-        c = backends.UWSGICache(cache="werkzeugtest")
+    def make_cache(self, serialization_args):
+        c = backends.UWSGICache(cache="werkzeugtest", **serialization_args)
         yield lambda: c
         c.clear()
 

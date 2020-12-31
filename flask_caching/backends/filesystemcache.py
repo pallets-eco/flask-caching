@@ -127,7 +127,7 @@ class FileSystemCache(BaseCache):
             try:
                 remove = False
                 with open(fname, "rb") as f:
-                    expires = self._serializer.load(f)
+                    expires, _ = self._serializer.load(f)
                 remove = (expires != 0 and expires <= now) or idx % 3 == 0
                 if remove:
                     os.remove(fname)
@@ -160,13 +160,13 @@ class FileSystemCache(BaseCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = self._serializer.load(f)
+                pickle_time, result = self._serializer.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
+                    result = None
                     os.remove(filename)
                 else:
                     hit_or_miss = "hit"
-                    result = self._serializer.load(f)
         except FileNotFoundError:
             pass
         except (IOError, OSError, self._serialization_error) as exc:
@@ -203,8 +203,7 @@ class FileSystemCache(BaseCache):
                 suffix=self._fs_transaction_suffix, dir=self._path
             )
             with os.fdopen(fd, "wb") as f:
-                self._serializer.dump(timeout, f)
-                self._serializer.dump(value, f)
+                self._serializer.dump((timeout, value), f)
             os.replace(tmp, filename)
             os.chmod(filename, self._mode)
         except (IOError, OSError) as exc:
@@ -239,7 +238,7 @@ class FileSystemCache(BaseCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = self._serializer.load(f)
+                pickle_time, _ = self._serializer.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
                     os.remove(filename)
