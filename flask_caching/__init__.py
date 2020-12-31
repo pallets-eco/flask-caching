@@ -303,6 +303,7 @@ class Cache(object):
         cache_none: bool=False,
         make_cache_key: Optional[Callable]=None,
         source_check: Optional[bool]=None,
+        force_tuple: bool = True,
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -403,6 +404,8 @@ class Cache(object):
                              formed with the function's source code hash in
                              addition to other parameters that may be included
                              in the formation of the key.
+        :param force_tuple: Default True. Cast output from list to tuple.
+                            JSON doesn't support tuple, but Flask expects it.
         """
 
         def decorator(f):
@@ -453,6 +456,9 @@ class Cache(object):
                                 found = False
                             else:
                                 found = self.cache.has(cache_key)
+                        elif force_tuple and isinstance(rv, list) and len(rv) == 2:
+                            # JSON compatibility for flask
+                            rv = tuple(rv)
                 except Exception:
                     if self.app.debug:
                         raise
