@@ -10,6 +10,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+import warnings
 try:
     import cPickle as pickle
 except ImportError:  # pragma: no cover
@@ -59,6 +60,12 @@ class BaseCache(object):
         self.default_timeout = default_timeout
         self.ignore_errors = False
 
+        if serializer_impl is pickle:
+            warnings.warn(
+                "Pickle serializer is not secure and may "
+                "lead to remote code execution. "
+                "Consider using another serializer (eg. JSON)."
+            )
         self._serializer = serializer_impl
         self._serialization_error = serializer_error
 
