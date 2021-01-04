@@ -193,6 +193,28 @@ class TestFileSystemCache(GenericCacheTests):
         nof_cache_files = c.get(c._fs_count_file)
         assert nof_cache_files is None
 
+    def test_filecount_caching_none(self, make_cache):
+        c = make_cache()
+        for i in range(3):
+            assert c.set("a", None)
+            assert c.get(c._fs_count_file) == 1
+
+    def test_filecount_after_deletion_in_has(self, make_cache):
+        c = make_cache()
+        assert c.set("foo", "bar", timeout=0.01)
+        assert c.get(c._fs_count_file) == 1
+        time.sleep(0.1)
+        assert c.has("foo") in (False, 0)
+        assert c.get(c._fs_count_file) == 0
+
+    def test_filecount_after_deletion_in_get(self, make_cache):
+        c = make_cache()
+        assert c.set("foo", "bar", timeout=0.01)
+        assert c.get(c._fs_count_file) == 1
+        time.sleep(0.1)
+        assert c.get("foo") is None
+        assert c.get(c._fs_count_file) == 0
+
     def test_count_file_accuracy(self, c):
         assert c.set("foo", "bar")
         assert c.set("moo", "car")
