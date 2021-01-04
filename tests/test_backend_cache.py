@@ -193,6 +193,12 @@ class TestFileSystemCache(GenericCacheTests):
         nof_cache_files = c.get(c._fs_count_file)
         assert nof_cache_files is None
 
+    def test_filecount_caching_none(self, make_cache):
+        c = make_cache()
+        for i in range(3):
+            assert c.set("a", None)
+            assert c.get(c._fs_count_file) == 1
+
     def test_count_file_accuracy(self, c):
         assert c.set("foo", "bar")
         assert c.set("moo", "car")
