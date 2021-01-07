@@ -165,7 +165,7 @@ class FileSystemCache(BaseCache):
                 pickle_time = pickle.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
-                    os.remove(filename)
+                    self.delete(key)
                 else:
                     hit_or_miss = "hit"
                     result = pickle.load(f)
@@ -207,6 +207,7 @@ class FileSystemCache(BaseCache):
             with os.fdopen(fd, "wb") as f:
                 pickle.dump(timeout, f, 1)
                 pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
+            is_new_file = not os.path.exists(filename)
             os.replace(tmp, filename)
             os.chmod(filename, self._mode)
         except (IOError, OSError) as exc:
@@ -215,7 +216,7 @@ class FileSystemCache(BaseCache):
             result = True
             logger.debug("set key %r", key)
             # Management elements should not count towards threshold
-            if not mgmt_element:
+            if not mgmt_element and is_new_file:
                 self._update_count(delta=1)
         return result
 
@@ -244,7 +245,7 @@ class FileSystemCache(BaseCache):
                 pickle_time = pickle.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
                 if expired:
-                    os.remove(filename)
+                    self.delete(key)
                 else:
                     result = True
         except FileNotFoundError:
