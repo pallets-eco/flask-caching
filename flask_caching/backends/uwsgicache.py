@@ -31,7 +31,7 @@ class UWSGICache(BaseCache):
 
     def __init__(self, default_timeout=300, cache="", **kwargs):
         super(UWSGICache, self).__init__(
-            default_timeout, extract_serializer_args(kwargs)
+            default_timeout, **extract_serializer_args(kwargs)
         )
 
         if platform.python_implementation() == "PyPy":
