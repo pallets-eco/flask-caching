@@ -49,6 +49,11 @@ class BaseCache(object):
     :param default_timeout: The default timeout (in seconds) that is used if
                             no timeout is specified on :meth:`set`. A timeout
                             of 0 indicates that the cache never expires.
+    :param serializer_impl: Pickle-like serialization implementation. It should
+                            support load(-s) and dump(-s) methods and binary
+                            strings/files.
+    :param serializer_error: Deserialization exception - for specified
+                             implementation.
     """
 
     def __init__(
