@@ -8,6 +8,8 @@
     :copyright: (c) 2014 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+
+import os
 import time
 
 import pytest
@@ -29,6 +31,17 @@ except ImportError:
             import memcache
         except ImportError:
             memcache = None
+
+try:
+    from google.cloud import storage, exceptions
+except ImportError:
+    storage = None
+    exceptions = None
+
+try:
+    from gcp_storage_emulator.server import create_server
+except ImportError:
+    create_server = None
 
 
 class CacheTestsBase(object):
@@ -131,6 +144,10 @@ class GenericCacheTests(CacheTestsBase):
         assert c.has("foo") in (False, 0)
         assert c.has("spam") in (False, 0)
 
+    def test_generic_get_binary(self, c):
+        assert c.set("foo", b"bar")
+        assert c.get("foo") == b"bar"
+
 
 class TestSimpleCache(GenericCacheTests):
     @pytest.fixture
@@ -150,9 +167,7 @@ class TestSimpleCache(GenericCacheTests):
 class TestFileSystemCache(GenericCacheTests):
     @pytest.fixture
     def make_cache(self, tmpdir):
-        return lambda **kw: backends.FileSystemCache(
-            cache_dir=str(tmpdir), **kw
-        )
+        return lambda **kw: backends.FileSystemCache(cache_dir=str(tmpdir), **kw)
 
     def test_filesystemcache_hashes(self, make_cache, hash_method):
         cache = make_cache(hash_method=hash_method)
@@ -310,3 +325,52 @@ class TestNullCache(CacheTestsBase):
 
     def test_has(self, c):
         assert not c.has("foo")
+
+
+class TestGoogleCloudStorageCache(GenericCacheTests):
+    @pytest.fixture(scope="class", autouse=True)
+    def requirements(self, gcs_bucket):
+        pass
+
+    @pytest.fixture
+    def make_cache(self, gcs_bucket):
+        c = backends.contrib.GoogleCloudStorageCache(bucket=gcs_bucket)
+        yield lambda: c
+        c.clear()
+
+
+# Emulator doesn't handle batched requests correctly.
+# https://github.com/googleapis/python-storage/issues/376
+class FakeGoogleCloudStorageCache(backends.contrib.GoogleCloudStorageCache):
+    def _delete_many(self, keys):
+        for key in keys:
+            try:
+                self.bucket.delete_blob(key)
+            except exceptions.NotFound:
+                pass
+        return True
+
+
+class TestFakeGoogleCloudStorageCache(GenericCacheTests):
+    @pytest.fixture(scope="class", autouse=True)
+    def requirements(self, gcs_emulator):
+        pass
+
+    @pytest.fixture
+    def make_cache(self, gcs_emulator):
+        orig_env = os.environ.get("STORAGE_EMULATOR_HOST")
+        os.environ["STORAGE_EMULATOR_HOST"] = "http://localhost:9023"
+        server = gcs_emulator(
+            "localhost", 9023, in_memory=True, default_bucket="test-bucket"
+        )
+        server.start()
+        c = FakeGoogleCloudStorageCache(
+            bucket="test-bucket", delete_expired_objects_on_read=True, anonymous=True
+        )
+        yield lambda: c
+        c.clear()
+        server.stop()
+        if orig_env is None:
+            del os.environ["STORAGE_EMULATOR_HOST"]
+        else:
+            os.environ["STORAGE_EMULATOR_HOST"] = orig_env

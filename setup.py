@@ -71,6 +71,8 @@ setup(
         "pytest-xprocess",
         "pylibmc",
         "redis",
+        "google-cloud-storage",
+        "gcp-storage-emulator",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
