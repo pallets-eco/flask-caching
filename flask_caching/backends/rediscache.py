@@ -135,11 +135,14 @@ class RedisCache(BaseCache):
     def add(self, key, value, timeout=None):
         timeout = self._normalize_timeout(timeout)
         dump = self.dump_object(value)
-        return self._write_client.setnx(
+        created = self._write_client.setnx(
             name=self._get_prefix() + key, value=dump
-        ) and self._write_client.expire(
-            name=self._get_prefix() + key, time=timeout
         )
+        if created and timeout != -1:
+            self._write_client.expire(
+                name=self._get_prefix() + key, time=timeout
+            )
+        return created
 
     def set_many(self, mapping, timeout=None):
         timeout = self._normalize_timeout(timeout)
