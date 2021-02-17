@@ -75,6 +75,12 @@ class MemcachedCache(BaseCache):
 
         self.key_prefix = key_prefix or None
 
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        args.append(config["CACHE_MEMCACHED_SERVERS"])
+        kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
+        return cls(*args, **kwargs)
+
     def _normalize_key(self, key):
         key = str(key)
         if self.key_prefix:
@@ -246,6 +252,18 @@ class SASLMemcachedCache(MemcachedCache):
 
         self.key_prefix = key_prefix
 
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        args.append(config["CACHE_MEMCACHED_SERVERS"])
+        kwargs.update(
+            dict(
+                username=config["CACHE_MEMCACHED_USERNAME"],
+                password=config["CACHE_MEMCACHED_PASSWORD"],
+                key_prefix=config["CACHE_KEY_PREFIX"],
+            )
+        )
+        return cls(*args, **kwargs)
+
 
 class SpreadSASLMemcachedCache(SASLMemcachedCache):
     """Simple Subclass of SASLMemcached client that will spread the value
@@ -265,6 +283,19 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         self.chunksize = kwargs.get("chunksize", 1048448)
         self.maxchunk = kwargs.get("maxchunk", 32)
         super(SpreadSASLMemcachedCache, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        args.append(config["CACHE_MEMCACHED_SERVERS"])
+        kwargs.update(
+            dict(
+                username=config.get("CACHE_MEMCACHED_USERNAME"),
+                password=config.get("CACHE_MEMCACHED_PASSWORD"),
+                key_prefix=config.get("CACHE_KEY_PREFIX"),
+            )
+        )
+
+        return cls(*args, **kwargs)
 
     def delete(self, key):
         for skey in self._genkeys(key):

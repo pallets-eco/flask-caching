@@ -21,6 +21,7 @@ from collections import OrderedDict
 from flask import current_app, request, url_for, Flask
 from werkzeug.utils import import_string
 from datetime import timedelta
+from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
 from markupsafe import Markup
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -220,6 +221,9 @@ class Cache(object):
         cache_factory = import_string(import_me)
         cache_args = config["CACHE_ARGS"][:]
         cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
+
+        if isinstance(cache_factory, BaseCache):
+            cache_factory = cache_factory.factory
 
         if config["CACHE_OPTIONS"]:
             cache_options.update(config["CACHE_OPTIONS"])
