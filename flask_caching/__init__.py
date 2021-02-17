@@ -216,6 +216,11 @@ class Cache(object):
     def _set_cache(self, app: Flask, config) -> None:
         import_me = config["CACHE_TYPE"]
         if "." not in import_me:
+            warnings.warn(
+                "Using the initialization functions in flask_caching.backend "
+                "is deprecated.  Use the a full path to backend classes "
+                "directly.",
+                category=DeprecationWarning)
             import_me = type(self).__module__ + '.backends.' + import_me
 
         cache_factory = import_string(import_me)
