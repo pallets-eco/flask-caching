@@ -83,6 +83,17 @@ class FileSystemCache(BaseCache):
         if self._threshold != 0:
             self._update_count(value=len(self._list_dir()))
 
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        args.insert(0, config["CACHE_DIR"])
+        kwargs.update(
+            dict(
+                threshold=config["CACHE_THRESHOLD"],
+                ignore_errors=config["CACHE_IGNORE_ERRORS"],
+            )
+        )
+        return cls(*args, **kwargs)
+
     @property
     def _file_count(self):
         return self.get(self._fs_count_file) or 0

@@ -41,6 +41,10 @@ class BaseCache(object):
         self.default_timeout = default_timeout
         self.ignore_errors = False
 
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        return cls()
+
     def _normalize_timeout(self, timeout):
         if timeout is None:
             timeout = self.default_timeout

@@ -48,6 +48,16 @@ class SimpleCache(BaseCache):
         self._threshold = threshold
         self.ignore_errors = ignore_errors
 
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        kwargs.update(
+            dict(
+                threshold=config["CACHE_THRESHOLD"],
+                ignore_errors=config["CACHE_IGNORE_ERRORS"],
+            )
+        )
+        return cls(*args, **kwargs)
+
     def _prune(self):
         if len(self._cache) > self._threshold:
             now = time()

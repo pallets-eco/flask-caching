@@ -58,6 +58,17 @@ class UWSGICache(BaseCache):
 
         self.cache = cache
 
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        # The name of the caching instance to connect to, for
+        # example: mycache@localhost:3031, defaults to an empty string, which
+        # means uWSGI will cache in the local instance. If the cache is in the
+        # same instance as the werkzeug app, you only have to provide the name of
+        # the cache.
+        uwsgi_cache_name = config.get("CACHE_UWSGI_NAME", "")
+        kwargs.update(dict(cache=uwsgi_cache_name))
+        return cls(*args, **kwargs)
+
     def get(self, key):
         rv = self._uwsgi.cache_get(key, self.cache)
         if rv is None:
