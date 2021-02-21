@@ -6,3 +6,5 @@ pytest-cov
 pytest-xprocess
 redis
 pylibmc
+coverage
+flake8
