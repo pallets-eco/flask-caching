@@ -116,8 +116,7 @@ class FileSystemCache(BaseCache):
         return int(timeout)
 
     def _list_dir(self):
-        """return a list of (fully qualified) cache filenames
-        """
+        """return a list of (fully qualified) cache filenames"""
         mgmt_files = [
             self._get_filename(name).split("/")[-1]
             for name in (self._fs_count_file,)
@@ -144,7 +143,7 @@ class FileSystemCache(BaseCache):
                 remove = (expires != 0 and expires <= now) or idx % 3 == 0
                 if remove:
                     os.remove(fname)
-                    nremoved +=1
+                    nremoved += 1
             except (IOError, OSError):
                 pass
         self._update_count(value=len(self._list_dir()))

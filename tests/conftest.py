@@ -66,7 +66,7 @@ def hash_method(request):
 @pytest.fixture(scope="class")
 def redis_server(xprocess):
     try:
-        import redis
+        import redis  # noqa
     except ImportError:
         pytest.skip("Python package 'redis' is not installed.")
 
@@ -96,7 +96,7 @@ def memcache_server(xprocess):
             from google.appengine.api import memcache
         except ImportError:
             try:
-                import memcache
+                import memcache  # noqa
             except ImportError:
                 pytest.skip(
                     "Python package for memcache is not installed. Need one of "
@@ -118,4 +118,3 @@ def memcache_server(xprocess):
 
     yield
     xprocess.getinfo("memcached").terminate()
-

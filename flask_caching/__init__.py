@@ -20,11 +20,10 @@ from collections import OrderedDict
 
 from flask import current_app, request, url_for, Flask
 from werkzeug.utils import import_string
-from datetime import timedelta
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
 from markupsafe import Markup
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 __version__ = "1.9.0"
 
@@ -136,7 +135,9 @@ def function_namespace(f, args=None):
     return ns, ins
 
 
-def make_template_fragment_key(fragment_name: str, vary_on: List[str]=[]) -> str:
+def make_template_fragment_key(
+    fragment_name: str, vary_on: List[str] = []
+) -> str:
     """Make a cache key for a specific fragment name."""
     if vary_on:
         fragment_name = "%s_" % fragment_name
@@ -146,7 +147,12 @@ def make_template_fragment_key(fragment_name: str, vary_on: List[str]=[]) -> str
 class Cache(object):
     """This class is used to control the cache objects."""
 
-    def __init__(self, app: Optional[Flask]=None, with_jinja2_ext: bool=True, config=None) -> None:
+    def __init__(
+        self,
+        app: Optional[Flask] = None,
+        with_jinja2_ext: bool = True,
+        config=None,
+    ) -> None:
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
 
@@ -220,8 +226,9 @@ class Cache(object):
                 "Using the initialization functions in flask_caching.backend "
                 "is deprecated.  Use the a full path to backend classes "
                 "directly.",
-                category=DeprecationWarning)
-            import_me = type(self).__module__ + '.backends.' + import_me
+                category=DeprecationWarning,
+            )
+            import_me = type(self).__module__ + ".backends." + import_me
 
         cache_factory = import_string(import_me)
         cache_args = config["CACHE_ARGS"][:]
@@ -294,16 +301,16 @@ class Cache(object):
 
     def cached(
         self,
-        timeout: Optional[int]=None,
-        key_prefix: str="view/%s",
-        unless: Optional[Callable]=None,
-        forced_update: Optional[Callable]=None,
-        response_filter: Optional[Callable]=None,
-        query_string: bool=False,
-        hash_method: Callable=hashlib.md5,
-        cache_none: bool=False,
-        make_cache_key: Optional[Callable]=None,
-        source_check: Optional[bool]=None,
+        timeout: Optional[int] = None,
+        key_prefix: str = "view/%s",
+        unless: Optional[Callable] = None,
+        forced_update: Optional[Callable] = None,
+        response_filter: Optional[Callable] = None,
+        query_string: bool = False,
+        hash_method: Callable = hashlib.md5,
+        cache_none: bool = False,
+        make_cache_key: Optional[Callable] = None,
+        source_check: Optional[bool] = None,
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -574,13 +581,13 @@ class Cache(object):
     def _memoize_version(
         self,
         f: Callable,
-        args: Optional[Any]=None,
+        args: Optional[Any] = None,
         kwargs=None,
-        reset: bool=False,
-        delete: bool=False,
-        timeout: Optional[int]=None,
-        forced_update: Optional[Union[bool, Callable]]=False,
-        args_to_ignore: Optional[Any]=None,
+        reset: bool = False,
+        delete: bool = False,
+        timeout: Optional[int] = None,
+        forced_update: Optional[Union[bool, Callable]] = False,
+        args_to_ignore: Optional[Any] = None,
     ) -> Union[Tuple[str, str], Tuple[str, None]]:
         """Updates the hash version associated with a memoized function or
         method.
@@ -642,12 +649,12 @@ class Cache(object):
 
     def _memoize_make_cache_key(
         self,
-        make_name: None=None,
-        timeout: Optional[Callable]=None,
-        forced_update: bool=False,
-        hash_method: Callable=hashlib.md5,
-        source_check: Optional[bool]=False,
-        args_to_ignore: Optional[Any]=None,
+        make_name: None = None,
+        timeout: Optional[Callable] = None,
+        forced_update: bool = False,
+        hash_method: Callable = hashlib.md5,
+        source_check: Optional[bool] = False,
+        args_to_ignore: Optional[Any] = None,
     ) -> Callable:
         """Function used to create the cache_key for memoized functions."""
 
@@ -763,7 +770,9 @@ class Cache(object):
             ),
         )
 
-    def _bypass_cache(self, unless: Optional[Callable], f: Callable, *args, **kwargs) -> bool:
+    def _bypass_cache(
+        self, unless: Optional[Callable], f: Callable, *args, **kwargs
+    ) -> bool:
         """Determines whether or not to bypass the cache by calling unless().
         Supports both unless() that takes in arguments and unless()
         that doesn't.
@@ -785,15 +794,15 @@ class Cache(object):
 
     def memoize(
         self,
-        timeout: Optional[int]=None,
-        make_name: None=None,
-        unless: None=None,
-        forced_update: Optional[Callable]=None,
-        response_filter: None=None,
-        hash_method: Callable=hashlib.md5,
-        cache_none: bool=False,
-        source_check: Optional[bool]=None,
-        args_to_ignore: Optional[Any]=None,
+        timeout: Optional[int] = None,
+        make_name: None = None,
+        unless: None = None,
+        forced_update: Optional[Callable] = None,
+        response_filter: None = None,
+        hash_method: Callable = hashlib.md5,
+        cache_none: bool = False,
+        source_check: Optional[bool] = None,
+        args_to_ignore: Optional[Any] = None,
     ) -> Callable:
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.

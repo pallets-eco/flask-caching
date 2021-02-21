@@ -97,7 +97,9 @@ class RedisCache(BaseCache):
 
         redis_url = config.get("CACHE_REDIS_URL")
         if redis_url:
-            kwargs["host"] = redis_from_url(redis_url, db=kwargs.pop("db", None))
+            kwargs["host"] = redis_from_url(
+                redis_url, db=kwargs.pop("db", None)
+            )
 
         return cls(*args, **kwargs)
 
@@ -225,8 +227,7 @@ class RedisCache(BaseCache):
         )
 
     def unlink(self, *keys):
-        """when redis-py >= 3.0.0 and redis > 4, support this operation
-        """
+        """when redis-py >= 3.0.0 and redis > 4, support this operation"""
         if not keys:
             return
         if self.key_prefix:
@@ -317,7 +318,9 @@ class RedisSentinelCache(RedisCache):
                 ),
                 master=config.get("CACHE_REDIS_SENTINEL_MASTER", "mymaster"),
                 password=config.get("CACHE_REDIS_PASSWORD", None),
-                sentinel_password=config.get("CACHE_REDIS_SENTINEL_PASSWORD", None),
+                sentinel_password=config.get(
+                    "CACHE_REDIS_SENTINEL_PASSWORD", None
+                ),
                 key_prefix=config.get("CACHE_KEY_PREFIX", None),
                 db=config.get("CACHE_REDIS_DB", 0),
             )
@@ -330,7 +333,8 @@ class RedisClusterCache(RedisCache):
     """Uses the Redis key-value store as a cache backend.
 
     The first argument can be either a string denoting address of the Redis
-    server or an object resembling an instance of a rediscluster.RedisCluster class.
+    server or an object resembling an instance of a rediscluster.RedisCluster
+    class.
 
     Note: Python Redis API already takes care of encoding unicode strings on
     the fly.
@@ -347,17 +351,21 @@ class RedisClusterCache(RedisCache):
     Any additional keyword arguments will be passed to
     ``rediscluster.RedisCluster``.
     """
-    def __init__(self,
-                 cluster="",
-                 password="",
-                 default_timeout=300,
-                 key_prefix="",
-                 **kwargs):
+
+    def __init__(
+        self,
+        cluster="",
+        password="",
+        default_timeout=300,
+        key_prefix="",
+        **kwargs
+    ):
         super().__init__(default_timeout=default_timeout)
 
         if kwargs.get("decode_responses", None):
-            raise ValueError("decode_responses is not supported by "
-                             "RedisCache.")
+            raise ValueError(
+                "decode_responses is not supported by " "RedisCache."
+            )
 
         try:
             from rediscluster import RedisCluster
@@ -365,30 +373,37 @@ class RedisClusterCache(RedisCache):
             raise RuntimeError("no rediscluster module found")
 
         try:
-            nodes = [(node.split(':')) for node in cluster.split(',')]
-            startup_nodes = [{
-                'host': node[0].strip(),
-                'port': node[1].strip()
-            } for node in nodes]
+            nodes = [(node.split(":")) for node in cluster.split(",")]
+            startup_nodes = [
+                {"host": node[0].strip(), "port": node[1].strip()}
+                for node in nodes
+            ]
         except IndexError:
-            raise ValueError("Please give the correct cluster argument "
-                             "e.g. host1:port1,host2:port2,host3:port3")
+            raise ValueError(
+                "Please give the correct cluster argument "
+                "e.g. host1:port1,host2:port2,host3:port3"
+            )
         # Skips the check of cluster-require-full-coverage config,
         # useful for clusters without the CONFIG command (like aws)
-        skip_full_coverage_check = kwargs.pop('skip_full_coverage_check', True)
+        skip_full_coverage_check = kwargs.pop("skip_full_coverage_check", True)
 
-        cluster = RedisCluster(startup_nodes=startup_nodes,
-                               password=password,
-                               skip_full_coverage_check=skip_full_coverage_check,
-                               **kwargs)
+        cluster = RedisCluster(
+            startup_nodes=startup_nodes,
+            password=password,
+            skip_full_coverage_check=skip_full_coverage_check,
+            **kwargs
+        )
         self._write_client = self._read_clients = cluster
         self.key_prefix = key_prefix
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
         kwargs.update(
-            dict(cluster=config.get("CACHE_REDIS_CLUSTER", ""),
-                 password=config.get("CACHE_REDIS_PASSWORD", ""),
-                 default_timeout=config.get("CACHE_DEFAULT_TIMEOUT", 300),
-                 key_prefix=config.get("CACHE_KEY_PREFIX", "")))
+            dict(
+                cluster=config.get("CACHE_REDIS_CLUSTER", ""),
+                password=config.get("CACHE_REDIS_PASSWORD", ""),
+                default_timeout=config.get("CACHE_DEFAULT_TIMEOUT", 300),
+                key_prefix=config.get("CACHE_KEY_PREFIX", ""),
+            )
+        )
         return cls(*args, **kwargs)

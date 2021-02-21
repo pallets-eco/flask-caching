@@ -84,7 +84,13 @@ setup(
     platforms="any",
     python_requires=">=3.5",
     install_requires=["Flask"],
-    tests_require=["pytest", "pytest-cov", "pytest-xprocess", "pylibmc", "redis"],
+    tests_require=[
+        "pytest",
+        "pytest-cov",
+        "pytest-xprocess",
+        "pylibmc",
+        "redis",
+    ],
     cmdclass={"test": PyTest},
     classifiers=[
         "Development Status :: 5 - Production/Stable",

@@ -8,7 +8,6 @@
     :copyright: (c) 2014 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
-import errno
 import time
 
 import pytest
@@ -249,7 +248,7 @@ class TestRedisCache(GenericCacheTests):
         elif request.param:
             host = redis.StrictRedis()
         elif callable(request.param):
-            key_prefix = gen_key_prefix
+            key_prefix = gen_key_prefix  # noqa (flake8 error: undefined)
             host = redis.Redis()
         else:
             host = redis.Redis()
@@ -268,8 +267,7 @@ class TestRedisCache(GenericCacheTests):
         with pytest.raises(ValueError) as exc_info:
             backends.RedisCache(host=None)
         assert (
-            str(exc_info.value)
-            == "RedisCache host parameter may not be None"
+            str(exc_info.value) == "RedisCache host parameter may not be None"
         )
 
 

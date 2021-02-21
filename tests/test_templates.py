@@ -7,7 +7,7 @@ from flask_caching import make_template_fragment_key
 
 
 def test_jinjaext_cache(app, cache):
-    somevar = ''.join([random.choice(string.ascii_letters) for x in range(6)])
+    somevar = "".join([random.choice(string.ascii_letters) for x in range(6)])
 
     testkeys = [
         make_template_fragment_key("fragment1"),
@@ -32,21 +32,22 @@ def test_jinjaext_cache(app, cache):
         #: Test rendering templates from strings
         output = render_template_string(
             """{% cache 60, "fragment3" %}{{somevar}}{% endcache %}""",
-            somevar=somevar
+            somevar=somevar,
         )
         assert cache.get(make_template_fragment_key("fragment3")) == somevar
         assert output == somevar
 
         #: Test backwards compatibility
         output = render_template_string(
-            """{% cache 30 %}{{somevar}}{% endcache %}""",
-            somevar=somevar)
+            """{% cache 30 %}{{somevar}}{% endcache %}""", somevar=somevar
+        )
         assert cache.get(make_template_fragment_key("None1")) == somevar
         assert output == somevar
 
         output = render_template_string(
             """{% cache 30, "fragment4", "fragment5"%}{{somevar}}{% endcache %}""",
-            somevar=somevar)
+            somevar=somevar,
+        )
         k = make_template_fragment_key("fragment4", vary_on=["fragment5"])
         assert cache.get(k) == somevar
         assert output == somevar

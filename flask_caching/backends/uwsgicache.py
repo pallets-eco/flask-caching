@@ -20,7 +20,7 @@ except ImportError:  # pragma: no cover
 
 
 class UWSGICache(BaseCache):
-    """ Implements the cache using uWSGI's caching framework.
+    """Implements the cache using uWSGI's caching framework.
 
     .. note::
         This class cannot be used when running under PyPy, because the uWSGI
@@ -45,16 +45,18 @@ class UWSGICache(BaseCache):
 
         try:
             import uwsgi
+
             self._uwsgi = uwsgi
         except ImportError:
             raise RuntimeError(
                 "uWSGI could not be imported, are you running under uWSGI?"
             )
 
-        if 'cache2' not in uwsgi.opt:
+        if "cache2" not in uwsgi.opt:
             raise RuntimeError(
                 "You must enable cache2 in uWSGI configuration: "
-                "https://uwsgi-docs.readthedocs.io/en/latest/Caching.html")
+                "https://uwsgi-docs.readthedocs.io/en/latest/Caching.html"
+            )
 
         self.cache = cache
 
@@ -63,8 +65,8 @@ class UWSGICache(BaseCache):
         # The name of the caching instance to connect to, for
         # example: mycache@localhost:3031, defaults to an empty string, which
         # means uWSGI will cache in the local instance. If the cache is in the
-        # same instance as the werkzeug app, you only have to provide the name of
-        # the cache.
+        # same instance as the werkzeug app, you only have to provide the name
+        # of the cache.
         uwsgi_cache_name = config.get("CACHE_UWSGI_NAME", "")
         kwargs.update(dict(cache=uwsgi_cache_name))
         return cls(*args, **kwargs)

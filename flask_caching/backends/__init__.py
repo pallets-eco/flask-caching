@@ -18,7 +18,11 @@ from flask_caching.backends.memcache import (
 from flask_caching.backends.nullcache import NullCache
 
 # TODO: Rename to "redis" when python2 support is removed
-from flask_caching.backends.rediscache import RedisCache, RedisSentinelCache, RedisClusterCache
+from flask_caching.backends.rediscache import (
+    RedisCache,
+    RedisSentinelCache,
+    RedisClusterCache,
+)
 from flask_caching.backends.simplecache import SimpleCache
 from flask_caching.backends.uwsgicache import UWSGICache
 
@@ -44,6 +48,7 @@ def null(app, config, args, kwargs):
 
 def simple(app, config, args, kwargs):
     return SimpleCache.factory(app, config, args, kwargs)
+
 
 def filesystem(app, config, args, kwargs):
     return FileSystemCache.factory(app, config, args, kwargs)

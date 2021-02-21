@@ -6,7 +6,8 @@ from flask_caching import Cache
 from flask_caching.backends.simplecache import SimpleCache
 
 try:
-    import redis
+    import redis  # noqa
+
     HAS_NOT_REDIS = False
 except ImportError:
     HAS_NOT_REDIS = True
