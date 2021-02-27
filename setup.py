@@ -39,10 +39,8 @@ Links
 """
 import ast
 import re
-import sys
 
 from setuptools import find_packages, setup
-from setuptools.command.test import test as TestCommand
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
@@ -51,23 +49,6 @@ with open("flask_caching/__init__.py", "rb") as f:
     version = str(
         ast.literal_eval(_version_re.search(content).group(1))  # type: ignore
     )
-
-
-class PyTest(TestCommand):
-    user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
-
-    def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = []
-
-    def run_tests(self):
-        import shlex
-
-        # import here, cause outside the eggs aren't loaded
-        import pytest
-
-        errno = pytest.main(shlex.split(self.pytest_args))
-        sys.exit(errno)
 
 
 setup(
@@ -91,7 +72,6 @@ setup(
         "pylibmc",
         "redis",
     ],
-    cmdclass={"test": PyTest},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
