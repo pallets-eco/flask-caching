@@ -1,7 +1,7 @@
 Flask-Caching
 =============
 
-[![Build Status](https://travis-ci.org/sh4nks/flask-caching.svg?branch=master)](https://travis-ci.org/sh4nks/flask-caching)
+[![Build Status](https://github.com/sh4nks/flask-caching/actions/workflows/tests.yml/badge.svg)](https://github.com/sh4nks/flask-caching/actions)
 [![Coverage Status](https://coveralls.io/repos/sh4nks/flask-caching/badge.png)](https://coveralls.io/r/sh4nks/flask-caching)
 [![PyPI Version](https://img.shields.io/pypi/v/Flask-Caching.svg)](https://pypi.python.org/pypi/Flask-Caching)
 [![Documentation Status](https://readthedocs.org/projects/flask-caching/badge/?version=latest)](https://flask-caching.readthedocs.io/en/latest/?badge=latest)
