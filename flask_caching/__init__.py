@@ -234,7 +234,7 @@ class Cache(object):
         cache_args = config["CACHE_ARGS"][:]
         cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
 
-        if isinstance(cache_factory, BaseCache):
+        if isinstance(cache_factory, type) and issubclass(cache_factory, BaseCache):
             cache_factory = cache_factory.factory
 
         if config["CACHE_OPTIONS"]:
