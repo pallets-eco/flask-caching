@@ -49,7 +49,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest --cov=./ --cov-report=xml
+        uwsgi --cache2 name=cache,items=100 --pyrun $(which pytest) --pyargv '--cov=./ --cov-report=xml'
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
