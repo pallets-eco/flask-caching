@@ -19,11 +19,7 @@ Since 1.8, Flask-Caching supports only Python 3.5+.
 Installation
 ------------
 
-Install the extension with one of the following commands::
-
-    $ easy_install Flask-Caching
-
-or alternatively if you have pip installed::
+Install the extension with the following command::
 
     $ pip install Flask-Caching
 
