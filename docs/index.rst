@@ -34,7 +34,7 @@ Cache is managed through a ``Cache`` instance::
 
     config = {
         "DEBUG": True,          # some Flask specific configs
-        "CACHE_TYPE": "simple", # Flask-Caching related configs
+        "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
         "CACHE_DEFAULT_TIMEOUT": 300
     }
     app = Flask(__name__)
@@ -45,7 +45,7 @@ Cache is managed through a ``Cache`` instance::
 You may also set up your ``Cache`` instance later at configuration time using
 **init_app** method::
 
-    cache = Cache(config={'CACHE_TYPE': 'simple'})
+    cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
     app = Flask(__name__)
     cache.init_app(app)
@@ -54,7 +54,7 @@ You may also provide an alternate configuration dictionary, useful if there
 will be multiple ``Cache`` instances each with a different backend::
 
     #: Method A: During instantiation of class
-    cache = Cache(config={'CACHE_TYPE': 'simple'})
+    cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
     #: Method B: During init_app call
     cache.init_app(app, config={'CACHE_TYPE': 'simple'})
 
@@ -320,19 +320,28 @@ The following configuration values exist for Flask-Caching:
 
                                 Built-in cache types:
 
-                                * **null**: NullCache (default)
-                                * **simple**: SimpleCache
-                                * **filesystem**: FileSystemCache
-                                * **redis**: RedisCache (redis required)
-                                * **redissentinel**: RedisSentinelCache (redis required)
-                                * **rediscluster**: RedisClusterCache (redis required)
-                                * **uwsgi**: UWSGICache (uwsgi required)
-                                * **memcached**: MemcachedCache (pylibmc or memcache required)
-                                * **gaememcached**: same as memcached (for backwards compatibility)
-                                * **saslmemcached**: SASLMemcachedCache (pylibmc required)
-                                * **spreadsaslmemcached**: SpreadSASLMemcachedCache (pylibmc required)
+                                * **NullCache** (default; old name is **null**)
+                                * **SimpleCache** (old name is **simple**)
+                                * **FileSystemCache** (old name is
+                                  **filesystem**)
+                                * **RedisCache** (redis required; old name is
+                                  **redis**)
+                                * **RedisSentinelCache** (redis required; old
+                                  name is **redissentinel**)
+                                * **RedisClusterCache** (redis and rediscluster
+                                  required; old name is **rediscluster**)
+                                * **UWSGICache** (uwsgi required; old name is
+                                  **uwsgi**)
+                                * **MemcachedCache** (pylibmc or memcache
+                                  required; old name is **memcached** or
+                                  **gaememcached**)
+                                * **SASLMemcachedCache** (pylibmc required; old
+                                  name is **saslmemcached**)
+                                * **SpreadSASLMemcachedCache** (pylibmc
+                                  required; old name is
+                                  **spreadsaslmemcached**)
 
-``CACHE_NO_NULL_WARNING``       Silents the warning message when using
+``CACHE_NO_NULL_WARNING``       Silence the warning message when using
                                 cache type of 'null'.
 ``CACHE_ARGS``                  Optional list to unpack and pass during
                                 the cache class instantiation.
@@ -405,17 +414,22 @@ Built-in Cache Backends
 NullCache
 `````````
 
-Set ``CACHE_TYPE`` to ``null`` to use this type.
+Set ``CACHE_TYPE`` to ``NullCache`` to use this type.  The old name, ``null``
+is deprecated and will be removed in Flask-Caching 2.0.
 
 Cache that doesn't cache
 
 - CACHE_DEFAULT_TIMEOUT
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
 
 SimpleCache
 ```````````
 
-Set ``CACHE_TYPE`` to ``simple`` to use this type.
+Set ``CACHE_TYPE`` to ``SimpleCache`` to use this type.  The old name,
+``simple`` is deprecated and will be removed in Flask-Caching 2.0.
 
 Uses a local python dictionary for caching. This is not really thread safe.
 
@@ -425,11 +439,15 @@ Relevant configuration values
 - CACHE_IGNORE_ERRORS
 - CACHE_THRESHOLD
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
 
 FileSystemCache
 ```````````````
 
-Set ``CACHE_TYPE`` to ``filesystem`` to use this type.
+Set ``CACHE_TYPE`` to ``FileSystem`` to use this type.  The old name,
+``filesystem`` is deprecated and will be removed in Flask-Caching 2.0.
 
 Uses the filesystem to store cached values
 
@@ -442,10 +460,15 @@ Uses the filesystem to store cached values
 There is a single valid entry in CACHE_OPTIONS: *mode*, which should be a 3 digit
 linux-style permissions octal mode.
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
+
 RedisCache
 ``````````
 
-Set ``CACHE_TYPE`` to ``redis`` to use this type.
+Set ``CACHE_TYPE`` to ``RedisCache`` to use this type.  The old name, ``redis``
+is deprecated and will be removed in Flask-Caching 2.0.
 
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_KEY_PREFIX
@@ -458,10 +481,15 @@ Set ``CACHE_TYPE`` to ``redis`` to use this type.
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
+
 RedisSentinelCache
 ``````````````````
 
-Set ``CACHE_TYPE`` to ``redissentinel`` to use this type.
+Set ``CACHE_TYPE`` to ``RedisSentinel`` to use this type.  The old name,
+``redissentinel`` is deprecated and will be removed in Flask-Caching 2.0.
 
 - CACHE_KEY_PREFIX
 - CACHE_REDIS_SENTINELS
@@ -471,10 +499,15 @@ Set ``CACHE_TYPE`` to ``redissentinel`` to use this type.
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
+
 RedisClusterCache
 ``````````````````
 
-Set ``CACHE_TYPE`` to ``rediscluster`` to use this type.
+Set ``CACHE_TYPE`` to ``RedisClusterCache`` to use this type.  The old name,
+``rediscluster`` is deprecated and will be removed in Flask-Caching 2.0.
 
 - CACHE_KEY_PREFIX
 - CACHE_REDIS_CLUSTER
@@ -482,10 +515,16 @@ Set ``CACHE_TYPE`` to ``rediscluster`` to use this type.
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
+
 MemcachedCache
 ``````````````
 
-Set ``CACHE_TYPE`` to ``memcached`` to use this type.
+Set ``CACHE_TYPE`` to ``MemcachedCache`` to use this type.  The old names,
+``memcached`` and ``gaememcached`` are deprecated and will be removed in
+Flask-Caching 2.0.
 
 Uses a memcached server as a backend. Supports either pylibmc or memcache or
 google app engine memcache library.
@@ -513,10 +552,15 @@ Relevant configuration values
 
    Alternatively, see `Custom Cache Backends`_.
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
+
 SASLMemcachedCache
 ``````````````````
 
-Set ``CACHE_TYPE`` to ``saslmemcached`` to use this type.
+Set ``CACHE_TYPE`` to ``SASLMemcachedCache`` to use this type.  The old name,
+``saslmemcached`` is deprecated and will be removed in Flask-Caching 2.0.
 
 Uses a memcached server as a backend. Intended to be used with a SASL enabled
 connection to the memcached server. pylibmc is required and SASL must be supported
@@ -531,16 +575,21 @@ Relevant configuration values
 - CACHE_MEMCACHED_USERNAME
 - CACHE_MEMCACHED_PASSWORD
 
-.. note:: Since the SASL Memcached cache types do not use werkzeug's original built-in cache
-   infrastructure, they can be configured with CACHE_OPTIONS.
+.. note:: Unlike MemcachedCache, SASLMemcachedCache can be configured with
+          CACHE_OPTIONS.
 
 .. versionadded:: 0.10
+
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
 
 
 SpreadSASLMemcachedCache
 ````````````````````````
 
-Set ``CACHE_TYPE`` to ``spreadsaslmemcached`` to use this type.
+Set ``CACHE_TYPE`` to ``SpreadSASLMemcachedCache`` to use this type.  The old
+name, ``spreadsaslmemcached`` is deprecated and will be removed in
+Flask-Caching 2.0.
 
 Same as SASLMemcachedCache however, it has the ablity to spread value across
 multiple keys if it is bigger than the memcached treshold which by
@@ -552,38 +601,59 @@ default is 1M. Uses pickle.
     Renamed ``spreadsaslmemcachedcache`` to ``spreadsaslmemcached`` for
     the sake of consistency.
 
+.. versionchanged::  1.9.1
+   Deprecated the old name in favour of just using the class name.
+
 
 Custom Cache Backends
 ---------------------
 
-You are able to easily add your own custom cache backends by exposing a function
-that can instantiate and return a cache object. ``CACHE_TYPE`` will be the
-import string to your custom function. It should expect to receive three
-arguments.
+You are able to easily add your own custom cache backends by exposing a
+function that can instantiate and return a cache object. ``CACHE_TYPE`` will be
+the import string to your custom cache type. If not a subclass of
+:class:`flask_caching.backends.cache.BaseCache`, Flask-Caching will call it
+with three arguments:
 
-* ``app``
-* ``args``
-* ``kwargs``
+* ``app``, the Flask application object the cache is being initialized for
+* ``args``, the value of the CACHE_ARGS configuration option
+* ``kwargs``, the value of the CACHE_OPTIONS configuration option
 
-Your custom cache object must also subclass the
-:class:`flask_caching.backends.cache.BaseCache` class. Flask-Caching will make sure
-that ``threshold`` is already included in the kwargs options dictionary since
-it is common to all BaseCache classes.
+.. note:: ``args`` and ``kwargs`` are not expanded when instantiating the cache
+   object, i.e. they are not passed in as ``*args`` and ``**kwargs``, but they
+   are the exact value of the CACHE_ARGS and CACHE_OPTIONS configuration
+   options (CACHE_ARGS, however, is converted to a list).
 
-An example Redis cache implementation::
+Your custom cache should, however, subclass the
+:class:`flask_caching.backends.cache.BaseCache` class so it provides all the
+necessary methods to be usable.
+
+.. versionchanged:: 1.9.1 If your custom cache type *is* a subclass of
+   :class:`flask_caching.backends.cache.BaseCache`, Flask-Caching will, instead
+   of directly instantiating the class, call its ``factory`` class method with
+   the same args as listed above.  Unless overridden, ``BaseCache.factory``
+   simply instantiates the object without passing any arguments to it.
+   Built-in cache classes have overridden this to mimic the old, function based
+   cache isntantiation, so if you subclassed something that is not
+   :class:`flask_caching.backends.cache.BaseCache`, you may want to consult the
+   source code to see if your class is still compatible.
+
+An example implementation::
 
     #: the_app/custom.py
     class RedisCache(BaseCache):
         def __init__(self, servers, default_timeout=500):
             pass
 
-    def redis(app, config, args, kwargs):
-       args.append(app.config['REDIS_SERVERS'])
-       return RedisCache(*args, **kwargs)
+        @classmethod
+        def factory(cls, app, args, kwargs):
+            args.append(app.config['REDIS_SERVERS'])
 
-With this example, your ``CACHE_TYPE`` might be ``the_app.custom.redis``
+            return cls(*args, **kwargs)
 
-An example PylibMC cache implementation to change binary setting and provide
+With this example, your ``CACHE_TYPE`` might be ``the_app.custom.RedisCache``
+
+CACHE_TYPE doesn’t have to directly point to a cache class, though.  An example
+PylibMC cache implementation to change binary setting and provide
 username/password if SASL is enabled on the library::
 
     #: the_app/custom.py
