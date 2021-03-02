@@ -303,27 +303,6 @@ class TestMemcachedCache(GenericCacheTests):
         assert c.has("foo") is False
 
 
-class TestUWSGICache(GenericCacheTests):
-    _can_use_fast_sleep = False
-    _guaranteed_deletes = False
-
-    @pytest.fixture(scope="class", autouse=True)
-    def requirements(self):
-        try:
-            import uwsgi  # NOQA
-        except ImportError:
-            pytest.skip(
-                'Python "uwsgi" package is only avaialable when running '
-                "inside uWSGI."
-            )
-
-    @pytest.fixture
-    def make_cache(self):
-        c = backends.UWSGICache(cache="werkzeugtest")
-        yield lambda: c
-        c.clear()
-
-
 class TestNullCache(CacheTestsBase):
     @pytest.fixture(scope="class", autouse=True)
     def make_cache(self):

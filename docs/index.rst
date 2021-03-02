@@ -605,6 +605,17 @@ default is 1M. Uses pickle.
    Deprecated the old name in favour of just using the class name.
 
 
+UWSGICache
+`````````
+
+.. warning::
+   ``UWSGICache`` is not maintained nor tested.  Use at your own risk.
+
+Set ``CACHE_TYPE`` to ``flask_caching.contrib.uwsgicache.UWSGICache`` to use
+this type.  You also have to set ``CACHE_UWSGI_NAME`` to the cache name you
+set in your uWSGI configuration.
+
+
 Custom Cache Backends
 ---------------------
 
