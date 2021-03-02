@@ -256,8 +256,12 @@ class Cache(object):
     @property
     def cache(self) -> SimpleCache:
         app = current_app or self.app
-        return app.extensions["cache"][self]
-
+        if self in app.extensions["cache"]:
+            return app.extensions["cache"][self]
+        
+        for k, cache in app.extensions["cache"].items():
+            return cache
+        
     def get(self, *args, **kwargs) -> Optional[Union[str, Markup]]:
         """Proxy function for internal cache object."""
         return self.cache.get(*args, **kwargs)
