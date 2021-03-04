@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import errno
 import os
-import sys
 
 import flask
 import pytest
