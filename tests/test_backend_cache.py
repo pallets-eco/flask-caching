@@ -334,14 +334,14 @@ class TestGoogleCloudStorageCache(GenericCacheTests):
 
     @pytest.fixture
     def make_cache(self, gcs_bucket):
-        c = backends.contrib.GoogleCloudStorageCache(bucket=gcs_bucket)
+        c = contrib.GoogleCloudStorageCache(bucket=gcs_bucket)
         yield lambda: c
         c.clear()
 
 
 # Emulator doesn't handle batched requests correctly.
 # https://github.com/googleapis/python-storage/issues/376
-class FakeGoogleCloudStorageCache(backends.contrib.GoogleCloudStorageCache):
+class FakeGoogleCloudStorageCache(contrib.GoogleCloudStorageCache):
     def _delete_many(self, keys):
         for key in keys:
             try:
