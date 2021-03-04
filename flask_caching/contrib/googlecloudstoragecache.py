@@ -163,7 +163,7 @@ class GoogleCloudStorageCache(BaseCache):
             with self._client.batch():
                 for key in keys:
                     self.bucket.delete_blob(key)
-        except exceptions.NotFound:
+        except exceptions.NotFound:  # noqa: F821
             pass
         return True
 
