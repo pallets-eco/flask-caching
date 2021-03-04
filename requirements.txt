@@ -10,3 +10,5 @@ coverage
 flake8
 twine
 wheel
+google-cloud-storage
+gcp-storage-emulator
