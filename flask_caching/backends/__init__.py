@@ -10,7 +10,7 @@
     :license: BSD, see LICENSE for more details.
 """
 from flask_caching.backends.filesystemcache import FileSystemCache
-from flask_caching.backends.contrib.googlecloudstoragecache import GoogleCloudStorageCache
+from flask_caching.contrib.googlecloudstoragecache import GoogleCloudStorageCache
 from flask_caching.backends.memcache import (
     MemcachedCache,
     SASLMemcachedCache,
