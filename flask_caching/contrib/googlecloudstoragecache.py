@@ -84,10 +84,13 @@ class GoogleCloudStorageCache(BaseCache):
                 if self.delete_expired_objects_on_read:
                     self._delete(full_key)
             else:
-                hit_or_miss = "hit"
-                result = blob.download_as_bytes()
-                if blob.content_type == "application/json":
-                    result = json.loads(result)
+                try:
+                    result = blob.download_as_bytes()
+                    hit_or_miss = "hit"
+                    if blob.content_type == "application/json":
+                        result = json.loads(result)
+                except exceptions.NotFound:  # noqa: F821
+                    pass
         expiredstr = "(expired)" if expired else ""
         logger.debug("get key %r -> %s %s", full_key, hit_or_miss, expiredstr)
         return result
