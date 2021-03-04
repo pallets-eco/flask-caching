@@ -4,7 +4,7 @@ Changelog
 Version 1.10.0
 -------------
 
-Unreleased
+Released 2020-03-04
 
 - **Important**: The way caching backends are loaded have been refactored.
   Instead of passing the name of the initialization function one can now use
@@ -12,6 +12,8 @@ Unreleased
   For example:
   ``CACHE_TYPE="flask_caching.backends.SimpleCache"``.
   In the next major release (2.0), this will be the only supported way.
+- UWSGICache is not officially supported anymore and moved to the user
+  contributed backends.
 - Switch from Travis-CI to GitHub Actions
 - Fix add() in RedisCache without a timeout.
   PR `#218 <https://github.com/sh4nks/flask-caching/pull/218>`_.
