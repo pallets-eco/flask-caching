@@ -9,6 +9,13 @@ from flask_caching.backends.base import BaseCache
 logger = logging.getLogger(__name__)
 
 
+try:
+    from google.auth.credentials import AnonymousCredentials
+    from google.cloud import storage, exceptions
+except ImportError:
+    raise RuntimeError("no google-cloud-storage module found")
+
+
 class GoogleCloudStorageCache(BaseCache):
     """Uses an Google Cloud Storage bucket as a cache backend.
     Note: User-contributed functionality. This project does not guarantee that
@@ -47,11 +54,6 @@ class GoogleCloudStorageCache(BaseCache):
         super(GoogleCloudStorageCache, self).__init__(default_timeout)
         if not isinstance(bucket, str):
             raise ValueError("GCSCache bucket parameter must be a string")
-        try:
-            from google.auth.credentials import AnonymousCredentials
-            from google.cloud import storage, exceptions
-        except ImportError:
-            raise RuntimeError("no google-cloud-storage module found")
         if anonymous:
             self._client = storage.Client(
                 credentials=AnonymousCredentials(), project="test", **kwargs
