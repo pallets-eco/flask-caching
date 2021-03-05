@@ -3,6 +3,7 @@ import pytest
 from flask import Flask
 
 from flask_caching import Cache
+from flask_caching.backends import CacheFactory
 from flask_caching.backends.simplecache import SimpleCache
 
 try:
@@ -17,6 +18,7 @@ class CustomSimpleCache(SimpleCache):
     pass
 
 
+@CacheFactory.register
 def newsimple(app, config, args, kwargs):
     return CustomSimpleCache(*args, **kwargs)
 
@@ -118,7 +120,7 @@ def test_app_redis_cache_backend_url_explicit_db_arg(app, redis_server):
 
 def test_app_custom_cache_backend(app):
     cache = Cache()
-    app.config["CACHE_TYPE"] = "test_basic_app.newsimple"
+    app.config["CACHE_TYPE"] = "newsimple"
     cache.init_app(app)
 
     with app.app_context():

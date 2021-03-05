@@ -1,17 +1,7 @@
-from flask import Flask
 import pytest
+from flask import Flask
 
 from flask_caching import Cache
-from flask_caching.backends import (
-    FileSystemCache,
-    MemcachedCache,
-    NullCache,
-    RedisCache,
-    RedisSentinelCache,
-    SASLMemcachedCache,
-    SimpleCache,
-    SpreadSASLMemcachedCache,
-)
 
 
 @pytest.fixture
@@ -24,28 +14,27 @@ def app():
 @pytest.mark.parametrize(
     "cache_type",
     (
-        FileSystemCache,
-        MemcachedCache,
-        NullCache,
-        RedisCache,
-        RedisSentinelCache,
-        SASLMemcachedCache,
-        SimpleCache,
-        SpreadSASLMemcachedCache,
+            "filesystem",
+            "memcached",
+            "null",
+            "redis",
+            "redissentinel",
+            "simple",
+            "saslmemcached",
+            "spreadsaslmemcached"
     ),
 )
 def test_init_nullcache(cache_type, app, tmp_path):
     extra_config = {
-        FileSystemCache: {
+        "filesystem": {
             "CACHE_DIR": tmp_path,
         },
-        SASLMemcachedCache: {
+        "saslmemcached": {
             "CACHE_MEMCACHED_USERNAME": "test",
             "CACHE_MEMCACHED_PASSWORD": "test",
         },
     }
-    app.config["CACHE_TYPE"] = "flask_caching.backends." + cache_type.__name__
+    app.config["CACHE_TYPE"] = cache_type
     app.config.update(extra_config.get(cache_type, {}))
     cache = Cache(app=app)
-
-    assert isinstance(app.extensions["cache"][cache], cache_type)
+    assert app.extensions["cache"][cache]

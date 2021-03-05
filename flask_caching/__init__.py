@@ -19,7 +19,6 @@ import warnings
 from collections import OrderedDict
 
 from flask import current_app, request, url_for, Flask
-from werkzeug.utils import import_string
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
 from markupsafe import Markup
@@ -220,26 +219,18 @@ class Cache(object):
         self._set_cache(app, config)
 
     def _set_cache(self, app: Flask, config) -> None:
-        import_me = config["CACHE_TYPE"]
-        if "." not in import_me:
-            plain_name_used = True
-            import_me = type(self).__module__ + ".backends." + import_me
-        else:
-            plain_name_used = False
 
-        cache_factory = import_string(import_me)
+        from .backends import CacheFactory
+
+        import_me = config["CACHE_TYPE"]
+        cache_factory = CacheFactory.get(import_me.lower())
+        if not cache_factory:
+            raise ImportError(
+                "%s is not a valid Flask-Caching backend" % (import_me)
+            )
+
         cache_args = config["CACHE_ARGS"][:]
         cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
-
-        if isinstance(cache_factory, type) and issubclass(cache_factory, BaseCache):
-            cache_factory = cache_factory.factory
-        elif plain_name_used:
-            warnings.warn(
-                "Using the initialization functions in flask_caching.backend "
-                "is deprecated.  Use the a full path to backend classes "
-                "directly.",
-                category=DeprecationWarning,
-            )
 
         if config["CACHE_OPTIONS"]:
             cache_options.update(config["CACHE_OPTIONS"])
