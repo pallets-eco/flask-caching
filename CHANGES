@@ -4,7 +4,7 @@ Changelog
 Version 1.10.0
 --------------
 
-Released 2020-03-04
+Released 2021-03-04
 
 - **Important**: The way caching backends are loaded have been refactored.
   Instead of passing the name of the initialization function one can now use
