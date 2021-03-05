@@ -10,7 +10,6 @@
     :license: BSD, see LICENSE for more details.
 """
 from flask_caching.backends.filesystemcache import FileSystemCache
-from flask_caching.contrib.googlecloudstoragecache import GoogleCloudStorageCache
 from flask_caching.backends.memcache import (
     MemcachedCache,
     SASLMemcachedCache,
@@ -32,7 +31,6 @@ __all__ = (
     "null",
     "simple",
     "filesystem",
-    "googlecloudstorage",
     "redis",
     "redissentinel",
     "rediscluster",
@@ -54,10 +52,6 @@ def simple(app, config, args, kwargs):
 
 def filesystem(app, config, args, kwargs):
     return FileSystemCache.factory(app, config, args, kwargs)
-
-
-def googlecloudstorage(app, config, args, kwargs):
-    return GoogleCloudStorageCache.factory(app, config, args, kwargs)
 
 
 def redis(app, config, args, kwargs):

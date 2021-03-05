@@ -95,24 +95,3 @@ def memcache_server(xprocess):
 
     yield
     xprocess.getinfo("memcached").terminate()
-
-
-@pytest.fixture(scope="class")
-def gcs_bucket(request):
-    try:
-        from google.cloud import storage
-    except ImportError:
-        pytest.skip("Python package 'google-cloud-storage' is not installed.")
-    bucket = os.environ.get("CACHE_GCS_BUCKET")
-    if not bucket:
-        pytest.skip("'CACHE_GCS_BUCKET' environment variable is not set.")
-    return bucket
-
-
-@pytest.fixture(scope="class")
-def gcs_emulator(request):
-    try:
-        from gcp_storage_emulator.server import create_server
-    except ImportError:
-        pytest.skip("Python package 'gcp-storage-emulator' is not installed.")
-    return create_server

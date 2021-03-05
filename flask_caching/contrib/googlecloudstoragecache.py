@@ -89,13 +89,14 @@ class GoogleCloudStorageCache(BaseCache):
                     hit_or_miss = "hit"
                     if blob.content_type == "application/json":
                         result = json.loads(result)
-                except exceptions.NotFound:  # noqa: F821
+                except exceptions.NotFound:
                     pass
         expiredstr = "(expired)" if expired else ""
         logger.debug("get key %r -> %s %s", full_key, hit_or_miss, expiredstr)
         return result
 
     def set(self, key, value, timeout=None):
+        result = False
         full_key = self.key_prefix + key
         content_type = "application/json"
         try:
@@ -109,9 +110,13 @@ class GoogleCloudStorageCache(BaseCache):
             # Use 'Custom-Time' for expiry
             # https://cloud.google.com/storage/docs/metadata#custom-time
             blob.custom_time = self._now(delta=timeout)
-        blob.upload_from_string(value, content_type=content_type)
-        logger.debug("set key %r", full_key)
-        return True
+        try:
+            blob.upload_from_string(value, content_type=content_type)
+            result = True
+        except exceptions.TooManyRequests:
+            pass
+        logger.debug("set key %r -> %s", full_key, result)
+        return result
 
     def add(self, key, value, timeout=None):
         full_key = self.key_prefix + key
@@ -166,7 +171,7 @@ class GoogleCloudStorageCache(BaseCache):
             with self._client.batch():
                 for key in keys:
                     self.bucket.delete_blob(key)
-        except exceptions.NotFound:  # noqa: F821
+        except (exceptions.NotFound, exceptions.TooManyRequests):
             pass
         return True
 
