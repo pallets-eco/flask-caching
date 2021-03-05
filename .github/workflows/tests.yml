@@ -10,12 +10,18 @@ on:
       - 'docs/**'
       - '*.md'
       - '*.rst'
+      - 'CHANGES'
+      - 'AUTHORS'
+      - 'LICENSE'
   pull_request:
     branches: [ master ]
     paths-ignore:
       - 'docs/**'
       - '*.md'
       - '*.rst'
+      - 'CHANGES'
+      - 'AUTHORS'
+      - 'LICENSE'
 
 jobs:
   build:
