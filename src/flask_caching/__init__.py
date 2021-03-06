@@ -32,6 +32,7 @@ from flask import g
 from flask import request
 from flask import Response
 from flask import url_for
+from flask.signals import Namespace
 from werkzeug.utils import import_string
 
 from flask_caching.backends.base import BaseCache
@@ -46,6 +47,8 @@ from flask_caching.utils import wants_args
 __version__ = "2.4.1"
 
 logger = logging.getLogger(__name__)
+
+_signals = Namespace()
 
 SUPPORTED_HASH_FUNCTIONS = [
     hashlib.sha1,
@@ -65,6 +68,11 @@ T = TypeVar("T")
 # return types are contravariant and covariant respectively.
 T_co = TypeVar("T_co", covariant=True)
 T_contra = TypeVar("T_contra", contravariant=True)
+
+cache_view_hit = _signals.signal('cache-view-hit')
+cache_view_miss = _signals.signal('cache-view-miss')
+cache_memoize_hit = _signals.signal('cache-memoize-hit')
+cache_memoize_miss = _signals.signal('cache-memoize-miss')
 
 
 class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
@@ -543,6 +551,13 @@ class Cache:
                         for func in after_request_funcs
                     ):
                         after_request_funcs.append(apply_caching)
+
+                if found:
+                    cache_view_hit.send(cache=self, cache_key=cache_key,
+                                        args=args, kwargs=kwargs)
+                else:
+                    cache_view_miss.send(cache=self, cache_key=cache_key,
+                                         args=args, kwargs=kwargs)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
@@ -1042,6 +1057,13 @@ class Cache:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
                     return self._call_fn(f, *args, **kwargs)
+
+                if found:
+                    cache_memoize_hit.send(cache=self, cache_key=cache_key,
+                                           f=f, args=args, kwargs=kwargs)
+                else:
+                    cache_memoize_miss.send(cache=self, cache_key=cache_key,
+                                            f=f, args=args, kwargs=kwargs)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
