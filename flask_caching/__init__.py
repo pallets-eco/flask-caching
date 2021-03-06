@@ -19,6 +19,7 @@ import warnings
 from collections import OrderedDict
 
 from flask import current_app, request, url_for, Flask
+from flask.signals import Namespace
 from werkzeug.utils import import_string
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
@@ -28,6 +29,8 @@ from typing import Any, Callable, List, Optional, Tuple, Union
 __version__ = "1.10.0"
 
 logger = logging.getLogger(__name__)
+
+_signals = Namespace()
 
 TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
 SUPPORTED_HASH_FUNCTIONS = [
@@ -43,6 +46,11 @@ SUPPORTED_HASH_FUNCTIONS = [
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 delchars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = (dict((k, None) for k in delchars),)
+
+cache_view_hit = _signals.signal('cache-view-hit')
+cache_view_miss = _signals.signal('cache-view-miss')
+cache_memoize_hit = _signals.signal('cache-memoize-hit')
+cache_memoize_miss = _signals.signal('cache-memoize-miss')
 
 
 def wants_args(f: Callable) -> bool:
@@ -470,6 +478,13 @@ class Cache(object):
                         raise
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
+
+                if found:
+                    cache_view_hit.send(cache=self, cache_key=cache_key,
+                                        args=args, kwargs=kwargs)
+                else:
+                    cache_view_miss.send(cache=self, cache_key=cache_key,
+                                         args=args, kwargs=kwargs)
 
                 if not found:
                     rv = f(*args, **kwargs)
@@ -947,6 +962,13 @@ class Cache(object):
                         raise
                     logger.exception("Exception possibly due to cache backend.")
                     return f(*args, **kwargs)
+
+                if found:
+                    cache_memoize_hit.send(cache=self, cache_key=cache_key,
+                                           f=f, args=args, kwargs=kwargs)
+                else:
+                    cache_memoize_miss.send(cache=self, cache_key=cache_key,
+                                            f=f, args=args, kwargs=kwargs)
 
                 if not found:
                     rv = f(*args, **kwargs)
