@@ -226,6 +226,7 @@ class Cache:
         config.setdefault("CACHE_TYPE", "NullCache")
         config.setdefault("CACHE_NO_NULL_WARNING", False)
         config.setdefault("CACHE_SOURCE_CHECK", False)
+        config.setdefault("CACHE_ENABLE_SIGNALS", False)
 
         if config["CACHE_TYPE"] == "NullCache" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
@@ -552,12 +553,13 @@ class Cache:
                     ):
                         after_request_funcs.append(apply_caching)
 
-                if found:
-                    cache_view_hit.send(cache=self, cache_key=cache_key,
-                                        args=args, kwargs=kwargs)
-                else:
-                    cache_view_miss.send(cache=self, cache_key=cache_key,
-                                         args=args, kwargs=kwargs)
+                if self.config["CACHE_ENABLE_SIGNALS"]:
+                    if found:
+                        cache_view_hit.send(cache=self, cache_key=cache_key,
+                                            args=args, kwargs=kwargs)
+                    else:
+                        cache_view_miss.send(cache=self, cache_key=cache_key,
+                                             args=args, kwargs=kwargs)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
@@ -1058,12 +1060,13 @@ class Cache:
                     logger.exception("Exception possibly due to cache backend.")
                     return self._call_fn(f, *args, **kwargs)
 
-                if found:
-                    cache_memoize_hit.send(cache=self, cache_key=cache_key,
-                                           f=f, args=args, kwargs=kwargs)
-                else:
-                    cache_memoize_miss.send(cache=self, cache_key=cache_key,
-                                            f=f, args=args, kwargs=kwargs)
+                if self.config["CACHE_ENABLE_SIGNALS"]:
+                    if found:
+                        cache_memoize_hit.send(cache=self, cache_key=cache_key,
+                                               f=f, args=args, kwargs=kwargs)
+                    else:
+                        cache_memoize_miss.send(cache=self, cache_key=cache_key,
+                                                f=f, args=args, kwargs=kwargs)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)

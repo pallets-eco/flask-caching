@@ -84,6 +84,8 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_HASH_METHOD``              hash_method used for hashing cache keys. Defaults to
                                    ``hashlib.sha256``. Changing it invalidates all
                                    existing cache entries.
+``CACHE_ENABLE_SIGNALS``           Send Flask Signals for :meth:`~Cache.cached` and
+                                   :meth:`~Cache.memoize` cache hits and misses.
 ``CACHE_UWSGI_NAME``               The name of the uwsgi caching instance to
                                    connect to, for example: mycache@localhost:3031,
                                    defaults to an empty string, which means uWSGI
@@ -171,3 +173,17 @@ Or drop the URL and use the individual settings only::
         "CACHE_REDIS_DB": 0,
         "CACHE_REDIS_PASSWORD": "hunter2",
     }
+
+
+Signals
+-------
+
+The following signals are supported::
+
+* ``flask_caching.cache_view_hit``
+* ``flask_caching.cache_view_miss``
+* ``flask_caching.cache_memoize_hit``
+* ``flask_caching.cache_memoize_miss``
+
+By default, signals are disabled. To enable sending signals set
+``CACHE_ENABLE_SIGNALS`` to ``True``.
