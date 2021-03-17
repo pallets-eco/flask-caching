@@ -26,7 +26,7 @@ setup(
     name="Flask-Caching",
     version=version,
     project_urls={
-        "Documentation": "flask-caching.readthedocs.io",
+        "Documentation": "https://flask-caching.readthedocs.io",
         "Source Code": "https://github.com/sh4nks/flask-caching",
         "Issue Tracker": "https://github.com/sh4nks/flask-caching",
     },
