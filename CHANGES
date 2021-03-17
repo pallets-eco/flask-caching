@@ -1,6 +1,20 @@
 Changelog
 =========
 
+Version 1.10.1
+--------------
+
+Released 2021-03-17
+
+- A ``GoogleCloudStorageCache`` backend has been added to the user contributed
+  caching backends. PR `#214 <https://github.com/sh4nks/flask-caching/pull/214>`_.
+- Fix a regression introduced in the last release which broke all applications
+  subclassing the ``Cache`` class.
+- Add test_generic_get_bytes test case.
+  PR `#236 <https://github.com/sh4nks/flask-caching/pull/236>`_.
+- Various improvements and fixes.
+
+
 Version 1.10.0
 --------------
 
