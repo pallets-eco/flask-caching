@@ -174,11 +174,11 @@ class FileSystemCache(BaseCache):
             with open(filename, "rb") as f:
                 pickle_time = pickle.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
-                if expired:
-                    self.delete(key)
-                else:
+                if not expired:
                     hit_or_miss = "hit"
                     result = pickle.load(f)
+            if expired:
+                self.delete(key)
         except FileNotFoundError:
             pass
         except (IOError, OSError, pickle.PickleError) as exc:
@@ -253,11 +253,11 @@ class FileSystemCache(BaseCache):
         try:
             with open(filename, "rb") as f:
                 pickle_time = pickle.load(f)
-                expired = pickle_time != 0 and pickle_time < time()
-                if expired:
-                    self.delete(key)
-                else:
-                    result = True
+            expired = pickle_time != 0 and pickle_time < time()
+            if expired:
+                self.delete(key)
+            else:
+                result = True
         except FileNotFoundError:
             pass
         except (IOError, OSError, pickle.PickleError) as exc:
