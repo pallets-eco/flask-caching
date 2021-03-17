@@ -1,42 +1,5 @@
 #!/usr/bin/env python
-"""
-Flask-Caching
-=============
-
-Adds easy cache support to Flask.
-
-Setup
------
-
-The Cache Extension can either be initialized directly:
-
-.. code:: python
-
-    from flask import Flask
-    from flask_caching import Cache
-
-    app = Flask(__name__)
-    # For more configuration options, check out the documentation
-    cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
-Or through the factory method:
-
-.. code:: python
-
-    cache = Cache(config={"CACHE_TYPE": "simple"})
-
-    app = Flask(__name__)
-    cache.init_app(app)
-
-Links
-=====
-
-* `Documentation <https://flask-caching.readthedocs.io>`_
-* `Source Code <https://github.com/sh4nks/flask-caching>`_
-* `Issues <https://github.com/sh4nks/flask-caching/issues>`_
-* `original Flask-Cache Extension <https://github.com/thadeusb/flask-cache>`_
-
-"""
+import os
 import ast
 import re
 
@@ -44,22 +7,36 @@ from setuptools import find_packages, setup
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
-with open("flask_caching/__init__.py", "rb") as f:
-    content = f.read().decode("utf-8")
-    version = str(
-        ast.literal_eval(_version_re.search(content).group(1))  # type: ignore
-    )
+
+def read(*parts):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(here, *parts), "r") as fp:
+        return fp.read()
+
+
+version_line = re.search(
+    r"__version__\s+=\s+(.*)", read("flask_caching", "__init__.py")
+).group(1)
+
+version = str(ast.literal_eval(version_line))
+long_description = read("README.md")
 
 
 setup(
     name="Flask-Caching",
     version=version,
+    project_urls={
+        "Documentation": "flask-caching.readthedocs.io",
+        "Source Code": "https://github.com/sh4nks/flask-caching",
+        "Issue Tracker": "https://github.com/sh4nks/flask-caching",
+    },
     url="https://github.com/sh4nks/flask-caching",
     license="BSD",
     author="Peter Justin",
     author_email="peter.justin@outlook.com",
     description="Adds caching support to your Flask application",
-    long_description=__doc__,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(exclude=("tests",)),
     zip_safe=False,
     platforms="any",
