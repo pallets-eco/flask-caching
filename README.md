@@ -32,13 +32,13 @@ from flask_caching import Cache
 
 app = Flask(__name__)
 # For more configuration options, check out the documentation
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 ```
 
 Or through the factory method:
 
 ```python
-cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
 app = Flask(__name__)
 cache.init_app(app)
