@@ -28,7 +28,7 @@ setup(
     project_urls={
         "Documentation": "https://flask-caching.readthedocs.io",
         "Source Code": "https://github.com/sh4nks/flask-caching",
-        "Issue Tracker": "https://github.com/sh4nks/flask-caching",
+        "Issue Tracker": "https://github.com/sh4nks/flask-caching/issues",
     },
     url="https://github.com/sh4nks/flask-caching",
     license="BSD",
