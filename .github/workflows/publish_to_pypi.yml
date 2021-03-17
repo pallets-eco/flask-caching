@@ -1,6 +1,11 @@
-name: Publish Python packages to PyPI and TestPyPI
+name: release
 
-on: release
+on:
+  # Triggers the workflow when a release is created
+  release:
+    types: [published]
+  # Allows you to run this workflow manually from the Actions tab
+  #workflow_dispatch:
 
 jobs:
   build-n-publish:
