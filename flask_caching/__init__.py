@@ -223,7 +223,7 @@ class Cache(object):
         import_me = config["CACHE_TYPE"]
         if "." not in import_me:
             plain_name_used = True
-            import_me = type(self).__module__ + ".backends." + import_me
+            import_me = "flask_caching.backends." + import_me
         else:
             plain_name_used = False
 

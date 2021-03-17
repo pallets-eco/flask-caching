@@ -13,6 +13,9 @@ except ImportError:
     HAS_NOT_REDIS = True
 
 
+class CustomCache(Cache):
+    pass
+
 class CustomSimpleCache(SimpleCache):
     pass
 
@@ -123,3 +126,12 @@ def test_app_custom_cache_backend(app):
 
     with app.app_context():
         assert isinstance(cache.cache, CustomSimpleCache)
+
+
+def test_subclassed_cache_class(app):
+    # just invoking it here proofs that everything worked when subclassing
+    # otherwise an werkzeug.utils.ImportStringError exception will be raised
+    # because flask-caching can't find the backend
+
+    # testing for "not raises" looked more hacky like this..
+    CustomCache(app)
