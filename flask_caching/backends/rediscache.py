@@ -301,11 +301,11 @@ class RedisSentinelCache(RedisCache):
             password=password,
             db=db,
             sentinel_kwargs=sentinel_kwargs,
-            **kwargs
+            **sentinel_kwargs
         )
 
-        self._write_client = sentinel.master_for(master)
-        self._read_clients = sentinel.slave_for(master)
+        self._write_client = sentinel.master_for(master, **kwargs)
+        self._read_clients = sentinel.slave_for(master, **kwargs)
 
         self.key_prefix = key_prefix or ""
 
@@ -317,6 +317,7 @@ class RedisSentinelCache(RedisCache):
                     "CACHE_REDIS_SENTINELS", [("127.0.0.1", 26379)]
                 ),
                 master=config.get("CACHE_REDIS_SENTINEL_MASTER", "mymaster"),
+                user=config.get("CACHE_REDIS_USER", None),
                 password=config.get("CACHE_REDIS_PASSWORD", None),
                 sentinel_password=config.get(
                     "CACHE_REDIS_SENTINEL_PASSWORD", None
