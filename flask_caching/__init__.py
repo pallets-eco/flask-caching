@@ -231,7 +231,9 @@ class Cache(object):
         cache_args = config["CACHE_ARGS"][:]
         cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
 
-        if isinstance(cache_factory, type) and issubclass(cache_factory, BaseCache):
+        if isinstance(cache_factory, type) and issubclass(
+            cache_factory, BaseCache
+        ):
             cache_factory = cache_factory.factory
         elif plain_name_used:
             warnings.warn(
@@ -272,6 +274,18 @@ class Cache(object):
 
     def delete(self, *args, **kwargs) -> bool:
         """Proxy function for internal cache object."""
+
+        query_string = kwargs.pop("query_string", None)
+        hash_method = kwargs.pop("hash_method", None)
+        source_check = kwargs.pop("source_check", None)
+        f = kwargs.pop("f", None)
+
+        if query_string:
+            key = self._make_args_hash(
+                hash_method or hashlib.md5, source_check, f
+            )
+            args = (args[0] + key,)
+
         return self.cache.delete(*args, **kwargs)
 
     def delete_many(self, *args, **kwargs) -> bool:
@@ -302,6 +316,35 @@ class Cache(object):
         if unlink is not None and callable(unlink):
             return unlink(*args, **kwargs)
         return self.delete_many(*args, **kwargs)
+
+    @staticmethod
+    def _make_args_hash(hash_method=hashlib.md5, source_check=None, f=None):
+        # Create a tuple of (key, value) pairs, where the key is the
+        # argument name and the value is its respective value. Order
+        # this tuple by key. Doing this ensures the cache key created
+        # is always the same for query string args whose keys/values
+        # are the same, regardless of the order in which they are
+        # provided.
+
+        args_as_sorted_tuple = tuple(
+            sorted((pair for pair in request.args.items(multi=True)))
+        )
+        # ... now hash the sorted (key, value) tuple so it can be
+        # used as a key for cache. Turn them into bytes so that the
+        # hash function will accept them
+        args_as_bytes = str(args_as_sorted_tuple).encode()
+        cache_hash = hash_method(args_as_bytes)
+
+        # Use the source code if source_check is True and update the
+        # cache_hash before generating the hashing and using it in
+        # cache_key
+        if source_check and callable(f):
+            func_source_code = inspect.getsource(f)
+            cache_hash.update(func_source_code.encode("utf-8"))
+
+        cache_hash = str(cache_hash.hexdigest())
+
+        return cache_hash
 
     def cached(
         self,
@@ -512,32 +555,9 @@ class Cache(object):
                 This will only be done is source_check is True.
                 """
 
-                # Create a tuple of (key, value) pairs, where the key is the
-                # argument name and the value is its respective value. Order
-                # this tuple by key. Doing this ensures the cache key created
-                # is always the same for query string args whose keys/values
-                # are the same, regardless of the order in which they are
-                # provided.
-
-                args_as_sorted_tuple = tuple(
-                    sorted((pair for pair in request.args.items(multi=True)))
+                cache_key = request.path + self._make_args_hash(
+                    hash_method, source_check
                 )
-                # ... now hash the sorted (key, value) tuple so it can be
-                # used as a key for cache. Turn them into bytes so that the
-                # hash function will accept them
-                args_as_bytes = str(args_as_sorted_tuple).encode()
-                cache_hash = hash_method(args_as_bytes)
-
-                # Use the source code if source_check is True and update the
-                # cache_hash before generating the hashing and using it in
-                # cache_key
-                if source_check and callable(f):
-                    func_source_code = inspect.getsource(f)
-                    cache_hash.update(func_source_code.encode("utf-8"))
-
-                cache_hash = str(cache_hash.hexdigest())
-
-                cache_key = request.path + cache_hash
 
                 return cache_key
 
