@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class SimpleCache(BaseCache):
-    """Simple memory cache for single process environments.  This class exists
+    """Simple memory cache for single process environments. This class exists
     mainly for the development server and is not 100% thread safe.  It tries
     to use as many atomic operations as possible and no locks for simplicity
     but it could happen under heavy load that keys are added multiple times.

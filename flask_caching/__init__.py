@@ -382,8 +382,8 @@ class Cache(object):
                               renewal of cached functions.
 
         :param response_filter: Default None. If not None, the callable is
-                                invoked after the cached funtion evaluation,
-                                and is given one arguement, the response
+                                invoked after the cached function evaluation,
+                                and is given one argument, the response
                                 content. If the callable returns False, the
                                 content will not be cached. Useful to prevent
                                 caching of code 500 responses.
@@ -707,7 +707,7 @@ class Cache(object):
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
-        #: 1, b=2 is equivilant to a=1, b=2, etc.
+        #: 1, b=2 is equivalent to a=1, b=2, etc.
         new_args = []
         arg_num = 0
         args_to_ignore = kwargs.pop("args_to_ignore", None) or []
