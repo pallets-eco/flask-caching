@@ -446,7 +446,7 @@ Relevant configuration values
 FileSystemCache
 ```````````````
 
-Set ``CACHE_TYPE`` to ``FileSystem`` to use this type.  The old name,
+Set ``CACHE_TYPE`` to ``FileSystemCache`` to use this type.  The old name,
 ``filesystem`` is deprecated and will be removed in Flask-Caching 2.0.
 
 Uses the filesystem to store cached values
