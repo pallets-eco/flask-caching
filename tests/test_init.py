@@ -11,6 +11,7 @@ from flask_caching.backends import (
     SASLMemcachedCache,
     SimpleCache,
     SpreadSASLMemcachedCache,
+    IgniteCache,
 )
 
 
@@ -32,6 +33,7 @@ def app():
         SASLMemcachedCache,
         SimpleCache,
         SpreadSASLMemcachedCache,
+        IgniteCache,
     ),
 )
 def test_init_nullcache(cache_type, app, tmp_path):
