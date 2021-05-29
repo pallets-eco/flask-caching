@@ -203,9 +203,9 @@ class Cache(object):
                 "caching is effectively disabled."
             )
 
-        if config["CACHE_TYPE"] == "filesystem" and config["CACHE_DIR"] is None:
+        if config["CACHE_TYPE"] in ["filesystem", "FileSystemCache"] and config["CACHE_DIR"] is None:
             warnings.warn(
-                "Flask-Caching: CACHE_TYPE is set to filesystem but no "
+                f"Flask-Caching: CACHE_TYPE is set to {config['CACHE_TYPE']} but no "
                 "CACHE_DIR is set."
             )
 
