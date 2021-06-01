@@ -25,7 +25,6 @@ from flask_caching.backends.rediscache import (
 )
 from flask_caching.backends.simplecache import SimpleCache
 from flask_caching.backends.uwsgicache import UWSGICache
-from flask_caching.contrib.ignitecache import IgniteCache
 
 
 __all__ = (
