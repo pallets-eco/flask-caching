@@ -50,14 +50,25 @@ def serialization_args(request):
     return request.param.copy()
 
 
+@pytest.fixture(params=[
+    {},
+    {"CACHE_SERIALIZER": "pickle", "CACHE_SERIALIZER_ERROR": "PickleError"},
+    {"CACHE_SERIALIZER": "json", "CACHE_SERIALIZER_ERROR": "JSONError"},
+    {"CACHE_SERIALIZER": pickle, "CACHE_SERIALIZER_ERROR": PickleError},
+    {"CACHE_SERIALIZER": json, "CACHE_SERIALIZER_ERROR": JSONError}
+])
+def app_serialization_args(request):
+    return request.param.copy()
+
+
 @pytest.fixture
-def app(request, serialization_args):
+def app(request, app_serialization_args):
     app = flask.Flask(
         request.module.__name__, template_folder=os.path.dirname(__file__)
     )
     app.testing = True
     app.config["CACHE_TYPE"] = "simple"
-    app.config["CACHE_OPTIONS"] = serialization_args
+    app.config.update(app_serialization_args)
     return app
 
 

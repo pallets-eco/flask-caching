@@ -213,6 +213,8 @@ class Cache(object):
         config.setdefault("CACHE_TYPE", "null")
         config.setdefault("CACHE_NO_NULL_WARNING", False)
         config.setdefault("CACHE_SOURCE_CHECK", False)
+        config.setdefault("CACHE_SERIALIZER", "pickle")
+        config.setdefault("CACHE_SERIALIZER_ERROR", "PickleError")
 
         if (
             config["CACHE_TYPE"] == "null"
@@ -245,8 +247,21 @@ class Cache(object):
         from . import backends
         cache_obj = load_module(import_me, lookup_obj=backends)
 
+        from . import serialization
         cache_args = config["CACHE_ARGS"][:]
-        cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
+        cache_options = {
+            "default_timeout": config["CACHE_DEFAULT_TIMEOUT"],
+            "serializer_impl": load_module(
+                config["CACHE_SERIALIZER"],
+                lookup_obj=serialization,
+                return_back=True
+            ),
+            "serializer_error": load_module(
+                config["CACHE_SERIALIZER_ERROR"],
+                lookup_obj=serialization,
+                return_back=True
+            )
+        }
 
         if config["CACHE_OPTIONS"]:
             cache_options.update(config["CACHE_OPTIONS"])
