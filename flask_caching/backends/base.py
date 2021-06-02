@@ -11,10 +11,8 @@
     :license: BSD, see LICENSE for more details.
 """
 import warnings
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
+
+from flask_caching.serialization import pickle, PickleError
 
 
 def iteritems_wrapper(mappingorseq):
@@ -60,7 +58,7 @@ class BaseCache(object):
         self,
         default_timeout=300,
         serializer_impl=pickle,
-        serializer_error=pickle.PickleError,
+        serializer_error=PickleError,
     ):
         self.default_timeout = default_timeout
         self.ignore_errors = False

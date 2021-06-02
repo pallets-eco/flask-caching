@@ -1,4 +1,8 @@
-import json
+import json as _json
+try:
+    import cPickle as pickle
+except ImportError:  # pragma: no cover
+    import pickle  # type: ignore
 
 
 class BytesSerializer:
@@ -18,10 +22,13 @@ class BytesSerializer:
     def loads(self, obj, *args, **kwargs):
         if isinstance(obj, bytes):
             obj = obj.decode()
-        return json.loads(obj, *args, **kwargs)
+        return self._serializer.loads(obj, *args, **kwargs)
 
     def load(self, fp, *args, **kwargs):
         return self.loads(fp.read(), *args, **kwargs)
 
 
-json_bytes = BytesSerializer(json)
+json = BytesSerializer(_json)
+JSONError = _json.JSONDecodeError
+
+PickleError = pickle.PickleError
