@@ -142,6 +142,33 @@ def make_template_fragment_key(fragment_name: str, vary_on: List[str]=[]) -> str
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
 
+def load_module(
+    module: Union[str, Any],
+    lookup_obj: Optional[Any] = None,
+    return_back: bool = False
+) -> Any:
+    """Dynamic module loading.
+
+    :param module: Module name, import string or object
+    :param lookup_obj: Try to import `module` from `lookup_obj`
+    :param return_back: Return `module` value if `module` is not string
+    :returns: Loaded module
+    :raises ImportError: When module load is not possible
+    """
+    if isinstance(module, str):
+        if "." in module:
+            return import_string(module)
+        elif lookup_obj is not None:
+            try:
+                return getattr(lookup_obj, module)
+            except AttributeError:
+                pass
+    elif return_back:
+        return module
+
+    raise ImportError("Could not load %s" % module)
+
+
 class Cache(object):
     """This class is used to control the cache objects."""
 
@@ -214,17 +241,9 @@ class Cache(object):
 
     def _set_cache(self, app: Flask, config) -> None:
         import_me = config["CACHE_TYPE"]
-        if "." not in import_me:
-            from . import backends
 
-            try:
-                cache_obj = getattr(backends, import_me)
-            except AttributeError:
-                raise ImportError(
-                    "%s is not a valid Flask-Caching backend" % (import_me)
-                )
-        else:
-            cache_obj = import_string(import_me)
+        from . import backends
+        cache_obj = load_module(import_me, lookup_obj=backends)
 
         cache_args = config["CACHE_ARGS"][:]
         cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
