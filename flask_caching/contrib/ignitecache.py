@@ -61,6 +61,14 @@ class IgniteCache(BaseCache):
             return
         return pickle.loads(rv)
 
+    def get_many(self, *keys):
+        rv = { k: pickle.loads(v) for k,v in self.cache.get_all(keys).items() }
+        return [rv.get(x,None) for x in keys]
+
+    def get_dict(self, *keys):
+        rv = { k: pickle.loads(v) for k,v in self.cache.get_all(keys).items() }
+        return { key:rv.get(key,None) for key in keys }
+
     def delete(self, key):
         return self.cache.remove_key(key)
 
