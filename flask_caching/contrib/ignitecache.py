@@ -24,7 +24,7 @@ except ImportError:
 
 try:
     from pyignite.datatypes import ExpiryPolicy
-    from pyignite.datatypes.prop_codes import PROP_NAME, PROP_EXPIRY_POLICY
+    from pyignite.datatypes.prop_codes import PROP_NAME, PROP_BACKUPS_NUMBER, PROP_EXPIRY_POLICY
 except ImportError:
     raise RuntimeError("your copy of pyignite is too old. Need at least version 0.5.0")
 
@@ -37,7 +37,7 @@ class IgniteCache(BaseCache):
     :param hosts: host and port to connect to, defaults to localhost:10800
     """
 
-    def __init__(self, default_timeout=300, cache="FLASK_CACHE", hosts="localhost:10800"):
+    def __init__(self, default_timeout=300, cache="FLASK_CACHE", hosts="localhost:10800", backups=1):
         super(IgniteCache, self).__init__(default_timeout)
 
         self.client = Client()
@@ -45,14 +45,16 @@ class IgniteCache(BaseCache):
         self.client.connect(host_components[0], int(host_components[1]))
         self.cache = self.client.get_or_create_cache({
             PROP_NAME: cache,
-            PROP_EXPIRY_POLICY: ExpiryPolicy(create=default_timeout * 1000)
+            PROP_EXPIRY_POLICY: ExpiryPolicy(create=default_timeout * 1000),
+            PROP_BACKUPS_NUMBER: backups
         })
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
         ignite_hosts = config.get("IGNITE_HOSTS","localhost:10800")
         ignite_cache_name = config.get("CACHE_IGNITE_NAME", "FLASK_CACHE")
-        kwargs.update(dict(cache=ignite_cache_name, hosts=ignite_hosts))
+        ignite_cache_backups = config.get("CACHE_IGNITE_BACKUPS", 1)
+        kwargs.update(dict(cache=ignite_cache_name, hosts=ignite_hosts, backups=ignite_cache_backups))
         return cls(*args, **kwargs)
 
     def get(self, key):
