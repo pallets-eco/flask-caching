@@ -22,11 +22,17 @@ try:
 except ImportError:
     raise RuntimeError("no pyignite module found")
 
+try:
+    from pyignite.datatypes import ExpiryPolicy
+    from pyignite.datatypes.prop_codes import PROP_NAME, PROP_EXPIRY_POLICY
+except ImportError:
+    raise RuntimeError("your copy of pyignite is too old. Need at least version 0.5.0")
+
 
 class IgniteCache(BaseCache):
     """Implements the cache using Apache Ignite.
 
-    :param default_timeout: The default timeout in seconds.
+    :param default_timeout: The default timeout in seconds, defaults to 300 seconds.
     :param cache: The name of the caching to create or connect to, defaults to FLASK_CACHE
     :param hosts: host and port to connect to, defaults to localhost:10800
     """
@@ -37,7 +43,10 @@ class IgniteCache(BaseCache):
         self.client = Client()
         host_components = hosts.split(':')
         self.client.connect(host_components[0], int(host_components[1]))
-        self.cache = self.client.get_or_create_cache(cache)
+        self.cache = self.client.get_or_create_cache({
+            PROP_NAME: cache,
+            PROP_EXPIRY_POLICY: ExpiryPolicy(create=default_timeout * 1000)
+        })
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
@@ -59,7 +68,7 @@ class IgniteCache(BaseCache):
         if timeout is None:
           cache = self.cache
         else:
-          cache = self.cache.with_expire_policy(access=timeout)
+          cache = self.cache.with_expire_policy(create=timeout * 1000)
         cache.put(
             key,
             pickle.dumps(value),
@@ -69,7 +78,7 @@ class IgniteCache(BaseCache):
         if timeout is None:
           cache = self.cache
         else:
-          cache = self.cache.with_expire_policy(access=timeout)
+          cache = self.cache.with_expire_policy(create=timeout * 1000)
         cache.put(
             key,
             pickle.dumps(value),
