@@ -144,7 +144,7 @@ class FileSystemCache(BaseCache):
                 if remove:
                     os.remove(fname)
                     nremoved += 1
-            except (IOError, OSError):
+            except OSError:
                 pass
         self._update_count(value=len(self._list_dir()))
         logger.debug("evicted %d key(s)", nremoved)
@@ -153,7 +153,7 @@ class FileSystemCache(BaseCache):
         for fname in self._list_dir():
             try:
                 os.remove(fname)
-            except (IOError, OSError):
+            except OSError:
                 self._update_count(value=len(self._list_dir()))
                 return False
         self._update_count(value=0)
@@ -174,14 +174,14 @@ class FileSystemCache(BaseCache):
             with open(filename, "rb") as f:
                 pickle_time = pickle.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
-                if expired:
-                    self.delete(key)
-                else:
+                if not expired:
                     hit_or_miss = "hit"
                     result = pickle.load(f)
+            if expired:
+                self.delete(key)
         except FileNotFoundError:
             pass
-        except (IOError, OSError, pickle.PickleError) as exc:
+        except (OSError, pickle.PickleError) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("get key %r -> %s %s", key, hit_or_miss, expiredstr)
@@ -217,10 +217,15 @@ class FileSystemCache(BaseCache):
             with os.fdopen(fd, "wb") as f:
                 pickle.dump(timeout, f, 1)
                 pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
+
+            # https://github.com/sh4nks/flask-caching/issues/238#issuecomment-801897606
             is_new_file = not os.path.exists(filename)
+            if not is_new_file:
+                os.remove(filename)
             os.replace(tmp, filename)
+
             os.chmod(filename, self._mode)
-        except (IOError, OSError) as exc:
+        except OSError as exc:
             logger.error("set key %r -> %s", key, exc)
         else:
             result = True
@@ -236,7 +241,7 @@ class FileSystemCache(BaseCache):
             os.remove(self._get_filename(key))
         except FileNotFoundError:
             logger.debug("delete key %r -> no such key")
-        except (IOError, OSError) as exc:
+        except (OSError) as exc:
             logger.error("delete key %r -> %s", key, exc)
         else:
             deleted = True
@@ -253,14 +258,14 @@ class FileSystemCache(BaseCache):
         try:
             with open(filename, "rb") as f:
                 pickle_time = pickle.load(f)
-                expired = pickle_time != 0 and pickle_time < time()
-                if expired:
-                    self.delete(key)
-                else:
-                    result = True
+            expired = pickle_time != 0 and pickle_time < time()
+            if expired:
+                self.delete(key)
+            else:
+                result = True
         except FileNotFoundError:
             pass
-        except (IOError, OSError, pickle.PickleError) as exc:
+        except (OSError, pickle.PickleError) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("has key %r -> %s %s", key, result, expiredstr)
