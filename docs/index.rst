@@ -56,7 +56,7 @@ will be multiple ``Cache`` instances each with a different backend::
     #: Method A: During instantiation of class
     cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
     #: Method B: During init_app call
-    cache.init_app(app, config={'CACHE_TYPE': 'simple'})
+    cache.init_app(app, config={'CACHE_TYPE': 'SimpleCache'})
 
 .. versionadded:: 0.7
 
