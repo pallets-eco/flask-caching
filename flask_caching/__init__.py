@@ -19,9 +19,10 @@ import warnings
 from collections import OrderedDict
 
 from flask import current_app, request, url_for, Flask
+from flask_caching.backends.rediscache import RedisCache
 from werkzeug.utils import import_string
 from flask_caching.backends.base import BaseCache
-from flask_caching.backends.simplecache import SimpleCache
+# from flask_caching.backends.simplecache import SimpleCache
 from markupsafe import Markup
 from typing import Any, Callable, List, Optional, Tuple, Union
 
@@ -254,7 +255,7 @@ class Cache(object):
         self.app = app
 
     @property
-    def cache(self) -> SimpleCache:
+    def cache(self) -> RedisCache:
         app = current_app or self.app
         return app.extensions["cache"][self]
 

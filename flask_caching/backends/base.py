@@ -103,7 +103,7 @@ class BaseCache(object):
                         0 indicates that the cache never expires.
         :returns: ``True`` if key has been updated, ``False`` for backend
                   errors. Pickling errors, however, will raise a subclass of
-                  ``pickle.PickleError``.
+                  ``json.JSONDecodeError``.
         :rtype: boolean
         """
         return True
