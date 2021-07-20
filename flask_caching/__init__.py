@@ -25,7 +25,7 @@ from flask_caching.backends.simplecache import SimpleCache
 from markupsafe import Markup
 from typing import Any, Callable, List, Optional, Tuple, Union
 
-__version__ = "1.10.1"
+__version__ = "1.10.2"
 
 logger = logging.getLogger(__name__)
 
