@@ -561,7 +561,7 @@ class Cache(object):
                 service = '/'.join(request.path.split('/')[5:])
                 cache_key = service + "?" + cache_hash
                 
-                print(service, cache_key)
+                # print(service, cache_key)
                 if not self.cache.get(cache_key):
                     service_count = service + "_count"
                     count = self.cache.inc(service_count)
