@@ -537,9 +537,36 @@ class Cache(object):
                     cache_hash.update(func_source_code.encode("utf-8"))
 
                 cache_hash = str(cache_hash.hexdigest())
-
-                cache_key = request.path + cache_hash
-
+                # services = [
+                #     "analytics",
+                #     "article",
+                #     "auth",
+                #     "aws/s3",
+                #     "aws/sns",
+                #     "bidding",
+                #     "categories",
+                #     "comments",
+                #     "credit",
+                #     "enquiry",
+                #     "input_demand",
+                #     "input_products",
+                #     "insurance",
+                #     "post",
+                #     "soil",
+                #     "trade",
+                #     "transaction",
+                #     "user"
+                # ]
+                
+                service = '/'.join(request.path.split('/')[5:])
+                cache_key = service + "?" + cache_hash
+                
+                print(service, cache_key)
+                if not self.cache.get(cache_key):
+                    service_count = service + "_count"
+                    count = self.cache.inc(service_count)
+                    service += "_{}".format(count)
+                    self.cache.set(service, cache_key)
                 return cache_key
 
             def _make_cache_key(args, kwargs, use_request):
