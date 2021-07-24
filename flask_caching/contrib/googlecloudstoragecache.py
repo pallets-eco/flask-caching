@@ -102,7 +102,7 @@ class GoogleCloudStorageCache(BaseCache):
         full_key = self.key_prefix + key
         content_type = "application/json"
         try:
-            value = json.dumps(value, pickle.HIGHEST_PROTOCOL)
+            value = json.dumps(value)
         except (UnicodeDecodeError, TypeError):
             content_type = "application/octet-stream"
         blob = self.bucket.blob(full_key)
