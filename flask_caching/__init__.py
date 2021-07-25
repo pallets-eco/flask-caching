@@ -799,7 +799,7 @@ class Cache(object):
     def memoize(
         self,
         timeout: Optional[int] = None,
-        make_name: None = None,
+        make_name: Optional[Callable] = None,
         unless: Optional[Callable] = None,
         forced_update: Optional[Callable] = None,
         response_filter: Optional[Callable] = None,
