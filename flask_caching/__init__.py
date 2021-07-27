@@ -653,7 +653,7 @@ class Cache(object):
 
     def _memoize_make_cache_key(
         self,
-        make_name: None = None,
+        make_name: Optional[Callable] = None,
         timeout: Optional[Callable] = None,
         forced_update: bool = False,
         hash_method: Callable = hashlib.md5,
@@ -799,10 +799,10 @@ class Cache(object):
     def memoize(
         self,
         timeout: Optional[int] = None,
-        make_name: None = None,
-        unless: None = None,
+        make_name: Optional[Callable] = None,
+        unless: Optional[Callable] = None,
         forced_update: Optional[Callable] = None,
-        response_filter: None = None,
+        response_filter: Optional[Callable] = None,
         hash_method: Callable = hashlib.md5,
         cache_none: bool = False,
         source_check: Optional[bool] = None,
