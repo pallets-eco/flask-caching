@@ -395,7 +395,7 @@ The following configuration values exist for Flask-Caching:
                                 RedisSentinelCache.
 ``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
                                 only for RedisSentinelCache.
-``CACHE_REDIS_CLUSTER``         A string of comma-separated Redis cluster node addresses. 
+``CACHE_REDIS_CLUSTER``         A string of comma-separated Redis cluster node addresses.
                                 e.g. host1:port1,host2:port2,host3:port3 . Used only for RedisClusterCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
@@ -404,6 +404,7 @@ The following configuration values exist for Flask-Caching:
                                 protocols ``redis://``, ``rediss://`` (redis over TLS) and
                                 ``unix://``. See more info about URL support [here](http://redis-py.readthedocs.io/en/latest/index.html#redis.ConnectionPool.from_url).
                                 Used only for RedisCache.
+``CACHE_ENABLE_SIGNALS``        Send Flask Signals for :meth:`~Cache.cached` and :meth:`~Cache.memoize` cache hits and misses.
 =============================== ==================================================================
 
 
@@ -675,6 +676,20 @@ username/password if SASL is enabled on the library::
                               binary=True)
 
 With this example, your ``CACHE_TYPE`` might be ``the_app.custom.pylibmccache``
+
+
+Signals
+-------
+
+The following signals are supported::
+
+* ``flask_caching.cache_view_hit``
+* ``flask_caching.cache_view_miss``
+* ``flask_caching.cache_memoize_hit``
+* ``flask_caching.cache_memoize_miss``
+
+By default, signals are disabled. To enable sending signals set
+``CACHE_ENABLE_SIGNALS`` to ``True``.
 
 
 API
