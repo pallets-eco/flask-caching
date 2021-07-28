@@ -83,7 +83,7 @@ class UWSGICache(BaseCache):
     def set(self, key, value, timeout=None):
         return self._uwsgi.cache_update(
             key,
-            pickle.dumps(value),
+            pickle.dumps(value, pickle.HIGHEST_PROTOCOL),
             self._normalize_timeout(timeout),
             self.cache,
         )
@@ -91,7 +91,7 @@ class UWSGICache(BaseCache):
     def add(self, key, value, timeout=None):
         return self._uwsgi.cache_set(
             key,
-            pickle.dumps(value),
+            pickle.dumps(value, pickle.HIGHEST_PROTOCOL),
             self._normalize_timeout(timeout),
             self.cache,
         )

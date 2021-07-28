@@ -327,7 +327,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         # I didn't found a good way to avoid pickling/unpickling if
         # key is smaller than chunksize, because in case or <werkzeug.requests>
         # getting the length consume the data iterator.
-        serialized = pickle.dumps(value, 2)
+        serialized = pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
         values = {}
         len_ser = len(serialized)
         chks = range(0, len_ser, self.chunksize)
