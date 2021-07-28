@@ -39,6 +39,7 @@ __all__ = (
     "gaememcached",
     "saslmemcached",
     "spreadsaslmemcached",
+    "ignite",
 )
 
 
@@ -84,3 +85,7 @@ def saslmemcached(app, config, args, kwargs):
 
 def spreadsaslmemcached(app, config, args, kwargs):
     return SpreadSASLMemcachedCache.factory(app, config, args, kwargs)
+    
+def ignite(app, config, args, kwargs):
+    return IgniteCache.factory(app, config, args, kwargs)
+    
