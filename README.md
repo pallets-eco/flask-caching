@@ -69,3 +69,4 @@ Links
 * [Source Code](https://github.com/sh4nks/flask-caching)
 * [Issues](https://github.com/sh4nks/flask-caching/issues)
 * [Original Flask-Cache Extension](https://github.com/thadeusb/flask-cache)
+
