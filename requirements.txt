@@ -1,5 +1,5 @@
-Flask
-Werkzeug
+Flask<2
+Werkzeug==1.0.1
 Sphinx
 pytest
 pytest-cov
