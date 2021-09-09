@@ -60,7 +60,7 @@ Python import lines like:
 Python versions
 -----
 
-Starting with version 1.8, Flask-Caching dropped Python 2 support. The library is tested against Python 3.5, 3.6, and PyPy 3.5.
+Starting with version 1.8, Flask-Caching dropped Python 2 support. The library is tested against Python 3.6, 3.7, 3.8, 3.9 and PyPy 3.6.
 
 Links
 =====
