@@ -3,7 +3,7 @@
 The preferred (and easiest) way is to fork the repository, add your changes
 based on the `master` branch and create a pull request.
 
-We use Travis CI for continuous integration so all pull requests are
+We use GitHub Actions for continuous integration so all pull requests are
 automatically tested for all supported Python versions.
 
 # Setting up the project
@@ -55,7 +55,7 @@ If you want to test your changes for other Python versions, install and run `tox
 
     $ pip install tox
     $ tox              # To run for every supported version
-    $ tox -e py35      # To run only for Python 3.5
+    $ tox -e py39      # To run only for Python 3.9
 
 # Helping out without writing code
 
