@@ -1,15 +1,24 @@
-/.venv/
-*.py[co]
-.*.swp
-.tox
-docs/_build/*
-*.egg-info
-build/*
+# general things to ignore
+build/
 dist/
-.idea/
-.idea/*
-.coverage
+*.egg-info/
+*.egg
+*.eggs
+*.py[cod]
+__pycache__/
+*.so
+*~
+venv/
+env/
+.DS_Store
+*.swp
+docs/_build
+
+# due to using t/nox and pytest
+.tox
 .cache
+.pytest_cache
+.coverage
+htmlcov/
 .xprocess
 .vscode
-coverage.xml
