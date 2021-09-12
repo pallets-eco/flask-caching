@@ -1,0 +1,5 @@
+pytest
+pytest-cov
+pytest-xprocess
+pylibmc
+redis

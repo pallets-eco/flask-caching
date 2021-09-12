@@ -1,0 +1,7 @@
+-r tests.in
+-r docs.in
+-r typing.in
+pip-tools
+pre-commit
+tox
+Flask
