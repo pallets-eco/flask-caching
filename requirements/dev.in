@@ -4,4 +4,3 @@
 pip-tools
 pre-commit
 tox
-Flask
