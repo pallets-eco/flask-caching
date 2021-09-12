@@ -6,8 +6,6 @@
 #
 attrs==21.2.0
     # via pytest
-coverage==5.5
-    # via pytest-cov
 iniconfig==1.1.1
     # via pytest
 packaging==21.0
@@ -25,15 +23,10 @@ pyparsing==2.4.7
 pytest==6.2.5
     # via
     #   -r requirements/tests.in
-    #   pytest-cov
     #   pytest-xprocess
-pytest-cov==2.12.1
-    # via -r requirements/tests.in
 pytest-xprocess==0.18.1
     # via -r requirements/tests.in
 redis==3.5.3
     # via -r requirements/tests.in
 toml==0.10.2
-    # via
-    #   pytest
-    #   pytest-cov
+    # via pytest

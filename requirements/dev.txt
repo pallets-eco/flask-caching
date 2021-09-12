@@ -22,8 +22,6 @@ click==8.0.1
     # via
     #   flask
     #   pip-tools
-coverage==5.5
-    # via pytest-cov
 distlib==0.3.2
     # via virtualenv
 docutils==0.16
@@ -95,10 +93,7 @@ pyparsing==2.4.7
 pytest==6.2.5
     # via
     #   -r requirements/tests.in
-    #   pytest-cov
     #   pytest-xprocess
-pytest-cov==2.12.1
-    # via -r requirements/tests.in
 pytest-xprocess==0.18.1
     # via -r requirements/tests.in
 pytz==2021.1
@@ -145,7 +140,6 @@ toml==0.10.2
     #   mypy
     #   pre-commit
     #   pytest
-    #   pytest-cov
     #   tox
 tomli==1.2.1
     # via pep517
