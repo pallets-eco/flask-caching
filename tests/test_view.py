@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import hashlib
 import time
 
@@ -181,13 +180,13 @@ def test_make_cache_key_function_property(app, cache):
     the_time = rv.data.decode("utf-8")
 
     cache_key = cached_view.make_cache_key(
-        cached_view.uncached, foo=u"a", bar=u"b"
+        cached_view.uncached, foo="a", bar="b"
     )
     cache_data = cache.get(cache_key)
     assert the_time == cache_data
 
     different_key = cached_view.make_cache_key(
-        cached_view.uncached, foo=u"b", bar=u"a"
+        cached_view.uncached, foo="b", bar="a"
     )
     different_data = cache.get(different_key)
     assert the_time != different_data

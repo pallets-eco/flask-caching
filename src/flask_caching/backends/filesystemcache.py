@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.filesystem
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,7 +64,7 @@ class FileSystemCache(BaseCache):
         hash_method=hashlib.md5,
         ignore_errors=False,
     ):
-        super(FileSystemCache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
         self._path = cache_dir
         self._threshold = threshold
         self._mode = mode

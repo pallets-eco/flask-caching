@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import string
 import random
 from flask import render_template, render_template_string

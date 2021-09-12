@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching
     ~~~~~~~~~~~~~
@@ -42,7 +41,7 @@ SUPPORTED_HASH_FUNCTIONS = [
 # Used to remove control characters and whitespace from cache keys.
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 delchars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
-null_control = (dict((k, None) for k in delchars),)
+null_control = ({k: None for k in delchars},)
 
 
 def wants_args(f: Callable) -> bool:
@@ -144,7 +143,7 @@ def make_template_fragment_key(
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
 
-class Cache(object):
+class Cache:
     """This class is used to control the cache objects."""
 
     def __init__(
@@ -520,7 +519,7 @@ class Cache(object):
                 # provided.
 
                 args_as_sorted_tuple = tuple(
-                    sorted((pair for pair in request.args.items(multi=True)))
+                    sorted(pair for pair in request.args.items(multi=True))
                 )
                 # ... now hash the sorted (key, value) tuple so it can be
                 # used as a key for cache. Turn them into bytes so that the
@@ -684,7 +683,7 @@ class Cache(object):
             else:
                 keyargs, keykwargs = args, kwargs
 
-            updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
+            updated = f"{altfname}{keyargs}{keykwargs}"
 
             cache_key = hash_method()
             cache_key.update(updated.encode("utf-8"))

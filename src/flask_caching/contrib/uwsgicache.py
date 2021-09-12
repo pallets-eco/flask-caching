@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.uwsgicache
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,7 +34,7 @@ class UWSGICache(BaseCache):
     """
 
     def __init__(self, default_timeout=300, cache=""):
-        super(UWSGICache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
 
         if platform.python_implementation() == "PyPy":
             raise RuntimeError(

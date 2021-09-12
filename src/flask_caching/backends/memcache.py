@@ -61,7 +61,7 @@ class MemcachedCache(BaseCache):
     """
 
     def __init__(self, servers=None, default_timeout=300, key_prefix=None):
-        super(MemcachedCache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
         if servers is None or isinstance(servers, (list, tuple)):
             if servers is None:
                 servers = ["127.0.0.1:11211"]
@@ -239,7 +239,7 @@ class SASLMemcachedCache(MemcachedCache):
         password=None,
         **kwargs
     ):
-        super(SASLMemcachedCache, self).__init__(
+        super().__init__(
             default_timeout=default_timeout
         )
 
@@ -284,7 +284,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         """
         self.chunksize = kwargs.get("chunksize", 1048448)
         self.maxchunk = kwargs.get("maxchunk", 32)
-        super(SpreadSASLMemcachedCache, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
@@ -301,7 +301,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
     def delete(self, key):
         for skey in self._genkeys(key):
-            super(SpreadSASLMemcachedCache, self).delete(skey)
+            super().delete(skey)
 
     def set(self, key, value, timeout=None, chunk=True):
         """Set a value in cache, potentially spreading it across multiple key.
@@ -318,7 +318,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if chunk:
             return self._set(key, value, timeout=timeout)
         else:
-            return super(SpreadSASLMemcachedCache, self).set(
+            return super().set(
                 key, value, timeout=timeout
             )
 
@@ -338,11 +338,11 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
             )
 
         for i in chks:
-            values["%s.%s" % (key, i // self.chunksize)] = serialized[
+            values[f"{key}.{i // self.chunksize}"] = serialized[
                 i : i + self.chunksize
             ]
 
-        super(SpreadSASLMemcachedCache, self).set_many(values, timeout)
+        super().set_many(values, timeout)
 
     def get(self, key, chunk=True):
         """Get a cached value.
@@ -353,14 +353,14 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if chunk:
             return self._get(key)
         else:
-            return super(SpreadSASLMemcachedCache, self).get(key)
+            return super().get(key)
 
     def _genkeys(self, key):
-        return ["%s.%s" % (key, i) for i in range(self.maxchunk)]
+        return [f"{key}.{i}" for i in range(self.maxchunk)]
 
     def _get(self, key):
-        to_get = ["%s.%s" % (key, i) for i in range(self.maxchunk)]
-        result = super(SpreadSASLMemcachedCache, self).get_many(*to_get)
+        to_get = [f"{key}.{i}" for i in range(self.maxchunk)]
+        result = super().get_many(*to_get)
         serialized = b"".join(v for v in result if v is not None)
 
         if not serialized:

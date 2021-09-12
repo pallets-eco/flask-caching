@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.null
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~

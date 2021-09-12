@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     tests.cache
     ~~~~~~~~~~~
@@ -31,7 +30,7 @@ except ImportError:
             memcache = None
 
 
-class CacheTestsBase(object):
+class CacheTestsBase:
     _can_use_fast_sleep = True
     _guaranteed_deletes = True
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.simple
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,7 +41,7 @@ class SimpleCache(BaseCache):
     """
 
     def __init__(self, threshold=500, default_timeout=300, ignore_errors=False):
-        super(SimpleCache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
         self._cache = {}
         self.clear = self._cache.clear
         self._threshold = threshold
