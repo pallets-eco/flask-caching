@@ -302,13 +302,7 @@ def test_memoize_arg_kwarg_var_keyword(app, cache):
 
         @cache.memoize()
         def f(a, b, c=1, **kwargs):
-            return (
-                a
-                + b
-                + c
-                + random.randrange(0, 100000)
-                + sum(list(kwargs.values()))
-            )
+            return a + b + c + random.randrange(0, 100000) + sum(list(kwargs.values()))
 
         assert f(1, 2) == f(1, 2, c=1)
         assert f(1, 2) == f(1, 2, 1)
@@ -634,13 +628,9 @@ def test_memoize_kwargs_to_args(app, cache):
 
         expected = (1, 2, "foo", "bar")
 
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, 1, 2, "foo", "bar"
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, "foo", "bar")
         assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, 2, "foo", "bar", a=1
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 2, "foo", "bar", a=1)
         assert args == expected
         args, kwargs = cache._memoize_kwargs_to_args(
             big_foo, a=1, b=2, c="foo", d="bar"
@@ -650,9 +640,7 @@ def test_memoize_kwargs_to_args(app, cache):
             big_foo, d="bar", b=2, a=1, c="foo"
         )
         assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, 1, 2, d="bar", c="foo"
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, d="bar", c="foo")
         assert args == expected
 
 

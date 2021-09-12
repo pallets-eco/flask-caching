@@ -179,15 +179,11 @@ def test_make_cache_key_function_property(app, cache):
     rv = tc.get("/a/b")
     the_time = rv.data.decode("utf-8")
 
-    cache_key = cached_view.make_cache_key(
-        cached_view.uncached, foo="a", bar="b"
-    )
+    cache_key = cached_view.make_cache_key(cached_view.uncached, foo="a", bar="b")
     cache_data = cache.get(cache_key)
     assert the_time == cache_data
 
-    different_key = cached_view.make_cache_key(
-        cached_view.uncached, foo="b", bar="a"
-    )
+    different_key = cached_view.make_cache_key(cached_view.uncached, foo="b", bar="a")
     different_data = cache.get(different_key)
     assert the_time != different_data
 
@@ -306,9 +302,7 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
     tc = app.test_client()
 
     # Make our first query...
-    first_response = tc.get(
-        "/works?mock=true&offset=20&limit=15&user[]=123&user[]=124"
-    )
+    first_response = tc.get("/works?mock=true&offset=20&limit=15&user[]=123&user[]=124")
     first_time = first_response.get_data(as_text=True)
 
     # Make the second query...
@@ -323,9 +317,7 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
 
     # Last/third query with different parameters/values should
     # produce a different time.
-    third_response = tc.get(
-        "/works?mock=true&offset=20&limit=15&user[]=125&user[]=124"
-    )
+    third_response = tc.get("/works?mock=true&offset=20&limit=15&user[]=125&user[]=124")
     third_time = third_response.get_data(as_text=True)
 
     # ... making sure that different query parameter values
@@ -362,15 +354,11 @@ def test_generate_cache_key_from_request_body(app, cache):
     tc = app.test_client()
 
     # Make our request...
-    first_response = tc.post(
-        "/works/arg", data=dict(mock=True, value=1, test=2)
-    )
+    first_response = tc.post("/works/arg", data=dict(mock=True, value=1, test=2))
     first_time = first_response.get_data(as_text=True)
 
     # Make the request...
-    second_response = tc.post(
-        "/works/arg", data=dict(mock=True, value=1, test=2)
-    )
+    second_response = tc.post("/works/arg", data=dict(mock=True, value=1, test=2))
     second_time = second_response.get_data(as_text=True)
 
     # Now make sure the time for the first and second
@@ -379,9 +367,7 @@ def test_generate_cache_key_from_request_body(app, cache):
 
     # Last/third request with different body should
     # produce a different time.
-    third_response = tc.post(
-        "/works/arg", data=dict(mock=True, value=2, test=3)
-    )
+    third_response = tc.post("/works/arg", data=dict(mock=True, value=2, test=3))
     third_time = third_response.get_data(as_text=True)
 
     # ... making sure that different request bodies

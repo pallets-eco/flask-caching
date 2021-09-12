@@ -153,9 +153,7 @@ class TestSimpleCache(GenericCacheTests):
 class TestFileSystemCache(GenericCacheTests):
     @pytest.fixture
     def make_cache(self, tmpdir):
-        return lambda **kw: backends.FileSystemCache(
-            cache_dir=str(tmpdir), **kw
-        )
+        return lambda **kw: backends.FileSystemCache(cache_dir=str(tmpdir), **kw)
 
     def test_filesystemcache_hashes(self, make_cache, hash_method):
         cache = make_cache(hash_method=hash_method)
@@ -269,9 +267,7 @@ class TestRedisCache(GenericCacheTests):
     def test_empty_host(self):
         with pytest.raises(ValueError) as exc_info:
             backends.RedisCache(host=None)
-        assert (
-            str(exc_info.value) == "RedisCache host parameter may not be None"
-        )
+        assert str(exc_info.value) == "RedisCache host parameter may not be None"
 
 
 class TestMemcachedCache(GenericCacheTests):

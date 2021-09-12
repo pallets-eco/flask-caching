@@ -143,9 +143,7 @@ def function_namespace(f, args=None):
     return ns, ins
 
 
-def make_template_fragment_key(
-    fragment_name: str, vary_on: List[str] = []
-) -> str:
+def make_template_fragment_key(fragment_name: str, vary_on: List[str] = []) -> str:
     """Make a cache key for a specific fragment name."""
     if vary_on:
         fragment_name = "%s_" % fragment_name
@@ -202,16 +200,16 @@ class Cache:
         config.setdefault("CACHE_NO_NULL_WARNING", False)
         config.setdefault("CACHE_SOURCE_CHECK", False)
 
-        if (
-            config["CACHE_TYPE"] == "null"
-            and not config["CACHE_NO_NULL_WARNING"]
-        ):
+        if config["CACHE_TYPE"] == "null" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
                 "Flask-Caching: CACHE_TYPE is set to null, "
                 "caching is effectively disabled."
             )
 
-        if config["CACHE_TYPE"] in ["filesystem", "FileSystemCache"] and config["CACHE_DIR"] is None:
+        if (
+            config["CACHE_TYPE"] in ["filesystem", "FileSystemCache"]
+            and config["CACHE_DIR"] is None
+        ):
             warnings.warn(
                 f"Flask-Caching: CACHE_TYPE is set to {config['CACHE_TYPE']} but no "
                 "CACHE_DIR is set."
@@ -440,9 +438,7 @@ class Cache:
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = _make_cache_key(
-                            args, kwargs, use_request=True
-                        )
+                        cache_key = _make_cache_key(args, kwargs, use_request=True)
 
                     if (
                         callable(forced_update)
@@ -492,9 +488,7 @@ class Cache:
                         except Exception:
                             if self.app.debug:
                                 raise
-                            logger.exception(
-                                "Exception possibly due to cache backend."
-                            )
+                            logger.exception("Exception possibly due to cache backend.")
                 return rv
 
             def default_make_cache_key(*args, **kwargs):
@@ -559,17 +553,13 @@ class Cache:
                         if use_request:
                             cache_key = key_prefix % request.path
                         else:
-                            cache_key = key_prefix % url_for(
-                                f.__name__, **kwargs
-                            )
+                            cache_key = key_prefix % url_for(f.__name__, **kwargs)
                     else:
                         cache_key = key_prefix
 
                 if source_check and callable(f):
                     func_source_code = inspect.getsource(f)
-                    func_source_hash = hash_method(
-                        func_source_code.encode("utf-8")
-                    )
+                    func_source_hash = hash_method(func_source_code.encode("utf-8"))
                     func_source_hash = str(func_source_hash.hexdigest())
 
                     cache_key += func_source_hash
@@ -776,9 +766,7 @@ class Cache:
         return (
             tuple(new_args),
             OrderedDict(
-                sorted(
-                    (k, v) for k, v in kwargs.items() if k in kw_keys_remaining
-                )
+                sorted((k, v) for k, v in kwargs.items() if k in kw_keys_remaining)
             ),
         )
 
@@ -917,9 +905,7 @@ class Cache:
                     source_check = self.source_check
 
                 try:
-                    cache_key = decorated_function.make_cache_key(
-                        f, *args, **kwargs
-                    )
+                    cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
 
                     if (
                         callable(forced_update)
@@ -969,9 +955,7 @@ class Cache:
                         except Exception:
                             if self.app.debug:
                                 raise
-                            logger.exception(
-                                "Exception possibly due to cache backend."
-                            )
+                            logger.exception("Exception possibly due to cache backend.")
                 return rv
 
             decorated_function.uncached = f

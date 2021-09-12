@@ -237,11 +237,9 @@ class SASLMemcachedCache(MemcachedCache):
         key_prefix=None,
         username=None,
         password=None,
-        **kwargs
+        **kwargs,
     ):
-        super().__init__(
-            default_timeout=default_timeout
-        )
+        super().__init__(default_timeout=default_timeout)
 
         if servers is None:
             servers = ["127.0.0.1:11211"]
@@ -318,9 +316,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if chunk:
             return self._set(key, value, timeout=timeout)
         else:
-            return super().set(
-                key, value, timeout=timeout
-            )
+            return super().set(key, value, timeout=timeout)
 
     def _set(self, key, value, timeout=None):
         # pickling/unpickling add an overhead,
@@ -333,14 +329,10 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         chks = range(0, len_ser, self.chunksize)
 
         if len(chks) > self.maxchunk:
-            raise ValueError(
-                "Cannot store value in less than %s keys" % self.maxchunk
-            )
+            raise ValueError("Cannot store value in less than %s keys" % self.maxchunk)
 
         for i in chks:
-            values[f"{key}.{i // self.chunksize}"] = serialized[
-                i : i + self.chunksize
-            ]
+            values[f"{key}.{i // self.chunksize}"] = serialized[i : i + self.chunksize]
 
         super().set_many(values, timeout)
 
