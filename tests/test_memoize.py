@@ -1,8 +1,11 @@
-import sys
 import random
+import sys
 import time
+
 import pytest
-from flask_caching import Cache, function_namespace
+
+from flask_caching import Cache
+from flask_caching import function_namespace
 
 
 def test_memoize(app, cache):

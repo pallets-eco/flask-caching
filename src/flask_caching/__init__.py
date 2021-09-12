@@ -16,13 +16,22 @@ import string
 import uuid
 import warnings
 from collections import OrderedDict
+from typing import Any
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from flask import current_app, request, url_for, Flask
+from flask import current_app
+from flask import Flask
+from flask import request
+from flask import url_for
+from markupsafe import Markup
 from werkzeug.utils import import_string
+
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
-from markupsafe import Markup
-from typing import Any, Callable, List, Optional, Tuple, Union
 
 __version__ = "1.10.1"
 

@@ -1,7 +1,9 @@
 import random
 from datetime import datetime
 
-from flask import Flask, jsonify, render_template_string
+from flask import Flask
+from flask import jsonify
+from flask import render_template_string
 
 from flask_caching import Cache
 

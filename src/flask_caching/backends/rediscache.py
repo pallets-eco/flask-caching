@@ -8,7 +8,8 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from flask_caching.backends.base import BaseCache, iteritems_wrapper
+from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import iteritems_wrapper
 
 try:
     import cPickle as pickle
