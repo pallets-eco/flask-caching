@@ -195,7 +195,7 @@ class TestFileSystemCache(GenericCacheTests):
 
     def test_filecount_caching_none(self, make_cache):
         c = make_cache()
-        for i in range(3):
+        for _ in range(3):
             assert c.set("a", None)
             assert c.get(c._fs_count_file) == 1
 
@@ -234,7 +234,7 @@ class TestFileSystemCache(GenericCacheTests):
 class TestRedisCache(GenericCacheTests):
     _can_use_fast_sleep = False
 
-    def gen_key_prefix():
+    def gen_key_prefix(self):
         return "werkzeug-test-case:"
 
     @pytest.fixture(scope="class", autouse=True)

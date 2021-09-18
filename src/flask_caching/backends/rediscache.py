@@ -58,7 +58,7 @@ class RedisCache(BaseCache):
             except ImportError:
                 raise RuntimeError("no redis module found")
             if kwargs.get("decode_responses", None):
-                raise ValueError("decode_responses is not supported by " "RedisCache.")
+                raise ValueError("decode_responses is not supported by RedisCache.")
             client = redis.Redis(
                 host=host, port=port, password=password, db=db, **kwargs
             )
@@ -260,7 +260,7 @@ class RedisSentinelCache(RedisCache):
             raise RuntimeError("no redis module found")
 
         if kwargs.get("decode_responses", None):
-            raise ValueError("decode_responses is not supported by " "RedisCache.")
+            raise ValueError("decode_responses is not supported by RedisCache.")
 
         sentinels = sentinels or [("127.0.0.1", 26379)]
         sentinel_kwargs = {
@@ -332,7 +332,7 @@ class RedisClusterCache(RedisCache):
         super().__init__(default_timeout=default_timeout)
 
         if kwargs.get("decode_responses", None):
-            raise ValueError("decode_responses is not supported by " "RedisCache.")
+            raise ValueError("decode_responses is not supported by RedisCache.")
 
         try:
             from rediscluster import RedisCluster

@@ -143,10 +143,12 @@ def function_namespace(f, args=None):
     return ns, ins
 
 
-def make_template_fragment_key(fragment_name: str, vary_on: List[str] = []) -> str:
+def make_template_fragment_key(fragment_name: str, vary_on: List[str] = None) -> str:
     """Make a cache key for a specific fragment name."""
     if vary_on:
         fragment_name = "%s_" % fragment_name
+    else:
+        vary_on = []
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
 

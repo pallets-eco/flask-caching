@@ -1,6 +1,6 @@
 import random
-import sys
 import time
+from collections import namedtuple
 
 import pytest
 
@@ -321,9 +321,7 @@ def test_memoize_classarg(app, cache):
     def bar(a):
         return a.value + random.random()
 
-    class Adder:
-        def __init__(self, value):
-            self.value = value
+    Adder = namedtuple(typename="Adder", field_names=["value"])
 
     adder = Adder(15)
     adder2 = Adder(20)
@@ -573,7 +571,11 @@ def test_memoize_multiple_arg_kwarg_calls(app, cache):
     with app.test_request_context():
 
         @cache.memoize()
-        def big_foo(a, b, c=[1, 1], d=[1, 1]):
+        def big_foo(a, b, c=None, d=None):
+            if c is None:
+                c = [1, 1]
+            if d is None:
+                d = [1, 1]
             return (
                 sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
             )  # noqa
@@ -589,7 +591,11 @@ def test_memoize_multiple_arg_kwarg_delete(app, cache):
     with app.test_request_context():
 
         @cache.memoize()
-        def big_foo(a, b, c=[1, 1], d=[1, 1]):
+        def big_foo(a, b, c=None, d=None):
+            if c is None:
+                c = [1, 1]
+            if d is None:
+                d = [1, 1]
             return (
                 sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
             )  # noqa

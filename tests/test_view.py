@@ -119,8 +119,6 @@ def test_generate_cache_key_from_different_view(app, cache):
     def view_cake(flavor):
         # What's the cache key for apple cake? thanks for making me hungry
         view_cake.cake_cache_key = view_cake.make_cache_key("apple")
-        # print view_cake.cake_cache_key
-
         return str(time.time())
 
     view_cake.cake_cache_key = ""
@@ -130,18 +128,14 @@ def test_generate_cache_key_from_different_view(app, cache):
     def view_pie(flavor):
         # What's the cache key for apple cake?
         view_pie.cake_cache_key = view_cake.make_cache_key("apple")
-        # print view_pie.cake_cache_key
-
         return str(time.time())
 
     view_pie.cake_cache_key = ""
 
     tc = app.test_client()
-    rv1 = tc.get("/cake/chocolate")
-    rv2 = tc.get("/pie/chocolate")
+    tc.get("/cake/chocolate")
+    tc.get("/pie/chocolate")
 
-    # print view_cake.cake_cache_key
-    # print view_pie.cake_cache_key
     assert view_cake.cake_cache_key == view_pie.cake_cache_key
 
 

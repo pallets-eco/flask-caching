@@ -69,7 +69,6 @@ def html(foo=None):
 
 @app.route("/template")
 def template():
-    dt = str(datetime.now())
     return render_template_string(
         """<html><body>foo cache:
             {% cache 60, "random" %}
