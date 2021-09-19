@@ -22,7 +22,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, pypy-3.7]
+        include:
+          - {name: Linux, python: '3.9', os: ubuntu-latest, tox: py39}
+          - {name: '3.8', python: '3.8', os: ubuntu-latest, tox: py38}
+          - {name: '3.7', python: '3.7', os: ubuntu-latest, tox: py37}
+          - {name: '3.6', python: '3.6', os: ubuntu-latest, tox: py36}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
