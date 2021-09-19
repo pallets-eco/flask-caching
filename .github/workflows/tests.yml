@@ -30,7 +30,8 @@ jobs:
         python-version: ${{ matrix.python }}
     - name: Install APT dependencies
       run: |
-        sudo apt install libmemcached-dev memcached redis
+        sudo apt-get update
+        sudo apt-get install libmemcached-dev memcached redis
         sudo systemctl stop memcached
         sudo systemctl stop redis-server
     - name: update pip
