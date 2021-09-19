@@ -1,6 +1,5 @@
 import random
 import time
-from collections import namedtuple
 
 import pytest
 
@@ -321,7 +320,9 @@ def test_memoize_classarg(app, cache):
     def bar(a):
         return a.value + random.random()
 
-    Adder = namedtuple(typename="Adder", field_names=["value"])
+    class Adder:  # noqa: B903
+        def __init__(self, value):
+            self.value = value
 
     adder = Adder(15)
     adder2 = Adder(20)
