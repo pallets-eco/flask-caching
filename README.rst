@@ -1,8 +1,9 @@
 Flask-Caching
 =============
 
-A fork of [Flask-Cache](https://github.com/thadeusb/flask-cache)
-extension which adds easy cache support to Flask.
+A fork of `Flask-cache`_ the extension which adds easy cache support to Flask.
+
+.. _Flask-cache: https://github.com/thadeusb/flask-cache
 
 
 Installing
