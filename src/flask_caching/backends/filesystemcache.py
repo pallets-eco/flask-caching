@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.filesystem
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,7 +64,7 @@ class FileSystemCache(BaseCache):
         hash_method=hashlib.md5,
         ignore_errors=False,
     ):
-        super(FileSystemCache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
         self._path = cache_dir
         self._threshold = threshold
         self._mode = mode
@@ -118,14 +117,12 @@ class FileSystemCache(BaseCache):
     def _list_dir(self):
         """return a list of (fully qualified) cache filenames"""
         mgmt_files = [
-            self._get_filename(name).split("/")[-1]
-            for name in (self._fs_count_file,)
+            self._get_filename(name).split("/")[-1] for name in (self._fs_count_file,)
         ]
         return [
             os.path.join(self._path, fn)
             for fn in os.listdir(self._path)
-            if not fn.endswith(self._fs_transaction_suffix)
-            and fn not in mgmt_files
+            if not fn.endswith(self._fs_transaction_suffix) and fn not in mgmt_files
         ]
 
     def _prune(self):

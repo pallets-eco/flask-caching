@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching
     ~~~~~~~~~~~~~
@@ -17,13 +16,22 @@ import string
 import uuid
 import warnings
 from collections import OrderedDict
+from typing import Any
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from flask import current_app, request, url_for, Flask
+from flask import current_app
+from flask import Flask
+from flask import request
+from flask import url_for
+from markupsafe import Markup
 from werkzeug.utils import import_string
+
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
-from markupsafe import Markup
-from typing import Any, Callable, List, Optional, Tuple, Union
 
 __version__ = "1.10.1"
 
@@ -42,7 +50,7 @@ SUPPORTED_HASH_FUNCTIONS = [
 # Used to remove control characters and whitespace from cache keys.
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 delchars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
-null_control = (dict((k, None) for k in delchars),)
+null_control = ({k: None for k in delchars},)
 
 
 def wants_args(f: Callable) -> bool:
@@ -135,16 +143,16 @@ def function_namespace(f, args=None):
     return ns, ins
 
 
-def make_template_fragment_key(
-    fragment_name: str, vary_on: List[str] = []
-) -> str:
+def make_template_fragment_key(fragment_name: str, vary_on: List[str] = None) -> str:
     """Make a cache key for a specific fragment name."""
     if vary_on:
         fragment_name = "%s_" % fragment_name
+    else:
+        vary_on = []
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
 
-class Cache(object):
+class Cache:
     """This class is used to control the cache objects."""
 
     def __init__(
@@ -194,16 +202,16 @@ class Cache(object):
         config.setdefault("CACHE_NO_NULL_WARNING", False)
         config.setdefault("CACHE_SOURCE_CHECK", False)
 
-        if (
-            config["CACHE_TYPE"] == "null"
-            and not config["CACHE_NO_NULL_WARNING"]
-        ):
+        if config["CACHE_TYPE"] == "null" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
                 "Flask-Caching: CACHE_TYPE is set to null, "
                 "caching is effectively disabled."
             )
 
-        if config["CACHE_TYPE"] in ["filesystem", "FileSystemCache"] and config["CACHE_DIR"] is None:
+        if (
+            config["CACHE_TYPE"] in ["filesystem", "FileSystemCache"]
+            and config["CACHE_DIR"] is None
+        ):
             warnings.warn(
                 f"Flask-Caching: CACHE_TYPE is set to {config['CACHE_TYPE']} but no "
                 "CACHE_DIR is set."
@@ -432,9 +440,7 @@ class Cache(object):
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = _make_cache_key(
-                            args, kwargs, use_request=True
-                        )
+                        cache_key = _make_cache_key(args, kwargs, use_request=True)
 
                     if (
                         callable(forced_update)
@@ -484,9 +490,7 @@ class Cache(object):
                         except Exception:
                             if self.app.debug:
                                 raise
-                            logger.exception(
-                                "Exception possibly due to cache backend."
-                            )
+                            logger.exception("Exception possibly due to cache backend.")
                 return rv
 
             def default_make_cache_key(*args, **kwargs):
@@ -520,7 +524,7 @@ class Cache(object):
                 # provided.
 
                 args_as_sorted_tuple = tuple(
-                    sorted((pair for pair in request.args.items(multi=True)))
+                    sorted(pair for pair in request.args.items(multi=True))
                 )
                 # ... now hash the sorted (key, value) tuple so it can be
                 # used as a key for cache. Turn them into bytes so that the
@@ -551,17 +555,13 @@ class Cache(object):
                         if use_request:
                             cache_key = key_prefix % request.path
                         else:
-                            cache_key = key_prefix % url_for(
-                                f.__name__, **kwargs
-                            )
+                            cache_key = key_prefix % url_for(f.__name__, **kwargs)
                     else:
                         cache_key = key_prefix
 
                 if source_check and callable(f):
                     func_source_code = inspect.getsource(f)
-                    func_source_hash = hash_method(
-                        func_source_code.encode("utf-8")
-                    )
+                    func_source_hash = hash_method(func_source_code.encode("utf-8"))
                     func_source_hash = str(func_source_hash.hexdigest())
 
                     cache_key += func_source_hash
@@ -684,7 +684,7 @@ class Cache(object):
             else:
                 keyargs, keykwargs = args, kwargs
 
-            updated = u"{0}{1}{2}".format(altfname, keyargs, keykwargs)
+            updated = f"{altfname}{keyargs}{keykwargs}"
 
             cache_key = hash_method()
             cache_key.update(updated.encode("utf-8"))
@@ -768,9 +768,7 @@ class Cache(object):
         return (
             tuple(new_args),
             OrderedDict(
-                sorted(
-                    (k, v) for k, v in kwargs.items() if k in kw_keys_remaining
-                )
+                sorted((k, v) for k, v in kwargs.items() if k in kw_keys_remaining)
             ),
         )
 
@@ -909,9 +907,7 @@ class Cache(object):
                     source_check = self.source_check
 
                 try:
-                    cache_key = decorated_function.make_cache_key(
-                        f, *args, **kwargs
-                    )
+                    cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
 
                     if (
                         callable(forced_update)
@@ -961,9 +957,7 @@ class Cache(object):
                         except Exception:
                             if self.app.debug:
                                 raise
-                            logger.exception(
-                                "Exception possibly due to cache backend."
-                            )
+                            logger.exception("Exception possibly due to cache backend.")
                 return rv
 
             decorated_function.uncached = f

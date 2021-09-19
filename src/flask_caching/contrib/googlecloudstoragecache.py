@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 import json
 import logging
@@ -51,7 +50,7 @@ class GoogleCloudStorageCache(BaseCache):
         anonymous=False,
         **kwargs
     ):
-        super(GoogleCloudStorageCache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
         if not isinstance(bucket, str):
             raise ValueError("GCSCache bucket parameter must be a string")
         if anonymous:

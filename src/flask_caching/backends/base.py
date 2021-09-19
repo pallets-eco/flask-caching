@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.base
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -28,7 +27,7 @@ def iteritems_wrapper(mappingorseq):
     return mappingorseq
 
 
-class BaseCache(object):
+class BaseCache:
     """Baseclass for the cache systems.  All the cache systems implement this
     API or a superset of it.
 

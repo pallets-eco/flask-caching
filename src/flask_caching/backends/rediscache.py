@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.rediscache
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -9,7 +8,8 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from flask_caching.backends.base import BaseCache, iteritems_wrapper
+from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import iteritems_wrapper
 
 try:
     import cPickle as pickle
@@ -58,9 +58,7 @@ class RedisCache(BaseCache):
             except ImportError:
                 raise RuntimeError("no redis module found")
             if kwargs.get("decode_responses", None):
-                raise ValueError(
-                    "decode_responses is not supported by " "RedisCache."
-                )
+                raise ValueError("decode_responses is not supported by RedisCache.")
             client = redis.Redis(
                 host=host, port=port, password=password, db=db, **kwargs
             )
@@ -97,17 +95,13 @@ class RedisCache(BaseCache):
 
         redis_url = config.get("CACHE_REDIS_URL")
         if redis_url:
-            kwargs["host"] = redis_from_url(
-                redis_url, db=kwargs.pop("db", None)
-            )
+            kwargs["host"] = redis_from_url(redis_url, db=kwargs.pop("db", None))
 
         return cls(*args, **kwargs)
 
     def _get_prefix(self):
         return (
-            self.key_prefix
-            if isinstance(self.key_prefix, str)
-            else self.key_prefix()
+            self.key_prefix if isinstance(self.key_prefix, str) else self.key_prefix()
         )
 
     def _normalize_timeout(self, timeout):
@@ -143,9 +137,7 @@ class RedisCache(BaseCache):
             return value
 
     def get(self, key):
-        return self.load_object(
-            self._read_clients.get(self._get_prefix() + key)
-        )
+        return self.load_object(self._read_clients.get(self._get_prefix() + key))
 
     def get_many(self, *keys):
         if self.key_prefix:
@@ -156,9 +148,7 @@ class RedisCache(BaseCache):
         timeout = self._normalize_timeout(timeout)
         dump = self.dump_object(value)
         if timeout == -1:
-            result = self._write_client.set(
-                name=self._get_prefix() + key, value=dump
-            )
+            result = self._write_client.set(name=self._get_prefix() + key, value=dump)
         else:
             result = self._write_client.setex(
                 name=self._get_prefix() + key, value=dump, time=timeout
@@ -168,13 +158,9 @@ class RedisCache(BaseCache):
     def add(self, key, value, timeout=None):
         timeout = self._normalize_timeout(timeout)
         dump = self.dump_object(value)
-        created = self._write_client.setnx(
-            name=self._get_prefix() + key, value=dump
-        )
+        created = self._write_client.setnx(name=self._get_prefix() + key, value=dump)
         if created and timeout != -1:
-            self._write_client.expire(
-                name=self._get_prefix() + key, time=timeout
-            )
+            self._write_client.expire(name=self._get_prefix() + key, time=timeout)
         return created
 
     def set_many(self, mapping, timeout=None):
@@ -188,9 +174,7 @@ class RedisCache(BaseCache):
             if timeout == -1:
                 pipe.set(name=self._get_prefix() + key, value=dump)
             else:
-                pipe.setex(
-                    name=self._get_prefix() + key, value=dump, time=timeout
-                )
+                pipe.setex(name=self._get_prefix() + key, value=dump, time=timeout)
         return pipe.execute()
 
     def delete(self, key):
@@ -217,14 +201,10 @@ class RedisCache(BaseCache):
         return status
 
     def inc(self, key, delta=1):
-        return self._write_client.incr(
-            name=self._get_prefix() + key, amount=delta
-        )
+        return self._write_client.incr(name=self._get_prefix() + key, amount=delta)
 
     def dec(self, key, delta=1):
-        return self._write_client.decr(
-            name=self._get_prefix() + key, amount=delta
-        )
+        return self._write_client.decr(name=self._get_prefix() + key, amount=delta)
 
     def unlink(self, *keys):
         """when redis-py >= 3.0.0 and redis > 4, support this operation"""
@@ -280,9 +260,7 @@ class RedisSentinelCache(RedisCache):
             raise RuntimeError("no redis module found")
 
         if kwargs.get("decode_responses", None):
-            raise ValueError(
-                "decode_responses is not supported by " "RedisCache."
-            )
+            raise ValueError("decode_responses is not supported by RedisCache.")
 
         sentinels = sentinels or [("127.0.0.1", 26379)]
         sentinel_kwargs = {
@@ -313,14 +291,10 @@ class RedisSentinelCache(RedisCache):
     def factory(cls, app, config, args, kwargs):
         kwargs.update(
             dict(
-                sentinels=config.get(
-                    "CACHE_REDIS_SENTINELS", [("127.0.0.1", 26379)]
-                ),
+                sentinels=config.get("CACHE_REDIS_SENTINELS", [("127.0.0.1", 26379)]),
                 master=config.get("CACHE_REDIS_SENTINEL_MASTER", "mymaster"),
                 password=config.get("CACHE_REDIS_PASSWORD", None),
-                sentinel_password=config.get(
-                    "CACHE_REDIS_SENTINEL_PASSWORD", None
-                ),
+                sentinel_password=config.get("CACHE_REDIS_SENTINEL_PASSWORD", None),
                 key_prefix=config.get("CACHE_KEY_PREFIX", None),
                 db=config.get("CACHE_REDIS_DB", 0),
             )
@@ -353,19 +327,12 @@ class RedisClusterCache(RedisCache):
     """
 
     def __init__(
-        self,
-        cluster="",
-        password="",
-        default_timeout=300,
-        key_prefix="",
-        **kwargs
+        self, cluster="", password="", default_timeout=300, key_prefix="", **kwargs
     ):
         super().__init__(default_timeout=default_timeout)
 
         if kwargs.get("decode_responses", None):
-            raise ValueError(
-                "decode_responses is not supported by " "RedisCache."
-            )
+            raise ValueError("decode_responses is not supported by RedisCache.")
 
         try:
             from rediscluster import RedisCluster
@@ -375,8 +342,7 @@ class RedisClusterCache(RedisCache):
         try:
             nodes = [(node.split(":")) for node in cluster.split(",")]
             startup_nodes = [
-                {"host": node[0].strip(), "port": node[1].strip()}
-                for node in nodes
+                {"host": node[0].strip(), "port": node[1].strip()} for node in nodes
             ]
         except IndexError:
             raise ValueError(

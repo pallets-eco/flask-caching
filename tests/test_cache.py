@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 import random
 import time
 
 import pytest
+
 from flask_caching import Cache
 
 try:

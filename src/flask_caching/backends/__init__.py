@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends
     ~~~~~~~~~~~~~~~~~~~~~~
@@ -10,21 +9,17 @@
     :license: BSD, see LICENSE for more details.
 """
 from flask_caching.backends.filesystemcache import FileSystemCache
-from flask_caching.backends.memcache import (
-    MemcachedCache,
-    SASLMemcachedCache,
-    SpreadSASLMemcachedCache,
-)
+from flask_caching.backends.memcache import MemcachedCache
+from flask_caching.backends.memcache import SASLMemcachedCache
+from flask_caching.backends.memcache import SpreadSASLMemcachedCache
 from flask_caching.backends.nullcache import NullCache
-
-# TODO: Rename to "redis" when python2 support is removed
-from flask_caching.backends.rediscache import (
-    RedisCache,
-    RedisSentinelCache,
-    RedisClusterCache,
-)
+from flask_caching.backends.rediscache import RedisCache
+from flask_caching.backends.rediscache import RedisClusterCache
+from flask_caching.backends.rediscache import RedisSentinelCache
 from flask_caching.backends.simplecache import SimpleCache
 from flask_caching.backends.uwsgicache import UWSGICache
+
+# TODO: Rename to "redis" when python2 support is removed
 
 
 __all__ = (

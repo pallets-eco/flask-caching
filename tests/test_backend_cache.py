@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     tests.cache
     ~~~~~~~~~~~
@@ -31,7 +30,7 @@ except ImportError:
             memcache = None
 
 
-class CacheTestsBase(object):
+class CacheTestsBase:
     _can_use_fast_sleep = True
     _guaranteed_deletes = True
 
@@ -154,9 +153,7 @@ class TestSimpleCache(GenericCacheTests):
 class TestFileSystemCache(GenericCacheTests):
     @pytest.fixture
     def make_cache(self, tmpdir):
-        return lambda **kw: backends.FileSystemCache(
-            cache_dir=str(tmpdir), **kw
-        )
+        return lambda **kw: backends.FileSystemCache(cache_dir=str(tmpdir), **kw)
 
     def test_filesystemcache_hashes(self, make_cache, hash_method):
         cache = make_cache(hash_method=hash_method)
@@ -198,7 +195,7 @@ class TestFileSystemCache(GenericCacheTests):
 
     def test_filecount_caching_none(self, make_cache):
         c = make_cache()
-        for i in range(3):
+        for _ in range(3):
             assert c.set("a", None)
             assert c.get(c._fs_count_file) == 1
 
@@ -237,7 +234,7 @@ class TestFileSystemCache(GenericCacheTests):
 class TestRedisCache(GenericCacheTests):
     _can_use_fast_sleep = False
 
-    def gen_key_prefix():
+    def gen_key_prefix(self):
         return "werkzeug-test-case:"
 
     @pytest.fixture(scope="class", autouse=True)
@@ -270,9 +267,7 @@ class TestRedisCache(GenericCacheTests):
     def test_empty_host(self):
         with pytest.raises(ValueError) as exc_info:
             backends.RedisCache(host=None)
-        assert (
-            str(exc_info.value) == "RedisCache host parameter may not be None"
-        )
+        assert str(exc_info.value) == "RedisCache host parameter may not be None"
 
 
 class TestMemcachedCache(GenericCacheTests):
