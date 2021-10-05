@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.jinja2ext
     ~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,7 +50,7 @@ JINJA_CACHE_ATTR_NAME = "_template_fragment_cache"
 
 
 class CacheExtension(Extension):
-    tags = set(["cache"])
+    tags = {"cache"}
 
     def parse(self, parser):
         lineno = next(parser.stream).lineno
@@ -66,7 +65,7 @@ class CacheExtension(Extension):
         if parser.stream.skip_if("comma"):
             args.append(parser.parse_expression())
         else:
-            args.append(nodes.Const("%s%s" % (parser.filename, lineno)))
+            args.append(nodes.Const(f"{parser.filename}{lineno}"))
 
         #: Parse vary_on parameters
         vary_on = []

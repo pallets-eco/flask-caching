@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.base
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,7 +39,7 @@ def extract_serializer_args(data):
     return result
 
 
-class BaseCache(object):
+class BaseCache:
     """Baseclass for the cache systems.  All the cache systems implement this
     API or a superset of it.
 
@@ -71,6 +70,10 @@ class BaseCache(object):
             )
         self._serializer = serializer_impl
         self._serialization_error = serializer_error
+
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        return cls()
 
     def _normalize_timeout(self, timeout):
         if timeout is None:
@@ -143,7 +146,7 @@ class BaseCache(object):
         :param value: the value for the key
         :param timeout: the cache timeout for the key in seconds (if not
                         specified, it uses the default timeout). A timeout of
-                        0 idicates that the cache never expires.
+                        0 indicates that the cache never expires.
         :returns: Same as :meth:`set`, but also ``False`` for already
                   existing keys.
         :rtype: boolean
@@ -156,7 +159,7 @@ class BaseCache(object):
         :param mapping: a mapping with the keys/values to set.
         :param timeout: the cache timeout for the key in seconds (if not
                         specified, it uses the default timeout). A timeout of
-                        0 idicates that the cache never expires.
+                        0 indicates that the cache never expires.
         :returns: Whether all given keys have been set.
         :rtype: boolean
         """

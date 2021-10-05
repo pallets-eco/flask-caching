@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 from flask import Flask
 
@@ -6,10 +5,15 @@ from flask_caching import Cache
 from flask_caching.backends.simplecache import SimpleCache
 
 try:
-    import redis
+    import redis  # noqa
+
     HAS_NOT_REDIS = False
 except ImportError:
     HAS_NOT_REDIS = True
+
+
+class CustomCache(Cache):
+    pass
 
 
 class CustomSimpleCache(SimpleCache):
@@ -80,9 +84,9 @@ def test_app_redis_cache_backend_url_default_db(app, redis_server):
     from flask_caching.backends.rediscache import RedisCache
 
     assert isinstance(app.extensions["cache"][cache], RedisCache)
-    rconn = app.extensions["cache"][
-        cache
-    ]._write_client.connection_pool.get_connection("foo")
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
+        "foo"
+    )
     assert rconn.db == 0
 
 
@@ -94,9 +98,9 @@ def test_app_redis_cache_backend_url_custom_db(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    rconn = app.extensions["cache"][
-        cache
-    ]._write_client.connection_pool.get_connection("foo")
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
+        "foo"
+    )
     assert rconn.db == 2
 
 
@@ -109,9 +113,9 @@ def test_app_redis_cache_backend_url_explicit_db_arg(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    rconn = app.extensions["cache"][
-        cache
-    ]._write_client.connection_pool.get_connection("foo")
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
+        "foo"
+    )
     assert rconn.db == 1
 
 
@@ -122,3 +126,12 @@ def test_app_custom_cache_backend(app):
 
     with app.app_context():
         assert isinstance(cache.cache, CustomSimpleCache)
+
+
+def test_subclassed_cache_class(app):
+    # just invoking it here proofs that everything worked when subclassing
+    # otherwise an werkzeug.utils.ImportStringError exception will be raised
+    # because flask-caching can't find the backend
+
+    # testing for "not raises" looked more hacky like this..
+    CustomCache(app)

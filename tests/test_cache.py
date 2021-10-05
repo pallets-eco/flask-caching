@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
 import random
 import time
 
 import pytest
+
 from flask_caching import Cache
 
 try:
-    import redis
+    import redis  # noqa
+
     HAS_NOT_REDIS = False
 except ImportError:
     HAS_NOT_REDIS = True
@@ -108,7 +109,7 @@ def test_cache_cached_function_with_source_check_enabled(app, cache):
 
         assert second_attempt == first_attempt
 
-        #... change the source  to see if the return value changes when called
+        # ... change the source  to see if the return value changes when called
         @cache.cached(key_prefix="MyBits", source_check=True)
         def get_random_bits():
             return {"val": [random.randrange(0, 2) for i in range(50)]}
@@ -119,7 +120,7 @@ def test_cache_cached_function_with_source_check_enabled(app, cache):
         # We changed the return data type so we do a check to be sure
         assert isinstance(third_attempt, dict)
 
-        #... change the source back to what it was original and the data should
+        # ... change the source back to what it was original and the data should
         # be the same
         @cache.cached(key_prefix="MyBits", source_check=True)
         def get_random_bits():
@@ -142,7 +143,7 @@ def test_cache_cached_function_with_source_check_disabled(app, cache):
 
         assert second_attempt == first_attempt
 
-        #... change the source  to see if the return value changes when called
+        # ... change the source  to see if the return value changes when called
         @cache.cached(key_prefix="MyBits", source_check=False)
         def get_random_bits():
             return {"val": [random.randrange(0, 2) for i in range(50)]}
@@ -197,7 +198,7 @@ def test_cached_none(app, cache):
 
 def test_cached_doesnt_cache_none(app, cache):
     """Asserting that when cache_none is False, we always
-       assume a None value returned from .get() means the key is not found
+    assume a None value returned from .get() means the key is not found
     """
     with app.test_request_context():
         from collections import Counter

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     tests.cache
     ~~~~~~~~~~~
@@ -8,7 +7,6 @@
     :copyright: (c) 2014 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
-import errno
 import time
 
 import pytest
@@ -32,7 +30,7 @@ except ImportError:
             memcache = None
 
 
-class CacheTestsBase(object):
+class CacheTestsBase:
     _can_use_fast_sleep = True
     _guaranteed_deletes = True
 
@@ -132,6 +130,10 @@ class GenericCacheTests(CacheTestsBase):
         assert c.has("foo") in (False, 0)
         assert c.has("spam") in (False, 0)
 
+    def test_generic_get_bytes(self, c):
+        assert c.set("foo", b"bar")
+        assert c.get("foo") == b"bar"
+
 
 class TestSimpleCache(GenericCacheTests):
     @pytest.fixture
@@ -193,6 +195,28 @@ class TestFileSystemCache(GenericCacheTests):
         nof_cache_files = c.get(c._fs_count_file)
         assert nof_cache_files is None
 
+    def test_filecount_caching_none(self, make_cache):
+        c = make_cache()
+        for _ in range(3):
+            assert c.set("a", None)
+            assert c.get(c._fs_count_file) == 1
+
+    def test_filecount_after_deletion_in_has(self, make_cache):
+        c = make_cache()
+        assert c.set("foo", "bar", timeout=0.01)
+        assert c.get(c._fs_count_file) == 1
+        time.sleep(0.1)
+        assert c.has("foo") in (False, 0)
+        assert c.get(c._fs_count_file) == 0
+
+    def test_filecount_after_deletion_in_get(self, make_cache):
+        c = make_cache()
+        assert c.set("foo", "bar", timeout=0.01)
+        assert c.get(c._fs_count_file) == 1
+        time.sleep(0.1)
+        assert c.get("foo") is None
+        assert c.get(c._fs_count_file) == 0
+
     def test_count_file_accuracy(self, c):
         assert c.set("foo", "bar")
         assert c.set("moo", "car")
@@ -212,7 +236,7 @@ class TestFileSystemCache(GenericCacheTests):
 class TestRedisCache(GenericCacheTests):
     _can_use_fast_sleep = False
 
-    def gen_key_prefix():
+    def gen_key_prefix(self):
         return "werkzeug-test-case:"
 
     @pytest.fixture(scope="class", autouse=True)
@@ -227,7 +251,7 @@ class TestRedisCache(GenericCacheTests):
         elif request.param:
             host = redis.StrictRedis()
         elif callable(request.param):
-            key_prefix = gen_key_prefix
+            key_prefix = gen_key_prefix  # noqa (flake8 error: undefined)
             host = redis.Redis()
         else:
             host = redis.Redis()
@@ -245,10 +269,7 @@ class TestRedisCache(GenericCacheTests):
     def test_empty_host(self):
         with pytest.raises(ValueError) as exc_info:
             backends.RedisCache(host=None)
-        assert (
-            str(exc_info.value)
-            == "RedisCache host parameter may not be None"
-        )
+        assert str(exc_info.value) == "RedisCache host parameter may not be None"
 
 
 class TestMemcachedCache(GenericCacheTests):
@@ -281,27 +302,6 @@ class TestMemcachedCache(GenericCacheTests):
         assert c.get("foo") == "bar"
         time.sleep(1)
         assert c.has("foo") is False
-
-
-class TestUWSGICache(GenericCacheTests):
-    _can_use_fast_sleep = False
-    _guaranteed_deletes = False
-
-    @pytest.fixture(scope="class", autouse=True)
-    def requirements(self):
-        try:
-            import uwsgi  # NOQA
-        except ImportError:
-            pytest.skip(
-                'Python "uwsgi" package is only avaialable when running '
-                "inside uWSGI."
-            )
-
-    @pytest.fixture
-    def make_cache(self, serialization_args):
-        c = backends.UWSGICache(cache="werkzeugtest", **serialization_args)
-        yield lambda: c
-        c.clear()
 
 
 class TestNullCache(CacheTestsBase):

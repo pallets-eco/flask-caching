@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.simple
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class SimpleCache(BaseCache):
-    """Simple memory cache for single process environments.  This class exists
+    """Simple memory cache for single process environments. This class exists
     mainly for the development server and is not 100% thread safe.  It tries
     to use as many atomic operations as possible and no locks for simplicity
     but it could happen under heavy load that keys are added multiple times.
@@ -30,22 +29,30 @@ class SimpleCache(BaseCache):
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
     :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
-                          method will ignore any errors that occurred during the
-                          deletion process. However, if it is set to ``False``
-                          it will stop on the first error. Defaults to
-                          ``False``.
+                          method will ignore any errors that occurred during
+                          the deletion process. However, if it is set to
+                          ``False`` it will stop on the first error. Defaults
+                          to ``False``.
     """
 
     def __init__(
         self, threshold=500, default_timeout=300, ignore_errors=False, **kwargs
     ):
-        super(SimpleCache, self).__init__(
-            default_timeout, **extract_serializer_args(kwargs)
-        )
+        super().__init__(default_timeout, **extract_serializer_args(kwargs))
         self._cache = {}
         self.clear = self._cache.clear
         self._threshold = threshold
         self.ignore_errors = ignore_errors
+
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        kwargs.update(
+            dict(
+                threshold=config["CACHE_THRESHOLD"],
+                ignore_errors=config["CACHE_IGNORE_ERRORS"],
+            )
+        )
+        return cls(*args, **kwargs)
 
     def _prune(self):
         if len(self._cache) > self._threshold:

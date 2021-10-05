@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import errno
 import os
 
@@ -8,12 +7,6 @@ import pytest
 import flask_caching as fsc
 from flask_caching.serialization import json, JSONError, pickle, PickleError
 
-# build the path to the uwsgi marker file
-# when running in tox, this will be relative to the tox env
-filename = os.path.join(
-    os.environ.get("TOX_ENVTMPDIR", ""), "test_uwsgi_failed"
-)
-
 try:
     __import__("pytest_xprocess")
     from xprocess import ProcessStarter
@@ -22,23 +15,6 @@ except ImportError:
     @pytest.fixture(scope="session")
     def xprocess():
         pytest.skip("pytest-xprocess not installed.")
-
-
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    """``uwsgi --pyrun`` doesn't pass on the exit code when ``pytest`` fails,
-    so Tox thinks the tests passed. For UWSGI tests, create a file to mark what
-    tests fail. The uwsgi Tox env has a command to read this file and exit
-    appropriately.
-    """
-    outcome = yield
-    report = outcome.get_result()
-    if item.cls != "TestUWSGICache":
-        return
-
-    if report.failed:
-        with open(filename, "a") as f:
-            f.write(item.name + "\n")
 
 
 @pytest.fixture(params=[
@@ -88,7 +64,7 @@ def hash_method(request):
 @pytest.fixture(scope="class")
 def redis_server(xprocess):
     try:
-        import redis
+        import redis  # noqa
     except ImportError:
         pytest.skip("Python package 'redis' is not installed.")
 
@@ -98,7 +74,7 @@ def redis_server(xprocess):
 
     try:
         xprocess.ensure("redis_server", Starter)
-    except IOError as e:
+    except OSError as e:
         # xprocess raises FileNotFoundError
         if e.errno == errno.ENOENT:
             pytest.skip("Redis is not installed.")
@@ -118,7 +94,7 @@ def memcache_server(xprocess):
             from google.appengine.api import memcache
         except ImportError:
             try:
-                import memcache
+                import memcache  # noqa
             except ImportError:
                 pytest.skip(
                     "Python package for memcache is not installed. Need one of "
@@ -131,7 +107,7 @@ def memcache_server(xprocess):
 
     try:
         xprocess.ensure("memcached", Starter)
-    except IOError as e:
+    except OSError as e:
         # xprocess raises FileNotFoundError
         if e.errno == errno.ENOENT:
             pytest.skip("Memcached is not installed.")
@@ -140,4 +116,3 @@ def memcache_server(xprocess):
 
     yield
     xprocess.getinfo("memcached").terminate()
-

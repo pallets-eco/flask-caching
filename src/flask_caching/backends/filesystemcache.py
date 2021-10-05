@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.filesystem
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,7 +60,7 @@ class FileSystemCache(BaseCache):
         ignore_errors=False,
         **kwargs
     ):
-        super(FileSystemCache, self).__init__(
+        super().__init__(
             default_timeout, **extract_serializer_args(kwargs)
         )
         self._path = cache_dir
@@ -80,6 +79,17 @@ class FileSystemCache(BaseCache):
         # the list_dir can slow initialisation massively
         if self._threshold != 0:
             self._update_count(value=len(self._list_dir()))
+
+    @classmethod
+    def factory(cls, app, config, args, kwargs):
+        args.insert(0, config["CACHE_DIR"])
+        kwargs.update(
+            dict(
+                threshold=config["CACHE_THRESHOLD"],
+                ignore_errors=config["CACHE_IGNORE_ERRORS"],
+            )
+        )
+        return cls(*args, **kwargs)
 
     @property
     def _file_count(self):
@@ -103,17 +113,14 @@ class FileSystemCache(BaseCache):
         return int(timeout)
 
     def _list_dir(self):
-        """return a list of (fully qualified) cache filenames
-        """
+        """return a list of (fully qualified) cache filenames"""
         mgmt_files = [
-            self._get_filename(name).split("/")[-1]
-            for name in (self._fs_count_file,)
+            self._get_filename(name).split("/")[-1] for name in (self._fs_count_file,)
         ]
         return [
             os.path.join(self._path, fn)
             for fn in os.listdir(self._path)
-            if not fn.endswith(self._fs_transaction_suffix)
-            and fn not in mgmt_files
+            if not fn.endswith(self._fs_transaction_suffix) and fn not in mgmt_files
         ]
 
     def _prune(self):
@@ -131,8 +138,8 @@ class FileSystemCache(BaseCache):
                 remove = (expires != 0 and expires <= now) or idx % 3 == 0
                 if remove:
                     os.remove(fname)
-                    nremoved +=1
-            except (IOError, OSError):
+                    nremoved += 1
+            except OSError:
                 pass
         self._update_count(value=len(self._list_dir()))
         logger.debug("evicted %d key(s)", nremoved)
@@ -141,7 +148,7 @@ class FileSystemCache(BaseCache):
         for fname in self._list_dir():
             try:
                 os.remove(fname)
-            except (IOError, OSError):
+            except OSError:
                 self._update_count(value=len(self._list_dir()))
                 return False
         self._update_count(value=0)
@@ -162,14 +169,14 @@ class FileSystemCache(BaseCache):
             with open(filename, "rb") as f:
                 pickle_time, result = self._serializer.load(f)
                 expired = pickle_time != 0 and pickle_time < time()
-                if expired:
-                    result = None
-                    os.remove(filename)
-                else:
-                    hit_or_miss = "hit"
+            if expired:
+                result = None
+                self.delete(key)
+            else:
+                hit_or_miss = "hit"
         except FileNotFoundError:
             pass
-        except (IOError, OSError, self._serialization_error) as exc:
+        except (OSError, self._serialization_error) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("get key %r -> %s %s", key, hit_or_miss, expiredstr)
@@ -204,15 +211,21 @@ class FileSystemCache(BaseCache):
             )
             with os.fdopen(fd, "wb") as f:
                 self._serializer.dump((timeout, value), f)
+
+            # https://github.com/sh4nks/flask-caching/issues/238#issuecomment-801897606
+            is_new_file = not os.path.exists(filename)
+            if not is_new_file:
+                os.remove(filename)
             os.replace(tmp, filename)
+
             os.chmod(filename, self._mode)
-        except (IOError, OSError) as exc:
+        except OSError as exc:
             logger.error("set key %r -> %s", key, exc)
         else:
             result = True
             logger.debug("set key %r", key)
             # Management elements should not count towards threshold
-            if not mgmt_element:
+            if not mgmt_element and is_new_file:
                 self._update_count(delta=1)
         return result
 
@@ -222,7 +235,7 @@ class FileSystemCache(BaseCache):
             os.remove(self._get_filename(key))
         except FileNotFoundError:
             logger.debug("delete key %r -> no such key")
-        except (IOError, OSError) as exc:
+        except (OSError) as exc:
             logger.error("delete key %r -> %s", key, exc)
         else:
             deleted = True
@@ -239,14 +252,14 @@ class FileSystemCache(BaseCache):
         try:
             with open(filename, "rb") as f:
                 pickle_time, _ = self._serializer.load(f)
-                expired = pickle_time != 0 and pickle_time < time()
-                if expired:
-                    os.remove(filename)
-                else:
-                    result = True
+            expired = pickle_time != 0 and pickle_time < time()
+            if expired:
+                self.delete(key)
+            else:
+                result = True
         except FileNotFoundError:
             pass
-        except (IOError, OSError, self._serialization_error) as exc:
+        except (OSError, self._serialization_error) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("has key %r -> %s %s", key, result, expiredstr)
