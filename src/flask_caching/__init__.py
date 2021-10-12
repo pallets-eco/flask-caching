@@ -152,6 +152,13 @@ def make_template_fragment_key(fragment_name: str, vary_on: List[str] = None) ->
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
 
+def call_fn(fn, *args, **kwargs):
+    ensure_sync = getattr(current_app, "ensure_sync", None)
+    if ensure_sync is not None:
+        return current_app.ensure_sync(fn)(*args, **kwargs)
+    return fn(*args, **kwargs)
+
+
 class Cache:
     """This class is used to control the cache objects."""
 
@@ -430,7 +437,7 @@ class Cache:
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
                 if self._bypass_cache(unless, f, *args, **kwargs):
-                    return f(*args, **kwargs)
+                    return call_fn(f, *args, **kwargs)
 
                 nonlocal source_check
                 if source_check is None:
@@ -475,10 +482,10 @@ class Cache:
                     if self.app.debug:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
-                    return f(*args, **kwargs)
+                    return call_fn(f, *args, **kwargs)
 
                 if not found:
-                    rv = f(*args, **kwargs)
+                    rv = call_fn(f, *args, **kwargs)
 
                     if response_filter is None or response_filter(rv):
                         try:
@@ -900,7 +907,7 @@ class Cache:
             def decorated_function(*args, **kwargs):
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
-                    return f(*args, **kwargs)
+                    return call_fn(f, *args, **kwargs)
 
                 nonlocal source_check
                 if source_check is None:
@@ -942,10 +949,10 @@ class Cache:
                     if self.app.debug:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
-                    return f(*args, **kwargs)
+                    return call_fn(f, *args, **kwargs)
 
                 if not found:
-                    rv = f(*args, **kwargs)
+                    rv = call_fn(f, *args, **kwargs)
 
                     if response_filter is None or response_filter(rv):
                         try:
