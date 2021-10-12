@@ -36,9 +36,13 @@ pytest==6.2.5
     #   pytest-xprocess
 pytest-xprocess==0.18.1
     # via -r requirements/tests.in
+pytest-asyncio
+    # via -r requirements/tests.in
 redis==3.5.3
     # via -r requirements/tests.in
 toml==0.10.2
     # via pytest
 werkzeug==2.0.1
+    # via flask
+asgiref
     # via flask
