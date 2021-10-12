@@ -31,6 +31,10 @@ def test_cached_view(app, cache):
 @pytest.mark.asyncio
 def test_async_cached_view(app, cache):
     import asyncio
+    import sys
+
+    if sys.version_info < (3, 7):
+        return
 
     @app.route("/test-async")
     @cache.cached(2)
