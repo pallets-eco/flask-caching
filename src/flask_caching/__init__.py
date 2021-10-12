@@ -264,7 +264,7 @@ class Cache:
     def _call_fn(self, fn, *args, **kwargs):
         ensure_sync = getattr(self.app, "ensure_sync", None)
         if ensure_sync is not None:
-            return self.app.ensure_sync(fn)(*args, **kwargs)
+            return ensure_sync(fn)(*args, **kwargs)
         return fn(*args, **kwargs)
 
     @property
