@@ -479,6 +479,8 @@ class Cache:
 
                 if not found:
                     rv = f(*args, **kwargs)
+                    if inspect.isgenerator(rv):
+                        rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
                         try:
@@ -946,6 +948,8 @@ class Cache:
 
                 if not found:
                     rv = f(*args, **kwargs)
+                    if inspect.isgenerator(rv):
+                        rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
                         try:
