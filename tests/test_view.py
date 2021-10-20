@@ -1,7 +1,7 @@
 import hashlib
 import time
 
-from flask import request, stream_with_context, Response
+from flask import request
 
 
 def test_cached_view(app, cache):
@@ -18,32 +18,6 @@ def test_cached_view(app, cache):
     time.sleep(1)
 
     rv = tc.get("/")
-
-    assert the_time == rv.data.decode("utf-8")
-
-    time.sleep(1)
-
-    rv = tc.get("/")
-    assert the_time != rv.data.decode("utf-8")
-
-
-def test_cached_stream_view(app, cache):
-
-    @app.route("/stream")
-    @cache.cached(2)
-    def cached_stream_view():
-        def generate():
-            yield str(time.time())
-        return Response(stream_with_context(generate()))
-
-    tc = app.test_client()
-
-    rv = tc.get("/stream")
-    the_time = rv.data.decode("utf-8")
-
-    time.sleep(1)
-
-    rv = tc.get("/stream")
 
     assert the_time == rv.data.decode("utf-8")
 

@@ -308,3 +308,22 @@ def test_cache_forced_update_params(app, cache):
         # this time the forced_update should have returned True, so
         # cached_function should have been called again
         assert cached_call_counter[1] == 2
+
+
+def test_generator(app, cache):
+    """ test function return generator"""
+
+    @cache.cached()
+    def gen():
+        return (i for i in range(10))
+
+    assert gen() == list(range(10))
+    assert gen() == list(range(10))
+
+    @cache.cached()
+    def gen_yield():
+        yield 1
+        yield 2
+
+    assert gen_yield() == [1, 2]
+    assert gen_yield() == [1, 2]
