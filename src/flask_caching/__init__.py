@@ -25,7 +25,7 @@ from werkzeug.utils import import_string
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
 from flask_caching.utils import (
-    want_args, get_arg_names,
+    wants_args, get_arg_names,
     get_arg_default, get_id,
     function_namespace,
     make_template_fragment_key
