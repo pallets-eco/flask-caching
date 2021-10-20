@@ -1,4 +1,5 @@
 import inspect
+import string
 
 from typing import Callable, List
 
@@ -20,7 +21,7 @@ def get_function_parameters(f: Callable) -> List:
     :param f
     :return: Parameter list of function
     """
-    return inspect.signature(f).parameters.values()
+    return list(inspect.signature(f).parameters.values())
 
 
 def get_arg_names(f: Callable) -> List[str]:
@@ -30,13 +31,13 @@ def get_arg_names(f: Callable) -> List[str]:
     """
     return [
         parameter.name
-        for parameter in get_function_params(f)
+        for parameter in get_function_parameters(f)
         if parameter.kind == parameter.POSITIONAL_OR_KEYWORD
     ]
 
 
 def get_arg_default(f: Callable, position: int):
-    arg = list(get_function_params(f))[position]
+    arg = get_function_parameters(f)[position]
     arg_def = arg.default
     return arg_def if arg_def != inspect.Parameter.empty else None
 

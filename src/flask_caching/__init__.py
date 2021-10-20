@@ -12,12 +12,11 @@ import functools
 import hashlib
 import inspect
 import logging
-import string
 import uuid
 import warnings
 from collections import OrderedDict
 
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, Union
 
 from flask import current_app, Flask, request, url_for
 from markupsafe import Markup
