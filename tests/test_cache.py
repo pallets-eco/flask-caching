@@ -312,18 +312,21 @@ def test_cache_forced_update_params(app, cache):
 
 def test_generator(app, cache):
     """ test function return generator"""
+    with app.test_request_context():
 
-    @cache.cached()
-    def gen():
-        return (i for i in range(10))
+        @cache.cached()
+        def gen():
+            return (str(time.time()) for i in range(2))
 
-    assert gen() == list(range(10))
-    assert gen() == list(range(10))
+        time_str = gen()
+        time.sleep(1)
+        assert gen() == time_str
 
-    @cache.cached()
-    def gen_yield():
-        yield 1
-        yield 2
+        @cache.cached()
+        def gen_yield():
+            yield str(time.time())
+            yield str(time.time())
 
-    assert gen_yield() == [1, 2]
-    assert gen_yield() == [1, 2]
+        time_str = gen_yield()
+        time.sleep(1)
+        assert gen_yield() == time_str
