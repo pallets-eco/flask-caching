@@ -167,7 +167,14 @@ class FileSystemCache(BaseCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time, result = self._serializer.load(f)
+                data = self._serializer.load(f)
+                if isinstance(data, int):
+                    # backward compatibility
+                    # should be removed in the next major release
+                    pickle_time = data
+                    result = self._serializer.load(f)
+                else:
+                    pickle_time, result = data
                 expired = pickle_time != 0 and pickle_time < time()
             if expired:
                 result = None
