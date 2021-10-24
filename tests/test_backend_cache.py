@@ -130,10 +130,6 @@ class GenericCacheTests(CacheTestsBase):
         assert c.has("foo") in (False, 0)
         assert c.has("spam") in (False, 0)
 
-    def test_generic_get_bytes(self, c):
-        assert c.set("foo", b"bar")
-        assert c.get("foo") == b"bar"
-
 
 class TestSimpleCache(GenericCacheTests):
     @pytest.fixture
