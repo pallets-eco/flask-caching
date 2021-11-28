@@ -26,6 +26,7 @@ from typing import Union
 from flask import current_app
 from flask import Flask
 from flask import request
+from flask import Response
 from flask import url_for
 from markupsafe import Markup
 from werkzeug.utils import import_string
@@ -150,6 +151,14 @@ def make_template_fragment_key(fragment_name: str, vary_on: List[str] = None) ->
     else:
         vary_on = []
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
+
+
+class CachedResponse(Response):
+    timeout = None
+
+    def __init__(self, response, timeout):
+        self.__dict__ = response.__dict__
+        self.timeout = timeout
 
 
 class Cache:
@@ -481,11 +490,14 @@ class Cache:
                     rv = f(*args, **kwargs)
 
                     if response_filter is None or response_filter(rv):
+                        cache_timeout = decorated_function.cache_timeout
+                        if isinstance(rv, CachedResponse):
+                            cache_timeout = rv.timeout or cache_timeout
                         try:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=decorated_function.cache_timeout,
+                                timeout=cache_timeout,
                             )
                         except Exception:
                             if self.app.debug:
