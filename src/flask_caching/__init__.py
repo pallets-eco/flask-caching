@@ -154,6 +154,10 @@ def make_template_fragment_key(fragment_name: str, vary_on: List[str] = None) ->
 
 
 class CachedResponse(Response):
+    """
+    views wraped by @cached can return this (which inherits from flask.Response)
+    to override the cache TTL dynamically
+    """
     timeout = None
 
     def __init__(self, response, timeout):

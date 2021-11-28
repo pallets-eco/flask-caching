@@ -76,6 +76,17 @@ The cached decorator has another optional argument called ``unless``. This
 argument accepts a callable that returns True or False. If ``unless`` returns
 ``True`` then it will bypass the caching mechanism entirely.
 
+To dynamically determine the timeout within the view, you can return `CachedResponse`,
+a subclass of `flask.Response`.
+
+    @app.route("/")
+    @cache.cached()
+    def index():
+        return CachedResponse(
+            response=make_response(render_template('index.html')),
+            timeout=50,
+        )
+
 .. warning::
 
     When using ``cached`` on a view, take care to put it between Flask's
