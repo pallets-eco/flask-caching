@@ -22,6 +22,8 @@ click==8.0.1
     # via
     #   flask
     #   pip-tools
+deprecated==1.2.13
+    # via redis
 distlib==0.3.2
     # via virtualenv
 docutils==0.16
@@ -96,7 +98,7 @@ pytz==2021.1
     # via babel
 pyyaml==5.4.1
     # via pre-commit
-redis==3.5.3
+redis==4.0.2
     # via -r tests.in
 requests==2.26.0
     # via sphinx
@@ -150,6 +152,8 @@ werkzeug==2.0.1
     # via flask
 wheel==0.37.0
     # via pip-tools
+wrapt==1.13.3
+    # via deprecated
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
