@@ -8,6 +8,8 @@ attrs==21.2.0
     # via pytest
 click==8.0.1
     # via flask
+deprecated==1.2.13
+    # via redis
 flask==2.0.2
     # via -r tests.in
 iniconfig==1.1.1
@@ -18,8 +20,10 @@ jinja2==3.0.1
     # via flask
 markupsafe==2.0.1
     # via jinja2
-packaging==21.0
-    # via pytest
+packaging==21.3
+    # via
+    #   pytest
+    #   redis
 pluggy==1.0.0
     # via pytest
 psutil==5.8.0
@@ -36,9 +40,11 @@ pytest==6.2.5
     #   pytest-xprocess
 pytest-xprocess==0.18.1
     # via -r tests.in
-redis==3.5.3
+redis==4.1.0
     # via -r tests.in
 toml==0.10.2
     # via pytest
 werkzeug==2.0.1
     # via flask
+wrapt==1.13.3
+    # via deprecated
