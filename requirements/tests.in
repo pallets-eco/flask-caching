@@ -3,3 +3,4 @@ pytest-xprocess
 pylibmc
 redis
 Flask
+cachelib
