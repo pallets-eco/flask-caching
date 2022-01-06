@@ -8,17 +8,9 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-# import platform
 from cachelib import UWSGICache as CachelibUWSGICache
 
 from flask_caching.backends.base import BaseCache
-
-# try:
-#     import cPickle as pickle
-# except ImportError:  # pragma: no cover
-#     import pickle  # type: ignore
-
-# import pickle
 
 
 class UWSGICache(BaseCache, CachelibUWSGICache):
@@ -44,12 +36,6 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
             default_timeout=default_timeout,
         )
 
-        # if platform.python_implementation() == "PyPy":
-        #     raise RuntimeError(
-        #         "uWSGI caching does not work under PyPy, see "
-        #         "the docs for more details."
-        #     )
-
         try:
             import uwsgi
 
@@ -65,8 +51,6 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
                 "https://uwsgi-docs.readthedocs.io/en/latest/Caching.html"
             )
 
-        # self.cache = cache
-
     @classmethod
     def factory(cls, app, config, args, kwargs):
         # The name of the caching instance to connect to, for
@@ -77,35 +61,3 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
         uwsgi_cache_name = config.get("CACHE_UWSGI_NAME", "")
         kwargs.update(dict(cache=uwsgi_cache_name))
         return cls(*args, **kwargs)
-
-    # def get(self, key):
-    #     return "hahah"
-    #     rv = self._uwsgi.cache_get(key, self.cache)
-    #     if rv is None:
-    #         return
-    #     return pickle.loads(rv)
-
-    # def delete(self, key):
-    #     return self._uwsgi.cache_del(key, self.cache)
-
-    # def set(self, key, value, timeout=None):
-    #     return self._uwsgi.cache_update(
-    #         key,
-    #         pickle.dumps(value),
-    #         self._normalize_timeout(timeout),
-    #         self.cache,
-    #     )
-
-    # def add(self, key, value, timeout=None):
-    #     return self._uwsgi.cache_set(
-    #         key,
-    #         pickle.dumps(value),
-    #         self._normalize_timeout(timeout),
-    #         self.cache,
-    #     )
-
-    # def clear(self):
-    #     return self._uwsgi.cache_clear(self.cache)
-
-    # def has(self, key):
-    #     return self._uwsgi.cache_exists(key, self.cache) is not None
