@@ -72,6 +72,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
             dict(
                 host=config.get("CACHE_REDIS_HOST", "localhost"),
                 port=config.get("CACHE_REDIS_PORT", 6379),
+                db=config.get("CACHE_REDIS_DB", 0),
             )
         )
         password = config.get("CACHE_REDIS_PASSWORD")
@@ -82,15 +83,13 @@ class RedisCache(BaseCache, CachelibRedisCache):
         if key_prefix:
             kwargs["key_prefix"] = key_prefix
 
-        db_number = config.get("CACHE_REDIS_DB")
-        if db_number:
-            kwargs["db"] = db_number
-
         redis_url = config.get("CACHE_REDIS_URL")
         if redis_url:
             kwargs["host"] = redis_from_url(redis_url, db=kwargs.pop("db", None))
 
-        return cls(*args, **kwargs)
+        new_class = cls(*args, **kwargs)
+
+        return new_class
 
     def _get_prefix(self):
         return (
