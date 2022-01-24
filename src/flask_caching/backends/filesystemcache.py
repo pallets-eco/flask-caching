@@ -12,6 +12,8 @@ import errno
 import hashlib
 import logging
 import os
+import stat
+import sys
 import tempfile
 from time import time
 
@@ -220,8 +222,10 @@ class FileSystemCache(BaseCache):
             if not is_new_file:
                 os.remove(filename)
             os.replace(tmp, filename)
-
-            os.chmod(filename, self._mode)
+            if(sys.platform=='win32'):
+                os.chmod(filename, stat.S_IWRITE)
+            else:
+                os.chmod(filename, self._mode)
         except OSError as exc:
             logger.error("set key %r -> %s", key, exc)
         else:
