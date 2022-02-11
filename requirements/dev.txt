@@ -113,7 +113,7 @@ sphinx==4.4.0
     #   sphinx-issues
     #   sphinx-tabs
     #   sphinxcontrib-log-cabinet
-sphinx-issues==1.2.0
+sphinx-issues==3.0.1
     # via -r docs.in
 sphinx-tabs==3.2.0
     # via -r docs.in
