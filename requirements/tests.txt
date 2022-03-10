@@ -8,7 +8,7 @@ attrs==21.2.0
     # via pytest
 click==8.0.1
     # via flask
-flask==2.0.2
+flask==2.0.3
     # via -r tests.in
 iniconfig==1.1.1
     # via pytest
