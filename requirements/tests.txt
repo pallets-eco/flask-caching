@@ -30,7 +30,7 @@ pylibmc==1.6.1
     # via -r tests.in
 pyparsing==2.4.7
     # via packaging
-pytest==6.2.5
+pytest==7.0.1
     # via
     #   -r tests.in
     #   pytest-xprocess
@@ -38,7 +38,7 @@ pytest-xprocess==0.18.1
     # via -r tests.in
 redis==3.5.3
     # via -r tests.in
-toml==0.10.2
+tomli==2.0.1
     # via pytest
 werkzeug==2.0.1
     # via flask
