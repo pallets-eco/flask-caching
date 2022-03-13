@@ -11,12 +11,7 @@
 import logging
 from time import time
 
-from flask_caching.backends.base import BaseCache
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 
 logger = logging.getLogger(__name__)
@@ -40,8 +35,10 @@ class SimpleCache(BaseCache):
                           to ``False``.
     """
 
-    def __init__(self, threshold=500, default_timeout=300, ignore_errors=False):
-        super().__init__(default_timeout)
+    def __init__(
+        self, threshold=500, default_timeout=300, ignore_errors=False, **kwargs
+    ):
+        super().__init__(default_timeout, **extract_serializer_args(kwargs))
         self._cache = {}
         self.clear = self._cache.clear
         self._threshold = threshold
@@ -87,7 +84,7 @@ class SimpleCache(BaseCache):
             if not expired:
                 hit_or_miss = "hit"
                 try:
-                    result = pickle.loads(value)
+                    result = self._serializer.loads(value)
                 except Exception as exc:
                     logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
@@ -97,7 +94,7 @@ class SimpleCache(BaseCache):
     def set(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        item = (expires, pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+        item = (expires, self._serializer.dumps(value))
         self._cache[key] = item
         logger.debug("set key %r", key)
         return True
@@ -105,7 +102,7 @@ class SimpleCache(BaseCache):
     def add(self, key, value, timeout=None):
         expires = self._normalize_timeout(timeout)
         self._prune()
-        item = (expires, pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+        item = (expires, self._serializer.dumps(value))
         updated = False
         should_add = key not in self._cache
         if should_add:

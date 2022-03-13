@@ -15,12 +15,7 @@ import os
 import tempfile
 from time import time
 
-from flask_caching.backends.base import BaseCache
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 
 logger = logging.getLogger(__name__)
@@ -63,8 +58,11 @@ class FileSystemCache(BaseCache):
         mode=0o600,
         hash_method=hashlib.md5,
         ignore_errors=False,
+        **kwargs
     ):
-        super().__init__(default_timeout)
+        super().__init__(
+            default_timeout, **extract_serializer_args(kwargs)
+        )
         self._path = cache_dir
         self._threshold = threshold
         self._mode = mode
@@ -136,7 +134,7 @@ class FileSystemCache(BaseCache):
             try:
                 remove = False
                 with open(fname, "rb") as f:
-                    expires = pickle.load(f)
+                    expires, _ = self._serializer.load(f)
                 remove = (expires != 0 and expires <= now) or idx % 3 == 0
                 if remove:
                     os.remove(fname)
@@ -169,16 +167,23 @@ class FileSystemCache(BaseCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = pickle.load(f)
+                data = self._serializer.load(f)
+                if isinstance(data, int):
+                    # backward compatibility
+                    # should be removed in the next major release
+                    pickle_time = data
+                    result = self._serializer.load(f)
+                else:
+                    pickle_time, result = data
                 expired = pickle_time != 0 and pickle_time < time()
-                if not expired:
-                    hit_or_miss = "hit"
-                    result = pickle.load(f)
             if expired:
+                result = None
                 self.delete(key)
+            else:
+                hit_or_miss = "hit"
         except FileNotFoundError:
             pass
-        except (OSError, pickle.PickleError) as exc:
+        except (OSError, self._serialization_error) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("get key %r -> %s %s", key, hit_or_miss, expiredstr)
@@ -212,8 +217,7 @@ class FileSystemCache(BaseCache):
                 suffix=self._fs_transaction_suffix, dir=self._path
             )
             with os.fdopen(fd, "wb") as f:
-                pickle.dump(timeout, f, 1)
-                pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
+                self._serializer.dump((timeout, value), f)
 
             # https://github.com/sh4nks/flask-caching/issues/238#issuecomment-801897606
             is_new_file = not os.path.exists(filename)
@@ -254,7 +258,7 @@ class FileSystemCache(BaseCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = pickle.load(f)
+                pickle_time, _ = self._serializer.load(f)
             expired = pickle_time != 0 and pickle_time < time()
             if expired:
                 self.delete(key)
@@ -262,7 +266,7 @@ class FileSystemCache(BaseCache):
                 result = True
         except FileNotFoundError:
             pass
-        except (OSError, pickle.PickleError) as exc:
+        except (OSError, self._serialization_error) as exc:
             logger.error("get key %r -> %s", key, exc)
         expiredstr = "(expired)" if expired else ""
         logger.debug("has key %r -> %s %s", key, result, expiredstr)

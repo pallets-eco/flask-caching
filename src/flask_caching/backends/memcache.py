@@ -13,12 +13,11 @@ import re
 """
 from time import time
 
-from flask_caching.backends.base import BaseCache, iteritems_wrapper
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
+from flask_caching.backends.base import (
+    BaseCache,
+    extract_serializer_args,
+    iteritems_wrapper,
+)
 
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
@@ -60,8 +59,10 @@ class MemcachedCache(BaseCache):
                        different prefix.
     """
 
-    def __init__(self, servers=None, default_timeout=300, key_prefix=None):
-        super().__init__(default_timeout)
+    def __init__(self, servers=None, default_timeout=300, key_prefix=None, **kwargs):
+        super().__init__(
+            default_timeout, **extract_serializer_args(kwargs)
+        )
         if servers is None or isinstance(servers, (list, tuple)):
             if servers is None:
                 servers = ["127.0.0.1:11211"]
@@ -239,7 +240,9 @@ class SASLMemcachedCache(MemcachedCache):
         password=None,
         **kwargs,
     ):
-        super().__init__(default_timeout=default_timeout)
+        super().__init__(
+            default_timeout=default_timeout, **extract_serializer_args(kwargs)
+        )
 
         if servers is None:
             servers = ["127.0.0.1:11211"]
@@ -323,7 +326,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         # I didn't found a good way to avoid pickling/unpickling if
         # key is smaller than chunksize, because in case or <werkzeug.requests>
         # getting the length consume the data iterator.
-        serialized = pickle.dumps(value, 2)
+        serialized = self._serializer.dumps(value)
         values = {}
         len_ser = len(serialized)
         chks = range(0, len_ser, self.chunksize)
@@ -358,4 +361,4 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if not serialized:
             return None
 
-        return pickle.loads(serialized)
+        return self._serializer.loads(serialized)

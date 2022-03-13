@@ -152,6 +152,33 @@ def make_template_fragment_key(fragment_name: str, vary_on: List[str] = None) ->
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
 
 
+def load_module(
+    module: Union[str, Any],
+    lookup_obj: Optional[Any] = None,
+    return_back: bool = False
+) -> Any:
+    """Dynamic module loading.
+
+    :param module: Module name, import string or object
+    :param lookup_obj: Try to import `module` from `lookup_obj`
+    :param return_back: Return `module` value if `module` is not string
+    :returns: Loaded module
+    :raises ImportError: When module load is not possible
+    """
+    if isinstance(module, str):
+        if "." in module:
+            return import_string(module)
+        elif lookup_obj is not None:
+            try:
+                return getattr(lookup_obj, module)
+            except AttributeError:
+                pass
+    elif return_back:
+        return module
+
+    raise ImportError("Could not load %s" % module)
+
+
 class Cache:
     """This class is used to control the cache objects."""
 
@@ -201,6 +228,8 @@ class Cache:
         config.setdefault("CACHE_TYPE", "null")
         config.setdefault("CACHE_NO_NULL_WARNING", False)
         config.setdefault("CACHE_SOURCE_CHECK", False)
+        config.setdefault("CACHE_SERIALIZER", "pickle")
+        config.setdefault("CACHE_SERIALIZER_ERROR", "PickleError")
 
         if config["CACHE_TYPE"] == "null" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
@@ -236,8 +265,23 @@ class Cache:
             plain_name_used = False
 
         cache_factory = import_string(import_me)
+
+        from . import serialization
+
         cache_args = config["CACHE_ARGS"][:]
-        cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
+        cache_options = {
+            "default_timeout": config["CACHE_DEFAULT_TIMEOUT"],
+            "serializer_impl": load_module(
+                config["CACHE_SERIALIZER"],
+                lookup_obj=serialization,
+                return_back=True
+            ),
+            "serializer_error": load_module(
+                config["CACHE_SERIALIZER_ERROR"],
+                lookup_obj=serialization,
+                return_back=True
+            )
+        }
 
         if isinstance(cache_factory, type) and issubclass(cache_factory, BaseCache):
             cache_factory = cache_factory.factory
@@ -313,7 +357,7 @@ class Cache:
 
     def cached(
         self,
-        timeout: Optional[int] = None,
+        timeout: Optional[int]=None,
         key_prefix: str = "view/%s",
         unless: Optional[Callable] = None,
         forced_update: Optional[Callable] = None,
@@ -323,6 +367,7 @@ class Cache:
         cache_none: bool = False,
         make_cache_key: Optional[Callable] = None,
         source_check: Optional[bool] = None,
+        force_tuple: bool = True,
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -423,6 +468,8 @@ class Cache:
                              formed with the function's source code hash in
                              addition to other parameters that may be included
                              in the formation of the key.
+        :param force_tuple: Default True. Cast output from list to tuple.
+                            JSON doesn't support tuple, but Flask expects it.
         """
 
         def decorator(f):
@@ -471,6 +518,9 @@ class Cache:
                                 found = False
                             else:
                                 found = self.cache.has(cache_key)
+                        elif force_tuple and isinstance(rv, list) and len(rv) == 2:
+                            # JSON compatibility for flask
+                            rv = tuple(rv)
                 except Exception:
                     if self.app.debug:
                         raise

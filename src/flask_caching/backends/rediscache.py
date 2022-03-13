@@ -8,13 +8,9 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from flask_caching.backends.base import BaseCache
-from flask_caching.backends.base import iteritems_wrapper
-
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
+from flask_caching.backends.base import (
+    BaseCache, extract_serializer_args, iteritems_wrapper
+)
 
 
 class RedisCache(BaseCache):
@@ -49,7 +45,7 @@ class RedisCache(BaseCache):
         key_prefix=None,
         **kwargs
     ):
-        super().__init__(default_timeout)
+        super().__init__(default_timeout, **extract_serializer_args(kwargs))
         if host is None:
             raise ValueError("RedisCache host parameter may not be None")
         if isinstance(host, str):
@@ -117,7 +113,7 @@ class RedisCache(BaseCache):
         t = type(value)
         if t == int:
             return str(value).encode("ascii")
-        return b"!" + pickle.dumps(value)
+        return b"!" + self._serializer.dumps(value)
 
     def load_object(self, value):
         """The reversal of :meth:`dump_object`.  This might be called with
@@ -127,8 +123,8 @@ class RedisCache(BaseCache):
             return None
         if value.startswith(b"!"):
             try:
-                return pickle.loads(value[1:])
-            except pickle.PickleError:
+                return self._serializer.loads(value[1:])
+            except self._serialization_error:
                 return None
         try:
             return int(value)
