@@ -19,8 +19,6 @@ from flask_caching.backends.rediscache import RedisSentinelCache
 from flask_caching.backends.simplecache import SimpleCache
 from flask_caching.backends.uwsgicache import UWSGICache
 
-# TODO: Rename to "redis" when python2 support is removed
-
 
 __all__ = (
     "null",
