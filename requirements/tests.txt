@@ -42,7 +42,7 @@ pytest==6.2.5
     #   pytest-xprocess
 pytest-xprocess==0.18.1
     # via -r tests.in
-redis==4.1.1
+redis==4.1.4
     # via -r tests.in
 toml==0.10.2
     # via pytest
