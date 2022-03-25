@@ -10,8 +10,7 @@
 """
 from cachelib import UWSGICache as CachelibUWSGICache
 
-from flask_caching.backends.base import BaseCache
-
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 class UWSGICache(BaseCache, CachelibUWSGICache):
     """Implements the cache using uWSGI's caching framework.
@@ -28,8 +27,8 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
         you only have to provide the name of the cache.
     """
 
-    def __init__(self, default_timeout=300, cache=""):
-        BaseCache.__init__(self, default_timeout=default_timeout)
+    def __init__(self, default_timeout=300, cache="", **kwargs):
+        BaseCache.__init__(self, default_timeout=default_timeout, **extract_serializer_args(kwargs))
         CachelibUWSGICache.__init__(
             self,
             cache=cache,
@@ -61,3 +60,34 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
         uwsgi_cache_name = config.get("CACHE_UWSGI_NAME", "")
         kwargs.update(dict(cache=uwsgi_cache_name))
         return cls(*args, **kwargs)
+
+    def get(self, key):
+        rv = self._uwsgi.cache_get(key, self.cache)
+        if rv is None:
+            return
+        return self._serializer.loads(rv)
+
+    def delete(self, key):
+        return self._uwsgi.cache_del(key, self.cache)
+
+    def set(self, key, value, timeout=None):
+        return self._uwsgi.cache_update(
+            key,
+            self._serializer.dumps(value),
+            self._normalize_timeout(timeout),
+            self.cache,
+        )
+
+    def add(self, key, value, timeout=None):
+        return self._uwsgi.cache_set(
+            key,
+            self._serializer.dumps(value),
+            self._normalize_timeout(timeout),
+            self.cache,
+        )
+
+    def clear(self):
+        return self._uwsgi.cache_clear(self.cache)
+
+    def has(self, key):
+        return self._uwsgi.cache_exists(key, self.cache) is not None

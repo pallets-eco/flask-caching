@@ -350,6 +350,18 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
                                 timeout is specified. Unit of time is
                                 seconds.
+``CACHE_SERIALIZER``            Pickle-like serialization implementation.
+                                It should support load(-s) and dump(-s)
+                                methods and binary strings/files. May be
+                                object, import string or predefined
+                                implementation name (``"json"`` or
+                                ``"pickle"``). Defaults to "pickle", but
+                                pickle module is not secure (CVE-2021-33026).
+                                Consider using another serializer (eg. JSON).
+``CACHE_SERIALIZER_ERROR``      Deserialization error. May be object,
+                                import string or predefined error name
+                                (``"JSONError"`` or ``"PickleError"``).
+                                Defaults to ``"PickleError"``.
 ``CACHE_IGNORE_ERRORS``         If set to any errors that occurred during the
                                 deletion process will be ignored. However, if
                                 it is set to ``False`` it will stop on the

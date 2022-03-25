@@ -11,12 +11,12 @@
 import hashlib
 import logging
 import os
-import pickle
+import tempfile
 from time import time
 
 from cachelib import FileSystemCache as CachelibFileSystemCache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +53,14 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         mode=0o600,
         hash_method=hashlib.md5,
         ignore_errors=False,
+        **kwargs
     ):
 
-        BaseCache.__init__(self, default_timeout=default_timeout)
+        BaseCache.__init__(
+            self,
+            default_timeout=default_timeout,
+            **extract_serializer_args(kwargs)
+        )
         CachelibFileSystemCache.__init__(
             self,
             cache_dir=cache_dir,
@@ -100,7 +105,7 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
             try:
                 remove = False
                 with open(fname, "rb") as f:
-                    expires = pickle.load(f)
+                    expires, _ = self._serializer.load(f)
                 remove = (expires != 0 and expires <= now) or idx % 3 == 0
                 if remove:
                     os.remove(fname)
@@ -117,20 +122,93 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = pickle.load(f)
+                data = self._serializer.load(f)
+                if isinstance(data, int):
+                    # backward compatibility
+                    # should be removed in the next major release
+                    pickle_time = data
+                    result = self._serializer.load(f)
+                else:
+                    pickle_time, result = data
                 expired = pickle_time != 0 and pickle_time < time()
-                if not expired:
-                    hit_or_miss = "hit"
-                    result = pickle.load(f)
             if expired:
+                result = None
                 self.delete(key)
+            else:
+                hit_or_miss = "hit"
         except FileNotFoundError:
             pass
-        except (OSError, pickle.PickleError) as exc:
-            logger.error("get key %r -> %s", key, exc)
+        except Exception as exc:
+            if exc is OSError or exc is self._serialization_error:
+                logger.error("get key %r -> %s", key, exc)
+            else:
+                raise exc
         expiredstr = "(expired)" if expired else ""
         logger.debug("get key %r -> %s %s", key, hit_or_miss, expiredstr)
         return result
+
+    def add(self, key, value, timeout=None):
+        filename = self._get_filename(key)
+        added = False
+        should_add = not os.path.exists(filename)
+        if should_add:
+            added = self.set(key, value, timeout)
+        addedstr = "added" if added else "not added"
+        logger.debug("add key %r -> %s", key, addedstr)
+        return should_add
+
+    def set(self, key, value, timeout=None, mgmt_element=False):
+        result = False
+
+        # Management elements have no timeout
+        if mgmt_element:
+            timeout = 0
+
+        # Don't prune on management element update, to avoid loop
+        else:
+            self._prune()
+
+        timeout = self._normalize_timeout(timeout)
+        filename = self._get_filename(key)
+        try:
+            fd, tmp = tempfile.mkstemp(
+                suffix=self._fs_transaction_suffix, dir=self._path
+            )
+            with os.fdopen(fd, "wb") as f:
+                self._serializer.dump((timeout, value), f)
+
+            # https://github.com/sh4nks/flask-caching/issues/238#issuecomment-801897606
+            is_new_file = not os.path.exists(filename)
+            if not is_new_file:
+                os.remove(filename)
+            os.replace(tmp, filename)
+
+            os.chmod(filename, self._mode)
+        except OSError as exc:
+            logger.error("set key %r -> %s", key, exc)
+        else:
+            result = True
+            logger.debug("set key %r", key)
+            # Management elements should not count towards threshold
+            if not mgmt_element and is_new_file:
+                self._update_count(delta=1)
+        return result
+
+    def delete(self, key, mgmt_element=False):
+        deleted = False
+        try:
+            os.remove(self._get_filename(key))
+        except FileNotFoundError:
+            logger.debug("delete key %r -> no such key")
+        except (OSError) as exc:
+            logger.error("delete key %r -> %s", key, exc)
+        else:
+            deleted = True
+            logger.debug("deleted key %r", key)
+            # Management elements should not count towards threshold
+            if not mgmt_element:
+                self._update_count(delta=-1)
+        return deleted
 
     def has(self, key):
         result = False
@@ -138,7 +216,7 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         filename = self._get_filename(key)
         try:
             with open(filename, "rb") as f:
-                pickle_time = pickle.load(f)
+                pickle_time, _ = self._serializer.load(f)
             expired = pickle_time != 0 and pickle_time < time()
             if expired:
                 self.delete(key)
@@ -146,8 +224,11 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
                 result = True
         except FileNotFoundError:
             pass
-        except (OSError, pickle.PickleError) as exc:
-            logger.error("get key %r -> %s", key, exc)
+        except Exception as exc:
+            if exc is OSError or exc is self._serialization_error:
+                logger.error("get key %r -> %s", key, exc)
+            else:
+                raise exc
         expiredstr = "(expired)" if expired else ""
         logger.debug("has key %r -> %s %s", key, result, expiredstr)
         return result

@@ -5,6 +5,7 @@ import flask
 import pytest
 
 import flask_caching as fsc
+from flask_caching.serialization import json, JSONError, pickle, PickleError
 
 try:
     __import__("pytest_xprocess")
@@ -16,13 +17,34 @@ except ImportError:
         pytest.skip("pytest-xprocess not installed.")
 
 
+@pytest.fixture(params=[
+    {},
+    {'serializer_impl': pickle, 'serializer_error': PickleError},
+    {'serializer_impl': json, 'serializer_error': JSONError}
+])
+def serialization_args(request):
+    return request.param.copy()
+
+
+@pytest.fixture(params=[
+    {},
+    {"CACHE_SERIALIZER": "pickle", "CACHE_SERIALIZER_ERROR": "PickleError"},
+    {"CACHE_SERIALIZER": "json", "CACHE_SERIALIZER_ERROR": "JSONError"},
+    {"CACHE_SERIALIZER": pickle, "CACHE_SERIALIZER_ERROR": PickleError},
+    {"CACHE_SERIALIZER": json, "CACHE_SERIALIZER_ERROR": JSONError}
+])
+def app_serialization_args(request):
+    return request.param.copy()
+
+
 @pytest.fixture
-def app(request):
+def app(request, app_serialization_args):
     app = flask.Flask(
         request.module.__name__, template_folder=os.path.dirname(__file__)
     )
     app.testing = True
     app.config["CACHE_TYPE"] = "simple"
+    app.config.update(app_serialization_args)
     return app
 
 

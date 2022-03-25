@@ -1,7 +1,8 @@
 import hashlib
 import time
 
-from flask import request
+import pytest
+from flask import request, Response
 
 
 def test_cached_view(app, cache):
@@ -25,6 +26,41 @@ def test_cached_view(app, cache):
 
     rv = tc.get("/")
     assert the_time != rv.data.decode("utf-8")
+
+
+@pytest.mark.parametrize('response,mime_type', (
+    ('123', 'text/plain'), ('["1"]', 'application/json'),
+    ('<html></html>', 'text/html'), (b"\x00", 'application/octet-stream'),
+    ('123', None)
+))
+@pytest.mark.parametrize('status', (200, '200 OK', 400, '404 Not Found', None))
+@pytest.mark.parametrize('headers', (
+        None, {'X-Header': '123'}, {'Location': 'http://a.a/', 'ETag': '"abcde123"'}
+))
+def test_cached_Response_view(app, cache, response, mime_type, status, headers):
+    @app.route('/')
+    @cache.cached(15)
+    def cached_view():
+        return Response(
+            response=response, mimetype=mime_type, status=status,
+            headers=headers
+        )
+
+    tc = app.test_client()
+    for _ in range(2):
+        rv = tc.get('/')
+
+        if response:
+            as_text = isinstance(response, str)
+            assert rv.get_data(as_text=as_text) == response
+        if mime_type:
+            assert rv.mimetype == mime_type
+        if status:
+            assert status in (rv.status, rv.status_code)
+        if headers:
+            for key in headers:
+                assert key in rv.headers
+                assert headers[key] == rv.headers[key]
 
 
 def test_cached_view_unless(app, cache):

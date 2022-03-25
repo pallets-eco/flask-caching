@@ -9,10 +9,11 @@
     :license: BSD, see LICENSE for more details.
 """
 import logging
+from time import time
 
 from cachelib import SimpleCache as CachelibSimpleCache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseCache, extract_serializer_args
 
 
 logger = logging.getLogger(__name__)
@@ -36,8 +37,18 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
                           to ``False``.
     """
 
-    def __init__(self, threshold=500, default_timeout=300, ignore_errors=False):
-        BaseCache.__init__(self, default_timeout=default_timeout)
+    def __init__(
+        self,
+        threshold=500,
+        default_timeout=300,
+        ignore_errors=False,
+        **kwargs
+    ):
+        BaseCache.__init__(
+            self,
+            default_timeout=default_timeout,
+            **extract_serializer_args(kwargs)
+        )
         CachelibSimpleCache.__init__(
             self, threshold=threshold, default_timeout=default_timeout
         )
@@ -53,3 +64,80 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
             )
         )
         return cls(*args, **kwargs)
+
+    def _prune(self):
+        if len(self._cache) > self._threshold:
+            now = time()
+            toremove = []
+            for idx, (key, (expires, _)) in enumerate(self._cache.items()):
+                if (expires != 0 and expires <= now) or idx % 3 == 0:
+                    toremove.append(key)
+            for key in toremove:
+                self._cache.pop(key, None)
+            logger.debug("evicted %d key(s): %r", len(toremove), toremove)
+
+    def _normalize_timeout(self, timeout):
+        timeout = BaseCache._normalize_timeout(self, timeout)
+        if timeout > 0:
+            timeout = time() + timeout
+        return timeout
+
+    def get(self, key):
+        result = None
+        expired = False
+        hit_or_miss = "miss"
+        try:
+            expires, value = self._cache[key]
+        except KeyError:
+            pass
+        else:
+            expired = expires != 0 and expires <= time()
+            if not expired:
+                hit_or_miss = "hit"
+                try:
+                    result = self._serializer.loads(value)
+                except Exception as exc:
+                    logger.error("get key %r -> %s", key, exc)
+        expiredstr = "(expired)" if expired else ""
+        logger.debug("get key %r -> %s %s", key, hit_or_miss, expiredstr)
+        return result
+
+    def set(self, key, value, timeout=None):
+        expires = self._normalize_timeout(timeout)
+        self._prune()
+        item = (expires, self._serializer.dumps(value))
+        self._cache[key] = item
+        logger.debug("set key %r", key)
+        return True
+
+    def add(self, key, value, timeout=None):
+        expires = self._normalize_timeout(timeout)
+        self._prune()
+        item = (expires, self._serializer.dumps(value))
+        updated = False
+        should_add = key not in self._cache
+        if should_add:
+            updated = self._cache.setdefault(key, item) != item
+        updatedstr = "updated" if updated else "not updated"
+        logger.debug("add key %r -> %s", key, updatedstr)
+        return should_add
+
+    def delete(self, key):
+        deleted = self._cache.pop(key, None) is not None
+        deletedstr = "deleted" if deleted else "not deleted"
+        logger.debug("delete key %r -> %s", key, deletedstr)
+        return deleted
+
+    def has(self, key):
+        result = False
+        expired = False
+        try:
+            expires, value = self._cache[key]
+        except KeyError:
+            pass
+        else:
+            result = expires == 0 or expires > time()
+            expired = not result
+        expiredstr = "(expired)" if expired else ""
+        logger.debug("has key %r -> %s %s", key, result, expiredstr)
+        return result

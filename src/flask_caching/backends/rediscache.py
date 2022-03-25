@@ -8,11 +8,12 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-import pickle
 
 from cachelib import RedisCache as CachelibRedisCache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import (
+    BaseCache, extract_serializer_args, iteritems_wrapper
+)
 
 
 class RedisCache(BaseCache, CachelibRedisCache):
@@ -47,7 +48,11 @@ class RedisCache(BaseCache, CachelibRedisCache):
         key_prefix=None,
         **kwargs
     ):
-        BaseCache.__init__(self, default_timeout=default_timeout)
+        BaseCache.__init__(
+            self,
+            default_timeout=default_timeout,
+            **extract_serializer_args(kwargs)
+        )
         CachelibRedisCache.__init__(
             self,
             host=host,
@@ -103,7 +108,94 @@ class RedisCache(BaseCache, CachelibRedisCache):
         t = type(value)
         if t == int:
             return str(value).encode("ascii")
-        return b"!" + pickle.dumps(value)
+        return b"!" + self._serializer.dumps(value)
+
+    def load_object(self, value):
+        """The reversal of :meth:`dump_object`.  This might be called with
+        None.
+        """
+        if value is None:
+            return None
+        if value.startswith(b"!"):
+            try:
+                return self._serializer.loads(value[1:])
+            except self._serialization_error:
+                return None
+        try:
+            return int(value)
+        except ValueError:
+            # before 0.8 we did not have serialization.  Still support that.
+            return value
+
+    def get(self, key):
+        return self.load_object(self._read_clients.get(self._get_prefix() + key))
+
+    def get_many(self, *keys):
+        if self.key_prefix:
+            keys = [self._get_prefix() + key for key in keys]
+        return [self.load_object(x) for x in self._read_clients.mget(keys)]
+
+    def set(self, key, value, timeout=None):
+        timeout = self._normalize_timeout(timeout)
+        dump = self.dump_object(value)
+        if timeout == -1:
+            result = self._write_client.set(name=self._get_prefix() + key, value=dump)
+        else:
+            result = self._write_client.setex(
+                name=self._get_prefix() + key, value=dump, time=timeout
+            )
+        return result
+
+    def add(self, key, value, timeout=None):
+        timeout = self._normalize_timeout(timeout)
+        dump = self.dump_object(value)
+        created = self._write_client.setnx(name=self._get_prefix() + key, value=dump)
+        if created and timeout != -1:
+            self._write_client.expire(name=self._get_prefix() + key, time=timeout)
+        return created
+
+    def set_many(self, mapping, timeout=None):
+        timeout = self._normalize_timeout(timeout)
+        # Use transaction=False to batch without calling redis MULTI
+        # which is not supported by twemproxy
+        pipe = self._write_client.pipeline(transaction=False)
+
+        for key, value in iteritems_wrapper(mapping):
+            dump = self.dump_object(value)
+            if timeout == -1:
+                pipe.set(name=self._get_prefix() + key, value=dump)
+            else:
+                pipe.setex(name=self._get_prefix() + key, value=dump, time=timeout)
+        return pipe.execute()
+
+    def delete(self, key):
+        return self._write_client.delete(self._get_prefix() + key)
+
+    def delete_many(self, *keys):
+        if not keys:
+            return
+        if self.key_prefix:
+            keys = [self._get_prefix() + key for key in keys]
+        return self._write_client.delete(*keys)
+
+    def has(self, key):
+        return self._read_clients.exists(self._get_prefix() + key)
+
+    def clear(self):
+        status = False
+        if self.key_prefix:
+            keys = self._read_clients.keys(self._get_prefix() + "*")
+            if keys:
+                status = self._write_client.delete(*keys)
+        else:
+            status = self._write_client.flushdb(asynchronous=True)
+        return status
+
+    def inc(self, key, delta=1):
+        return self._write_client.incr(name=self._get_prefix() + key, amount=delta)
+
+    def dec(self, key, delta=1):
+        return self._write_client.decr(name=self._get_prefix() + key, amount=delta)
 
     def unlink(self, *keys):
         """when redis-py >= 3.0.0 and redis > 4, support this operation"""
