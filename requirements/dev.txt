@@ -6,6 +6,8 @@
 #
 alabaster==0.7.12
     # via sphinx
+async-timeout==4.0.2
+    # via redis
 attrs==21.4.0
     # via pytest
 babel==2.9.1
@@ -13,7 +15,6 @@ babel==2.9.1
 cachelib==0.6.0
     # via -r tests.in
 certifi==2021.10.8
-backports-entry-points-selectable==1.1.0
     # via requests
 cfgv==3.3.1
     # via pre-commit
@@ -27,7 +28,7 @@ deprecated==1.2.13
     # via redis
 distlib==0.3.4
     # via virtualenv
-docutils==0.16
+docutils==0.17.1
     # via
     #   sphinx
     #   sphinx-tabs
@@ -35,15 +36,13 @@ filelock==3.4.2
     # via
     #   tox
     #   virtualenv
-flask==2.0.3
+flask==2.1.1
     # via -r tests.in
 identify==2.4.4
     # via pre-commit
 idna==3.3
     # via requests
 imagesize==1.3.0
-    # via sphinx
-importlib-metadata==4.10.1
     # via sphinx
 iniconfig==1.1.1
     # via pytest
@@ -92,7 +91,7 @@ pylibmc==1.6.1
     # via -r tests.in
 pyparsing==3.0.6
     # via packaging
-pytest==6.2.5
+pytest==7.1.1
     # via
     #   -r tests.in
     #   pytest-xprocess
@@ -102,7 +101,7 @@ pytz==2021.3
     # via babel
 pyyaml==6.0
     # via pre-commit
-redis==4.1.1
+redis==4.2.1
     # via -r tests.in
 requests==2.27.1
     # via sphinx
@@ -112,7 +111,7 @@ six==1.16.0
     #   virtualenv
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==4.4.0
+sphinx==4.5.0
     # via
     #   -r docs.in
     #   pallets-sphinx-themes
@@ -121,7 +120,7 @@ sphinx==4.4.0
     #   sphinxcontrib-log-cabinet
 sphinx-issues==3.0.1
     # via -r docs.in
-sphinx-tabs==3.2.0
+sphinx-tabs==3.3.1
     # via -r docs.in
 sphinxcontrib-applehelp==1.0.2
     # via sphinx
@@ -140,10 +139,11 @@ sphinxcontrib-serializinghtml==1.1.5
 toml==0.10.2
     # via
     #   pre-commit
-    #   pytest
     #   tox
 tomli==2.0.0
-    # via pep517
+    # via
+    #   pep517
+    #   pytest
 tox==3.24.5
     # via -r dev.in
 urllib3==1.26.8
@@ -158,8 +158,6 @@ wheel==0.37.1
     # via pip-tools
 wrapt==1.13.3
     # via deprecated
-zipp==3.7.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

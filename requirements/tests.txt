@@ -4,6 +4,8 @@
 #
 #    pip-compile tests.in
 #
+async-timeout==4.0.2
+    # via redis
 attrs==21.4.0
     # via pytest
 cachelib==0.6.0
@@ -12,7 +14,7 @@ click==8.0.3
     # via flask
 deprecated==1.2.13
     # via redis
-flask==2.0.3
+flask==2.1.1
     # via -r tests.in
 iniconfig==1.1.1
     # via pytest
@@ -36,15 +38,15 @@ pylibmc==1.6.1
     # via -r tests.in
 pyparsing==3.0.6
     # via packaging
-pytest==6.2.5
+pytest==7.1.1
     # via
     #   -r tests.in
     #   pytest-xprocess
 pytest-xprocess==0.18.1
     # via -r tests.in
-redis==4.1.1
+redis==4.2.1
     # via -r tests.in
-toml==0.10.2
+tomli==2.0.1
     # via pytest
 werkzeug==2.0.2
     # via flask

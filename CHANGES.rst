@@ -6,7 +6,9 @@ Version 1.2.0
 
 Unreleased
 
-- cachelib is now used as backend. PR `#308 <https://github.com/pallets-eco/flask-caching/pull/308>`_.
+- Cachelib is now used as backend. PR `#308 <https://github.com/pallets-eco/flask-caching/pull/308>`_.
+- Drop support for python 3.6
+- A ``DynamoDbCache`` backend has been add to the user contributed backends.
 
 
 Version 1.10.1
