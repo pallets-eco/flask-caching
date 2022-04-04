@@ -21,24 +21,34 @@ def utcnow():
 
 class DynamoDbCache(BaseCache):
     """
-    Implementation of flask_caching.BaseCache that uses an AWS DynamoDb table as the backend.
+    Implementation of flask_caching.BaseCache that uses an AWS DynamoDb table
+    as the backend.
 
-    The DynamoDB table is required to already exist.   The table must be defined with a hash_key of type string, and
-    no sort key.  Additionally, you'll probably want to enable the TTL feature on the table, so that DynamoDB will
-    automatically delete expired cache items.  The hash_key attribute name defaults to 'cache_key', and the ttl
-    attribute name defaults to 'expiration_time'.  These defaults can be changed via constructor parameter, or via
-    app config properties.
+    The DynamoDB table is required to already exist.   The table must be
+    defined with a hash_key of type string, and no sort key.  Additionally,
+    you'll probably want to enable the TTL feature on the table, so that
+    DynamoDB will automatically delete expired cache items.  The hash_key
+    attribute name defaults to 'cache_key', and the ttl attribute name
+    defaults to 'expiration_time'.  These defaults can be changed via
+    constructor parameter, or via app config properties.
 
-    Your server process will require dynamodb:GetItem and dynamodb:PutItem IAM permissions on the cache table.
+    Your server process will require dynamodb:GetItem and dynamodb:PutItem
+    IAM permissions on the cache table.
 
-    App config:  The factory method for this class uses the following app config attributes:
+    App config:  The factory method for this class uses the following app
+    config attributes:
+
     CACHE_DYNAMODB_TABLE: (Required) the name of the DynamoDB table to use
-    CACHE_DYNAMODB_KEY_FIELD: The name of the hash key attribute of the table.  Defaults to 'cache_key'
-    CACHE_DYNAMODB_EXPIRATION_TIME_FIELD: The name of the TTL field. Defaults to 'expiration_time'
+    CACHE_DYNAMODB_KEY_FIELD: The name of the hash key attribute of the
+                              table.  Defaults to 'cache_key'
+    CACHE_DYNAMODB_EXPIRATION_TIME_FIELD: The name of the TTL field. Defaults
+                                          to 'expiration_time'
 
-    Additionally, the CACHE_DEFAULT_TIMEOUT attribute can be used to override default the cache timeout.
+    Additionally, the CACHE_DEFAULT_TIMEOUT attribute can be used to override
+    default the cache timeout.
 
-    Here is how you could create a DynamoDB table suitable for use by this class using the AWS CLI.
+    Here is how you could create a DynamoDB table suitable for use by this
+    class using the AWS CLI.
 
         TABLE_NAME=cache-table
         KEY_ATTRIBUTE=cache_key
@@ -54,18 +64,27 @@ class DynamoDbCache(BaseCache):
             --table-name $TABLE_NAME \
             --time-to-live-specification Enabled=true,AttributeName=$TTL_ATTRIBUTE
 
-    If you use anything other than the default key and TTL attribute names, be sure to update the app config
-    appropriately.
+    If you use anything other than the default key and TTL attribute names,
+    be sure to update the app config appropriately.
+
+    Limitations: DynamoDB table items are limited to 400 KB in size.  Since
+    this class stores cached items in a table, the max size of a cache entry
+    will be slightly less than 400 KB, since the cache key and expiration
+    time fields are also part of the item.
 
     :param table_name: The name of the DynamoDB table to use
-    :param default_timeout: Set the timeout in seconds after which cache entries expire
-    :param key_field: The name of the hash_key attribute in the DynamoDb table. This must be a string attribute.
-    :param expiration_time_field: The name of the table attribute to store the expiration time in.  This will be an
-                                  int attribute. The timestamp will be stored as seconds past the epoch.  If you
-                                  configure this as the TTL field, then DynamoDB will automatically delete expired
-                                  entries.
-    :param dynamo: A boto3 dynamodb resource object. This is mainly for testing; by default the class will create its
-                   own resource object.
+    :param default_timeout: Set the timeout in seconds after which cache entries
+                            expire
+    :param key_field: The name of the hash_key attribute in the DynamoDb
+                      table. This must be a string attribute.
+    :param expiration_time_field: The name of the table attribute to store the
+                                  expiration time in.  This will be an int
+                                  attribute. The timestamp will be stored as
+                                  seconds past the epoch.  If you configure
+                                  this as the TTL field, then DynamoDB will
+                                  automatically delete expired entries.
+    :param dynamo: A boto3 dynamodb resource object. This is mainly for testing;
+                   by default the class will create its own resource object.
     """
 
     def __init__(
@@ -93,7 +112,8 @@ class DynamoDbCache(BaseCache):
     def factory(cls, app, config, args: list, kwargs: dict):
         args.insert(0, config['CACHE_DYNAMODB_TABLE'])
         key_field = config.get('CACHE_DYNAMODB_KEY_FIELD')
-        expiration_time_field = config.get('CACHE_DYNAMODB_EXPIRATION_TIME_FIELD')
+        expiration_time_field = config.get(
+            'CACHE_DYNAMODB_EXPIRATION_TIME_FIELD')
 
         if key_field:
             kwargs.setdefault('key_field', key_field)
@@ -104,13 +124,17 @@ class DynamoDbCache(BaseCache):
 
     def _get_item(self, key, attributes=None):
         """
-        Get an item from the cache table, optionally limiting the returned attributes.
+        Get an item from the cache table, optionally limiting the returned
+        attributes.
 
         :param key: The cache key of the item to fetch
 
-        :param attributes: An optional list of attributes to fetch.  If not given, all attributes are fetched.  The
-                           expiration_time field will always be added to the list of fetched attributes.
-        :return: The table item for key if it exists and is not expired, else None
+        :param attributes: An optional list of attributes to fetch.  If not
+                           given, all attributes are fetched.  The
+                           expiration_time field will always be added to the
+                           list of fetched attributes.
+        :return: The table item for key if it exists and is not expired, else
+                 None
         """
         kwargs = {}
         if attributes:
@@ -133,20 +157,24 @@ class DynamoDbCache(BaseCache):
         Get a cache item as a Flask Response
 
         :param key: The cache key of the item to fetch
-
-        :return: If key is found and the item isn't expired, returns a Flask response object containing the cached
-                 response body, status code, and headers.  Else returns None
+        :return: If key is found and the item isn't expired, returns a Flask
+                 response object containing the cached response body, status
+                 code, and headers.  Else returns None
         """
         cache_item = self._get_item(key)
         if cache_item:
             response = cache_item[RESPONSE_FIELD]
-            return flask.make_response(bytes(response['body']), int(response['statusCode']), response['headers'])
+            return flask.make_response(
+                bytes(response['body']),
+                int(response['statusCode']),
+                response['headers'])
 
         return None
 
     def delete(self, key):
         """
-        Deletes an item from the cache.  This is a no-op if the item doesn't exist
+        Deletes an item from the cache.  This is a no-op if the item doesn't
+        exist
 
         :param key: Key of the item to delete.
         :return: True if the key existed and was deleted
@@ -166,13 +194,16 @@ class DynamoDbCache(BaseCache):
 
         :param key: Cache key to use
         :param value: A value returned by a flask view function
-        :param timeout: The timeout in seconds for the cached item, to override the default
-        :param overwrite: If true, overwrite any existing cache item with key. If false, the new value will only be
-                          stored if no non-expired cache item exists with key.
+        :param timeout: The timeout in seconds for the cached item, to override
+                        the default
+        :param overwrite: If true, overwrite any existing cache item with key.
+                          If false, the new value will only be stored if no
+                          non-expired cache item exists with key.
         :return: True if the new item was stored.
         """
         now = utcnow()
-        expiration_time = now + datetime.timedelta(seconds=self._normalize_timeout(timeout))
+        expiration_time = now + datetime.timedelta(
+            seconds=self._normalize_timeout(timeout))
         response_obj = flask.make_response(value)
 
         cached_response = {
@@ -183,20 +214,20 @@ class DynamoDbCache(BaseCache):
 
         kwargs = {}
         if not overwrite:
-            # Cause the put to fail if a non-expired item with this key already exists
-            cond = Attr(self._key_field).not_exists() | Attr(self._expiration_time_field).lte(int(now.timestamp()))
+            # Cause the put to fail if a non-expired item with this key
+            # already exists
+            cond = Attr(self._key_field).not_exists() \
+                | Attr(self._expiration_time_field).lte(int(now.timestamp()))
             kwargs = dict(ConditionExpression=cond)
 
         try:
-            self._table.put_item(
-                Item={
-                    self._key_field: key,
-                    self._expiration_time_field: int(expiration_time.timestamp()),
-                    CREATED_AT_FIELD: now.isoformat(),
-                    RESPONSE_FIELD: cached_response
-                },
-                **kwargs
-            )
+            item = {
+                self._key_field: key,
+                self._expiration_time_field: int(expiration_time.timestamp()),
+                CREATED_AT_FIELD: now.isoformat(),
+                RESPONSE_FIELD: cached_response
+            }
+            self._table.put_item(Item=item, **kwargs)
             return True
         except self._dynamo.meta.client.exceptions.ConditionalCheckFailedException:
             return False
@@ -212,9 +243,11 @@ class DynamoDbCache(BaseCache):
 
     def clear(self):
         paginator = self._dynamo.meta.client.get_paginator('scan')
+        pages = paginator.paginate(TableName=self._table_name,
+                                   ProjectionExpression=self._key_field)
 
         with self._table.batch_writer() as batch:
-            for page in paginator.paginate(TableName=self._table_name, ProjectionExpression=self._key_field):
+            for page in pages:
                 for item in page['Items']:
                     batch.delete_item(Key=item)
 
