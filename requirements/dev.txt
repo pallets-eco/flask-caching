@@ -91,7 +91,7 @@ pylibmc==1.6.1
     # via -r tests.in
 pyparsing==3.0.6
     # via packaging
-pytest==6.2.5
+pytest==7.1.1
     # via
     #   -r tests.in
     #   pytest-xprocess
@@ -139,10 +139,11 @@ sphinxcontrib-serializinghtml==1.1.5
 toml==0.10.2
     # via
     #   pre-commit
-    #   pytest
     #   tox
 tomli==2.0.0
-    # via pep517
+    # via
+    #   pep517
+    #   pytest
 tox==3.24.5
     # via -r dev.in
 urllib3==1.26.8
