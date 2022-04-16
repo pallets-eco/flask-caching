@@ -4,6 +4,8 @@
 #
 #    pip-compile tests.in
 #
+async-timeout==4.0.2
+    # via redis
 attrs==21.4.0
     # via pytest
 cachelib==0.6.0
@@ -42,7 +44,7 @@ pytest==6.2.5
     #   pytest-xprocess
 pytest-xprocess==0.18.1
     # via -r tests.in
-redis==4.1.1
+redis==4.2.1
     # via -r tests.in
 toml==0.10.2
     # via pytest
