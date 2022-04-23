@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 try:
     from google.auth.credentials import AnonymousCredentials
     from google.cloud import storage, exceptions
-except ImportError:
-    raise RuntimeError("no google-cloud-storage module found")
+except ImportError as e:
+    raise RuntimeError("no google-cloud-storage module found") from e
 
 
 class GoogleCloudStorageCache(BaseCache):

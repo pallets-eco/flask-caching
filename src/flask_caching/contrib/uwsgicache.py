@@ -8,17 +8,12 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-import platform
+from cachelib import UWSGICache as CachelibUWSGICache
 
 from flask_caching.backends.base import BaseCache
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
 
-
-class UWSGICache(BaseCache):
+class UWSGICache(BaseCache, CachelibUWSGICache):
     """Implements the cache using uWSGI's caching framework.
 
     .. note::
@@ -34,30 +29,27 @@ class UWSGICache(BaseCache):
     """
 
     def __init__(self, default_timeout=300, cache=""):
-        super().__init__(default_timeout)
-
-        if platform.python_implementation() == "PyPy":
-            raise RuntimeError(
-                "uWSGI caching does not work under PyPy, see "
-                "the docs for more details."
-            )
+        BaseCache.__init__(self, default_timeout=default_timeout)
+        CachelibUWSGICache.__init__(
+            self,
+            cache=cache,
+            default_timeout=default_timeout,
+        )
 
         try:
             import uwsgi
 
             self._uwsgi = uwsgi
-        except ImportError:
+        except ImportError as e:
             raise RuntimeError(
                 "uWSGI could not be imported, are you running under uWSGI?"
-            )
+            ) from e
 
         if "cache2" not in uwsgi.opt:
             raise RuntimeError(
                 "You must enable cache2 in uWSGI configuration: "
                 "https://uwsgi-docs.readthedocs.io/en/latest/Caching.html"
             )
-
-        self.cache = cache
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
@@ -69,34 +61,3 @@ class UWSGICache(BaseCache):
         uwsgi_cache_name = config.get("CACHE_UWSGI_NAME", "")
         kwargs.update(dict(cache=uwsgi_cache_name))
         return cls(*args, **kwargs)
-
-    def get(self, key):
-        rv = self._uwsgi.cache_get(key, self.cache)
-        if rv is None:
-            return
-        return pickle.loads(rv)
-
-    def delete(self, key):
-        return self._uwsgi.cache_del(key, self.cache)
-
-    def set(self, key, value, timeout=None):
-        return self._uwsgi.cache_update(
-            key,
-            pickle.dumps(value),
-            self._normalize_timeout(timeout),
-            self.cache,
-        )
-
-    def add(self, key, value, timeout=None):
-        return self._uwsgi.cache_set(
-            key,
-            pickle.dumps(value),
-            self._normalize_timeout(timeout),
-            self.cache,
-        )
-
-    def clear(self):
-        return self._uwsgi.cache_clear(self.cache)
-
-    def has(self, key):
-        return self._uwsgi.cache_exists(key, self.cache) is not None
