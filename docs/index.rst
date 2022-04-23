@@ -5,9 +5,9 @@ Flask-Caching
    :noindex:
 
 Flask-Caching is an extension to `Flask`_ that adds caching support for
-various backends to any Flask application. Besides providing support for all
-`werkzeug`_'s original caching backends through a uniformed API,
-it is also possible to develop your own caching backend by subclassing
+various backends to any Flask application. By running on top of `cachelib`_
+it supports all of `werkzeug`_'s original caching backends through a uniformed
+API. It is also possible to develop your own caching backend by subclassing
 :class:`flask_caching.backends.base.BaseCache` class.
 
 Version support
@@ -700,3 +700,4 @@ Additional Information
 
 .. _Flask: http://flask.pocoo.org/
 .. _werkzeug: http://werkzeug.pocoo.org/
+.. _cachelib: https://github.com/pallets/cachelib

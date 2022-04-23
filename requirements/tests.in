@@ -5,3 +5,4 @@ pylibmc
 redis
 Flask
 asgiref
+cachelib
