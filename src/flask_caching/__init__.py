@@ -261,6 +261,12 @@ class Cache:
         )
         self.app = app
 
+    def _call_fn(self, fn, *args, **kwargs):
+        ensure_sync = getattr(self.app, "ensure_sync", None)
+        if ensure_sync is not None:
+            return ensure_sync(fn)(*args, **kwargs)
+        return fn(*args, **kwargs)
+
     @property
     def cache(self) -> SimpleCache:
         app = current_app or self.app
@@ -430,7 +436,7 @@ class Cache:
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
                 if self._bypass_cache(unless, f, *args, **kwargs):
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 nonlocal source_check
                 if source_check is None:
@@ -475,10 +481,10 @@ class Cache:
                     if self.app.debug:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 if not found:
-                    rv = f(*args, **kwargs)
+                    rv = self._call_fn(f, *args, **kwargs)
 
                     if response_filter is None or response_filter(rv):
                         try:
@@ -900,7 +906,7 @@ class Cache:
             def decorated_function(*args, **kwargs):
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 nonlocal source_check
                 if source_check is None:
@@ -942,10 +948,10 @@ class Cache:
                     if self.app.debug:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 if not found:
-                    rv = f(*args, **kwargs)
+                    rv = self._call_fn(f, *args, **kwargs)
 
                     if response_filter is None or response_filter(rv):
                         try:

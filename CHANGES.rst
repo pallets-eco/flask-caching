@@ -6,8 +6,9 @@ Version 1.2.0
 
 Unreleased
 
+- Add support for Flask 2.0 async. PR `#282 <https://github.com/pallets-eco/flask-caching/pull/282>`_.
 - Cachelib is now used as backend. PR `#308 <https://github.com/pallets-eco/flask-caching/pull/308>`_.
-- Drop support for python 3.6
+- Drop support for python 3.6. PR `#332 <https://github.com/pallets-eco/flask-caching/pull/332>`_.
 
 
 Version 1.10.1

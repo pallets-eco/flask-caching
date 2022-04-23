@@ -1,4 +1,5 @@
 import hashlib
+import pytest
 import time
 
 from flask import request
@@ -25,6 +26,30 @@ def test_cached_view(app, cache):
 
     rv = tc.get("/")
     assert the_time != rv.data.decode("utf-8")
+
+
+@pytest.mark.asyncio
+def test_async_cached_view(app, cache):
+    import asyncio
+    import sys
+
+    if sys.version_info < (3, 7):
+        return
+
+    @app.route("/test-async")
+    @cache.cached(2)
+    async def cached_async_view():
+        await asyncio.sleep(0.1)
+        return str(time.time())
+
+    tc = app.test_client()
+    rv = tc.get("/test-async")
+    the_time = rv.data.decode("utf-8")
+
+    time.sleep(1)
+
+    rv = tc.get("/test-async")
+    assert the_time == rv.data.decode("utf-8")
 
 
 def test_cached_view_unless(app, cache):

@@ -4,6 +4,7 @@ Sphinx
 pytest
 pytest-cov
 pytest-xprocess
+pytest-asyncio
 redis
 pylibmc
 coverage
