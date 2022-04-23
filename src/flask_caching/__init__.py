@@ -15,21 +15,27 @@ import logging
 import uuid
 import warnings
 from collections import OrderedDict
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from typing import Any, Callable, Optional, Tuple, Union
-
-from flask import current_app, Flask, request, url_for
+from flask import current_app
+from flask import Flask
+from flask import request
+from flask import url_for
 from markupsafe import Markup
 from werkzeug.utils import import_string
 
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
-from flask_caching.utils import (
-    wants_args, get_arg_names,
-    get_arg_default, get_id,
-    function_namespace,
-    make_template_fragment_key
-)
+from flask_caching.utils import function_namespace
+from flask_caching.utils import get_arg_default
+from flask_caching.utils import get_arg_names
+from flask_caching.utils import get_id
+from flask_caching.utils import make_template_fragment_key  # noqa: F401
+from flask_caching.utils import wants_args
 
 __version__ = "1.10.1"
 
@@ -153,6 +159,12 @@ class Cache:
             app, config, cache_args, cache_options
         )
         self.app = app
+
+    def _call_fn(self, fn, *args, **kwargs):
+        ensure_sync = getattr(self.app, "ensure_sync", None)
+        if ensure_sync is not None:
+            return ensure_sync(fn)(*args, **kwargs)
+        return fn(*args, **kwargs)
 
     @property
     def cache(self) -> SimpleCache:
@@ -323,7 +335,7 @@ class Cache:
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
                 if self._bypass_cache(unless, f, *args, **kwargs):
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 nonlocal source_check
                 if source_check is None:
@@ -368,10 +380,10 @@ class Cache:
                     if self.app.debug:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 if not found:
-                    rv = f(*args, **kwargs)
+                    rv = self._call_fn(f, *args, **kwargs)
                     if inspect.isgenerator(rv):
                         rv = [val for val in rv]
 
@@ -795,7 +807,7 @@ class Cache:
             def decorated_function(*args, **kwargs):
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 nonlocal source_check
                 if source_check is None:
@@ -837,10 +849,10 @@ class Cache:
                     if self.app.debug:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
-                    return f(*args, **kwargs)
+                    return self._call_fn(f, *args, **kwargs)
 
                 if not found:
-                    rv = f(*args, **kwargs)
+                    rv = self._call_fn(f, *args, **kwargs)
                     if inspect.isgenerator(rv):
                         rv = [val for val in rv]
 

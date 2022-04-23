@@ -1,6 +1,8 @@
 pytest
 pytest-xprocess
+pytest-asyncio
 pylibmc
 redis
 Flask
+asgiref
 cachelib
