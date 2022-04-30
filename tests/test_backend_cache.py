@@ -203,7 +203,7 @@ class TestFileSystemCache(GenericCacheTests):
         c = make_cache()
         assert c.set("foo", "bar", timeout=0.01)
         assert c.get(c._fs_count_file) == 1
-        time.sleep(0.1)
+        time.sleep(1)
         assert c.has("foo") in (False, 0)
         assert c.get(c._fs_count_file) == 0
 
@@ -211,7 +211,7 @@ class TestFileSystemCache(GenericCacheTests):
         c = make_cache()
         assert c.set("foo", "bar", timeout=0.01)
         assert c.get(c._fs_count_file) == 1
-        time.sleep(0.1)
+        time.sleep(1)
         assert c.get("foo") is None
         assert c.get(c._fs_count_file) == 0
 
@@ -298,7 +298,7 @@ class TestMemcachedCache(GenericCacheTests):
     def test_timeouts(self, c):
         c.set("foo", "bar", 1)
         assert c.get("foo") == "bar"
-        time.sleep(1)
+        time.sleep(2)
         assert c.has("foo") is False
 
 
