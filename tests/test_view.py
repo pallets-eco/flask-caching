@@ -1,8 +1,11 @@
 import hashlib
-import pytest
 import time
 
+import pytest
+from flask import make_response
 from flask import request
+
+from flask_caching import CachedResponse
 
 
 def test_cached_view(app, cache):
@@ -251,6 +254,26 @@ def test_cache_timeout_property(app, cache):
     time.sleep(3)
     # it's been >7 seconds, cache is not still active
     assert time2 != tc.get("/a/b").data.decode("utf-8")
+
+
+def test_cache_timeout_dynamic(app, cache):
+    @app.route("/")
+    @cache.cached(timeout=1)
+    def cached_view():
+        # This should override the timeout to be 2 seconds
+        return CachedResponse(response=make_response(str(time.time())), timeout=2)
+
+    tc = app.test_client()
+
+    rv1 = tc.get("/")
+    time1 = rv1.data.decode("utf-8")
+    time.sleep(1)
+
+    # it's been 1 second, cache is still active
+    assert time1 == tc.get("/").data.decode("utf-8")
+    time.sleep(1)
+    # it's been >2 seconds, cache is not still active
+    assert time1 != tc.get("/").data.decode("utf-8")
 
 
 def test_generate_cache_key_from_query_string(app, cache):

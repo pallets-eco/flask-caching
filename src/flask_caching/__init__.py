@@ -24,6 +24,7 @@ from typing import Union
 from flask import current_app
 from flask import Flask
 from flask import request
+from flask import Response
 from flask import url_for
 from markupsafe import Markup
 from werkzeug.utils import import_string
@@ -49,6 +50,19 @@ SUPPORTED_HASH_FUNCTIONS = [
     hashlib.sha512,
     hashlib.md5,
 ]
+
+
+class CachedResponse(Response):
+    """
+    views wraped by @cached can return this (which inherits from flask.Response)
+    to override the cache TTL dynamically
+    """
+
+    timeout = None
+
+    def __init__(self, response, timeout):
+        self.__dict__ = response.__dict__
+        self.timeout = timeout
 
 
 class Cache:
@@ -388,11 +402,14 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
+                        cache_timeout = decorated_function.cache_timeout
+                        if isinstance(rv, CachedResponse):
+                            cache_timeout = rv.timeout or cache_timeout
                         try:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=decorated_function.cache_timeout,
+                                timeout=cache_timeout,
                             )
                         except Exception:
                             if self.app.debug:
