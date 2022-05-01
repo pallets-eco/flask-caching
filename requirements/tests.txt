@@ -5,26 +5,19 @@
 #    pip-compile requirements/tests.in
 #
 asgiref==3.5.0
-    # via -r requirements/tests.in
+    # via -r tests.in
 async-timeout==4.0.2
     # via redis
 attrs==21.4.0
     # via pytest
 cachelib==0.6.0
-    # via -r requirements/tests.in
+    # via -r tests.in
 click==8.0.3
     # via flask
 deprecated==1.2.13
     # via redis
 flask==2.1.1
-    # via -r requirements/tests.in
-importlib-metadata==4.11.3
-    # via
-    #   click
-    #   flask
-    #   pluggy
-    #   pytest
-    #   redis
+    # via -r tests.in
 iniconfig==1.1.1
     # via pytest
 itsdangerous==2.0.1
@@ -44,32 +37,23 @@ psutil==5.9.0
 py==1.11.0
     # via pytest
 pylibmc==1.6.1
-    # via -r requirements/tests.in
+    # via -r tests.in
 pyparsing==3.0.6
     # via packaging
 pytest==7.1.1
     # via
-    #   -r requirements/tests.in
+    #   -r tests.in
     #   pytest-asyncio
     #   pytest-xprocess
 pytest-asyncio==0.18.3
-    # via -r requirements/tests.in
+    # via -r tests.in
 pytest-xprocess==0.18.1
-    # via -r requirements/tests.in
-redis==4.2.1
-    # via -r requirements/tests.in
+    # via -r tests.in
+redis==4.2.2
+    # via -r tests.in
 tomli==2.0.1
     # via pytest
-typing-extensions==4.2.0
-    # via
-    #   asgiref
-    #   async-timeout
-    #   importlib-metadata
-    #   pytest-asyncio
-    #   redis
 werkzeug==2.0.2
     # via flask
 wrapt==1.14.0
     # via deprecated
-zipp==3.8.0
-    # via importlib-metadata
