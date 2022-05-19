@@ -77,7 +77,7 @@ argument accepts a callable that returns True or False. If ``unless`` returns
 ``True`` then it will bypass the caching mechanism entirely.
 
 To dynamically determine the timeout within the view, you can return `CachedResponse`,
-a subclass of `flask.Response`.
+a subclass of `flask.Response`::
 
     @app.route("/")
     @cache.cached()
@@ -617,7 +617,7 @@ default is 1M. Uses pickle.
 
 
 UWSGICache
-`````````
+``````````
 
 .. warning::
    ``UWSGICache`` is not maintained nor tested.  Use at your own risk.
