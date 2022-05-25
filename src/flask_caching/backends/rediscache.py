@@ -168,7 +168,7 @@ class RedisSentinelCache(RedisCache):
             if key.startswith("sentinel_")
         }
         kwargs = {
-            key[9:]: value
+            key: value
             for key, value in kwargs.items()
             if not key.startswith("sentinel_")
         }
