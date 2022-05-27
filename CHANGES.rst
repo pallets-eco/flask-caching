@@ -4,7 +4,7 @@ Changelog
 Version 1.11.0
 --------------
 
-Unreleased
+Released 2022-05-27
 
 - Add suport for cached/memoized generators. PR `#286 <https://github.com/pallets-eco/flask-caching/pull/286>`_.
 - Add support for Flask 2.0 async. PR `#282 <https://github.com/pallets-eco/flask-caching/pull/282>`_.
