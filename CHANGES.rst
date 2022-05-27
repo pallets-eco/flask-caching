@@ -1,6 +1,7 @@
 Changelog
 =========
 
+
 Version 1.11.0
 --------------
 
@@ -11,7 +12,8 @@ Released 2022-05-27
 - Cachelib is now used as backend. PR `#308 <https://github.com/pallets-eco/flask-caching/pull/308>`_.
 - Drop support for python 3.6. PR `#332 <https://github.com/pallets-eco/flask-caching/pull/332>`_.
 - Add support for dynamic cache timeouts `#296 <https://github.com/pallets-eco/flask-caching/pull/296>`_.
-- Fix bug `#343 <https://github.com/pallets-eco/flask-caching/issues/343>`_ in CACHE_OPTIONS reading for radis in RedisSentinelCache
+- Fix bug in ``CACHE_OPTIONS`` reading for redis in ``RedisSentinelCache``. PR `#343 <https://github.com/pallets-eco/flask-caching/issues/343>`_.
+
 
 Version 1.10.1
 --------------
