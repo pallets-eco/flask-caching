@@ -38,7 +38,7 @@ from flask_caching.utils import get_id
 from flask_caching.utils import make_template_fragment_key  # noqa: F401
 from flask_caching.utils import wants_args
 
-__version__ = "1.10.1"
+__version__ = "1.11.0"
 
 logger = logging.getLogger(__name__)
 
