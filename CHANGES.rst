@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 1.11.1
+--------------
+
+Released 2022-05-27
+
+- Add cachelib to setup.py
+
 
 Version 1.11.0
 --------------
