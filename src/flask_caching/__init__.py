@@ -189,6 +189,10 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.get(*args, **kwargs)
 
+    def has(self, *args, **kwargs) -> bool:
+        """Proxy function for internal cache object."""
+        return self.cache.has(*args, **kwargs)
+
     def set(self, *args, **kwargs) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.set(*args, **kwargs)
