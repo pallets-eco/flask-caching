@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.11.2
+--------------
+
+Released 2022-05-29
+
+- Add support for `has` proxy
+
+
 Version 1.11.1
 --------------
 

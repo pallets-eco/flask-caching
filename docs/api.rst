@@ -15,7 +15,7 @@ Cache API
 
 .. autoclass:: Cache
    :members: init_app, get, set, add, delete, get_many, set_many, delete_many,
-             clear, cached, memoize, delete_memoized, delete_memoized_verhash
+             has, clear, cached, memoize, delete_memoized, delete_memoized_verhash
 
 
 Backends
