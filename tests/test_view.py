@@ -1,7 +1,6 @@
 import hashlib
 import time
 
-import pytest
 from flask import make_response
 from flask import request
 
@@ -31,7 +30,6 @@ def test_cached_view(app, cache):
     assert the_time != rv.data.decode("utf-8")
 
 
-@pytest.mark.asyncio
 def test_async_cached_view(app, cache):
     import asyncio
     import sys
