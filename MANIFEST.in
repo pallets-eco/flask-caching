@@ -2,7 +2,6 @@ include LICENSE
 include CONTRIBUTORS
 include CHANGES
 include README.md
-include requirements.txt
 include tox.ini
 include setup.cfg
 include src/flask_caching/py.typed
