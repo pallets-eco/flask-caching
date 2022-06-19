@@ -100,7 +100,7 @@ pytest==7.1.2
     #   pytest-xprocess
 pytest-asyncio==0.18.3
     # via -r tests.in
-pytest-xprocess==0.18.1
+pytest-xprocess==0.19.0
     # via -r tests.in
 pytz==2021.3
     # via babel
