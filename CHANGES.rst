@@ -1,12 +1,18 @@
 Changelog
 =========
 
+Version 2.0.0
+-------------
+
+- `flask_caching.backends.FileSystemCache` internal implementations have been removed. It now shares 100% of `cachelib.FileSystemCache` API and is fully compatible.
+
+
 Version 1.11.1
 --------------
 
 Released 2022-05-27
 
-- Add cachelib to setup.py
+- Add cachelib to setup.py: :pr:`354`
 
 
 Version 1.11.0
@@ -14,12 +20,12 @@ Version 1.11.0
 
 Released 2022-05-27
 
-- Add suport for cached/memoized generators. PR `#286 <https://github.com/pallets-eco/flask-caching/pull/286>`_.
-- Add support for Flask 2.0 async. PR `#282 <https://github.com/pallets-eco/flask-caching/pull/282>`_.
-- Cachelib is now used as backend. PR `#308 <https://github.com/pallets-eco/flask-caching/pull/308>`_.
-- Drop support for python 3.6. PR `#332 <https://github.com/pallets-eco/flask-caching/pull/332>`_.
-- Add support for dynamic cache timeouts `#296 <https://github.com/pallets-eco/flask-caching/pull/296>`_.
-- Fix bug in ``CACHE_OPTIONS`` reading for redis in ``RedisSentinelCache``. PR `#343 <https://github.com/pallets-eco/flask-caching/issues/343>`_.
+- Add suport for cached/memoized generators. :pr:`#286`
+- Add support for Flask 2.0 async. :pr:`#282`
+- Cachelib is now used as backend. :pr:`#308`
+- Drop support for python 3.6. :pr:`#332`
+- Add support for dynamic cache timeouts `#296`
+- Fix bug in ``CACHE_OPTIONS`` reading for redis in ``RedisSentinelCache``. :pr:`#343`
 
 
 Version 1.10.1
@@ -28,11 +34,11 @@ Version 1.10.1
 Released 2021-03-17
 
 - A ``GoogleCloudStorageCache`` backend has been added to the user contributed
-  caching backends. PR `#214 <https://github.com/sh4nks/flask-caching/pull/214>`_.
+  caching backends. :pr:`#214`
 - Fix a regression introduced in the last release which broke all applications
   subclassing the ``Cache`` class.
 - Add test_generic_get_bytes test case.
-  PR `#236 <https://github.com/sh4nks/flask-caching/pull/236>`_.
+  :pr:`#236`
 - Various improvements and fixes.
 
 
@@ -51,28 +57,28 @@ Released 2021-03-04
   contributed backends.
 - Switch from Travis-CI to GitHub Actions
 - Fix add() in RedisCache without a timeout.
-  PR `#218 <https://github.com/sh4nks/flask-caching/pull/218>`_.
+  :pr:`#218`
 - Fix error in how the FileSystemCache counts the number of files.
-  PR `#210 <https://github.com/sh4nks/flask-caching/pull/210>`_.
+  :pr:`#210`
 - Type Annotations have been added.
-  PR `#198 <https://github.com/sh4nks/flask-caching/pull/198>`_.
+  :pr:`#198`
 - Add some basic logging to SimpleCache and FileSystemCache for better
   observability.
-  PR `#203 <https://github.com/sh4nks/flask-caching/pull/203>`_.
+  :pr:`#203`
 - Add option in memoize to ignore args
-  PR `#201 <https://github.com/sh4nks/flask-caching/pull/201>`_.
+  :pr:`#201`
 - Stop marking wheels as Python 2 compatible.
-  PR `#196 <https://github.com/sh4nks/flask-caching/pull/196>`_.
+  :pr:`#196`
 - Fix ``default_timeout`` not being properly passed to its super constructor.
-  PR `#187 <https://github.com/sh4nks/flask-caching/pull/187>`_.
+  :pr:`#187`
 - Fix ``kwargs`` not being passed on in function ``_memoize_make_cache_key``.
-  PR `#184 <https://github.com/sh4nks/flask-caching/pull/184>`_.
+  :pr:`#184`
 - Add a Redis Cluster Mode caching backend.
-  PR `#173 <https://github.com/sh4nks/flask-caching/pull/173>`_.
+  :pr:`#173`
 - Do not let PIP install this package on unsupported Python Versions.
-  PR `#179 <https://github.com/sh4nks/flask-caching/pull/179>`_.
+  :pr:`#179`
 - Fix uWSGI initialization by checking if uWSGI has the 'cache2' option
-  enabled. PR `#176 <https://github.com/sh4nks/flask-caching/pull/176>`_.
+  enabled. :pr:`#176`
 - Documentation updates and fixes.
 
 
@@ -82,11 +88,11 @@ Version 1.9.0
 Released 2020-06-02
 
 - Add an option to include the functions source code when generating the cache
-  key. PR `#156 <https://github.com/sh4nks/flask-caching/pull/156>`_.
+  key. :pr:`#156`
 - Add an feature that allows one to completely control the way how cache keys
   are generated. For example, one can now implement a function that generates a
   cache key the based on POST requests.
-  PR `#159 <https://github.com/sh4nks/flask-caching/pull/159>`_.
+  :pr:`#159`
 - Fix the cache backend naming collisions by renaming them from ``simple`` to
   ``simplecache``, ``null`` to ``nullcache`` and ``filesystem`` to
   ``filesystemcache``.
@@ -105,17 +111,17 @@ Released 2019-11-24
 - **BREAKING:** Removed support for Python 2. Python 3.5 and upwards are
   supported as of now.
 - Add option to specify if ``None`` is a cached value or not. See
-  PR `#140 <https://github.com/sh4nks/flask-caching/pull/140>`_ and
-  `#141 <https://github.com/sh4nks/flask-caching/pull/141>`_.
+  :pr:`#140` and
+  `#141`
 - Allow to use ``__caching_id__`` rather than ``__repr__`` as an object
   caching key.
-  PR `#123 <https://github.com/sh4nks/flask-caching/pull/123>`_.
+  :pr:`#123`
 - The RedisCache backend now support generating the key_prefix via a callable.
-  PR `#109 <https://github.com/sh4nks/flask-caching/pull/109>`_.
+  :pr:`#109`
 - Emit a warning if the ``CACHE_TYPE`` is set to ``filesystem`` but no
   ``CACHE_DIR`` is set.
 - Fixes Google App Engine Memcache backend.
-  See issue `#120 <https://github.com/sh4nks/flask-caching/issues/120>`_ for
+  See issue `#120` for
   more details.
 - Various documentation updates and fixes.
 
@@ -128,7 +134,7 @@ Released 2019-05-28
 **This is the last version supporting Python 2!**
 
 - Do not run a cached/memoized function if the cached return value is None.
-  PR `#108 <https://github.com/sh4nks/flask-caching/pull/108>`_.
+  :pr:`#108`
 
 
 Version 1.7.1
@@ -137,9 +143,9 @@ Version 1.7.1
 Released 2019-04-16
 
 - Fix introspecting Python 3 functions by using varkw.
-  PR `#101 <https://github.com/sh4nks/flask-caching/pull/101>`_.
+  :pr:`#101`
 - Remove leftover files (``uwsgi.py``) in PyPI package. See issue
-  `#102 <https://github.com/sh4nks/flask-caching/issues/102>`_ for more details.
+  `#102` for more details.
 
 
 Version 1.7.0
@@ -149,7 +155,7 @@ Released 2019-03-29
 
 - Added a feature called 'response_filter' which enables one to only
   cache views depending on the response code.
-  PR `#99 <https://github.com/sh4nks/flask-caching/pull/99>`_.
+  :pr:`#99`
 - A DeprecationWarning got turned into a TypeError.
 
 
@@ -164,7 +170,7 @@ Released 2019-03-06
   deletion mode, one has to flip the config setting ``CACHE_IGNORE_ERRORS`` to
   ``True``. This was and still is only relevant for the **filesystem** and
   **simple** cache backends.
-  PR `#94 <https://github.com/sh4nks/flask-caching/pull/94>`_.
+  :pr:`#94`
 - Re-added the ``gaememcached`` CACHE_TYPE for improved backwards compatibility.
 - Documentation improvements
 
@@ -175,11 +181,11 @@ Version 1.5.0
 Released 2019-02-23
 
 - Add support for a Redis Sentinel Cluster.
-  PR `#90 <https://github.com/sh4nks/flask-caching/pull/90>`_.
+  :pr:`#90`
 - Parameterize the hash function so alternatives can be used.
-  PR `#77 <https://github.com/sh4nks/flask-caching/pull/77>`_.
+  :pr:`#77`
 - Include the deprecated ``werkzeug.contrib.cache`` module in Flask-Caching.
-  PR `#75 <https://github.com/sh4nks/flask-caching/pull/75>`_.
+  :pr:`#75`
 
 
 Version 1.4.0
@@ -188,17 +194,17 @@ Version 1.4.0
 Released 2018-04-16
 
 - Fix logic for creating key for var args in memoize.
-  PR `#70 <https://github.com/sh4nks/flask-caching/pull/70>`_.
+  :pr:`#70`
 - Allow older Werkzeug versions by making the UWSGICache backend conditional.
-  PR `#55 <https://github.com/sh4nks/flask-caching/pull/55>`_.
+  :pr:`#55`
 - Some documentation improvements.
-  PR `#48 <https://github.com/sh4nks/flask-caching/pull/48>`_,
-  `#51 <https://github.com/sh4nks/flask-caching/pull/51>`_,
-  `#56 <https://github.com/sh4nks/flask-caching/pull/56>`_,
-  `#67 <https://github.com/sh4nks/flask-caching/pull/67>`_.
+  :pr:`#48`,
+  `#51`,
+  `#56`,
+  `#67`
 - Some CI improvements.
-  PR `#49 <https://github.com/sh4nks/flask-caching/pull/49>`_,
-  `#50 <https://github.com/sh4nks/flask-caching/pull/50>`_.
+  :pr:`#49`,
+  `#50`
 
 
 Version 1.3.3
@@ -207,7 +213,7 @@ Version 1.3.3
 Released 2017-06-25
 
 - Add support for multiple query params and use md5 for consistent hashing.
-  PR `#43 <https://github.com/sh4nks/flask-caching/pull/43>`_.
+  :pr:`#43`
 
 
 Version 1.3.2
@@ -217,7 +223,7 @@ Released 2017-06-25
 
 - Fix ``spreadsaslmemcached`` backend when using Python 3.
 - Fix kwargs order when memoizing a function using Python 3.6 or greater.
-  See `#27 <https://github.com/sh4nks/flask-caching/issues/27>`_.
+  See `#27`
 
 
 Version 1.3.1
@@ -226,7 +232,7 @@ Version 1.3.1
 Released 2017-06-20
 
 - Avoid breakage for environments with Werkzeug<0.12 installed because
-  the uwsgi backend depends on Werkzeug >=0.12. See `#38 <https://github.com/sh4nks/flask-caching/issues/38>`_.
+  the uwsgi backend depends on Werkzeug >=0.12. See `#38`
 
 
 Version 1.3.0
@@ -238,7 +244,7 @@ Released 2017-06-17
 - Provide a keyword `query_string` to the cached decorator in order to create
   the same cache key for different query string requests,
   so long as they have the same key/value (order does not matter).
-  PR `#35 <https://github.com/sh4nks/flask-caching/issues/35>`_.
+  :pr:`#35`
 - Use pytest as test suite and test runner. Additionally, the tests have
   been split up into multiple files instead of having one big file.
 
@@ -248,7 +254,7 @@ Version 1.2.0
 
 Released 2017-02-02
 
-- Allows functions with kwargs to be memoized correctly. See `#18 <https://github.com/sh4nks/flask-caching/issues/18>`_.
+- Allows functions with kwargs to be memoized correctly. See `#18`
 
 
 Version 1.1.1
@@ -256,7 +262,7 @@ Version 1.1.1
 
 Released 2016-12-09
 
-- Fix PyPI Package distribution. See `#15 <https://github.com/sh4nks/flask-caching/issues/15>`_.
+- Fix PyPI Package distribution. See `#15`
 
 
 Version 1.1.0
@@ -264,12 +270,12 @@ Version 1.1.0
 
 Released 2016-12-09
 
-- Fix 'redis' backend import mechanisim. See `#14 <https://github.com/sh4nks/flask-caching/pull/14>`_.
+- Fix 'redis' backend import mechanisim. See `#14`
 - Made backends a module to better control which cache backends to expose
   and moved our custom clients into a own module inside of the backends
-  module. See also `#14 <https://github.com/sh4nks/flask-caching/pull/14>`_ (and partly some own changes).
-- Some docs and test changes. See `#8 <https://github.com/sh4nks/flask-caching/pull/8>`_
-  and `#12 <https://github.com/sh4nks/flask-caching/pull/12>`_.
+  module. See also `#14` (and partly some own changes).
+- Some docs and test changes. See `#8`
+  and `#12`
 
 
 Version 1.0.1
@@ -278,7 +284,7 @@ Version 1.0.1
 Released 2016-08-30
 
 - The caching wrappers like `add`, `set`, etc are now returning the wrapped
-  result as someone would expect. See `#5 <https://github.com/sh4nks/flask-caching/pull/5>`_.
+  result as someone would expect. See `#5`
 
 
 Version 1.0.0
@@ -289,7 +295,7 @@ Released 2016-07-05
 - Changed the way of importing Flask-Cache. Instead of using the depreacted
   method for importing Flask Extensions (via ``flask.ext.cache``),
   the name of the extension,  ``flask_cache`` is used. Have a look at
-  `Flask's documentation <http://flask.pocoo.org/docs/0.11/extensions/#flask-before-0-8>`_
+  `Flask's documentation`
   for more information regarding this matter. This also fixes the
   deprecation warning from Flask.
 - Lots of PEP8 and Documentation fixes.
@@ -297,21 +303,21 @@ Released 2016-07-05
   available on PyPI for download.
 
 In addition to the above mentioned fixes, following pull requests have been
-merged into this fork of `Flask-Cache <https://github.com/thadeusb/flask-cache>`_:
+merged into this fork of `Flask-Cache`:
 
-- `#90 Update documentation: route decorator before cache <https://github.com/thadeusb/flask-cache/pull/90>`_
-- `#95 Pass the memoize parameters into unless(). <https://github.com/thadeusb/flask-cache/pull/95>`_
-- `#109 wrapped function called twice <https://github.com/thadeusb/flask-cache/pull/109>`_
-- `#117 Moves setting the app attribute to the _set_cache method <https://github.com/thadeusb/flask-cache/pull/117>`_
-- `#121 fix doc for delete_memoized <https://github.com/thadeusb/flask-cache/pull/121>`_
-- `#122 Added proxy for werkzeug get_dict <https://github.com/thadeusb/flask-cache/pull/122>`_
-- `#123 "forced_update" option to 'cache' and 'memoize' decorators <https://github.com/thadeusb/flask-cache/pull/123>`_
-- `#124 Fix handling utf8 key args <https://github.com/thadeusb/flask-cache/pull/124)>`_ (cherry-picked)
-- `#125 Fix unittest failing for redis unittest <https://github.com/thadeusb/flask-cache/pull/125>`_
-- `#127 Improve doc for using @cached on view <https://github.com/thadeusb/flask-cache/pull/127>`_
-- `#128 Doc for delete_memoized <https://github.com/thadeusb/flask-cache/pull/128>`_
-- `#129 tries replacing inspect.getargspec with either signature or getfullargspec if possible <https://github.com/thadeusb/flask-cache/pull/129>`_
-- `make_cache_key() returning incorrect key <https://github.com/SkierPGP/Flask-Cache/pull/1>`_ (cherry-picked)
+- `#90 Update documentation: route decorator before cache`
+- `#95 Pass the memoize parameters into unless().`
+- `#109 wrapped function called twice`
+- `#117 Moves setting the app attribute to the _set_cache method`
+- `#121 fix doc for delete_memoized`
+- `#122 Added proxy for werkzeug get_dict`
+- `#123 "forced_update" option to 'cache' and 'memoize' decorators`
+- `#124 Fix handling utf8 key args` (cherry-picked)
+- `#125 Fix unittest failing for redis unittest`
+- `#127 Improve doc for using @cached on view`
+- `#128 Doc for delete_memoized`
+- `#129 tries replacing inspect.getargspec with either signature or getfullargspec if possible`
+- `make_cache_key() returning incorrect key` (cherry-picked)
 
 
 Version 0.13
