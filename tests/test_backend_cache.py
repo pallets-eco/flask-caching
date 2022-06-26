@@ -7,11 +7,13 @@
     :copyright: (c) 2014 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+import pickle
 import time
 
 import pytest
 
 from flask_caching import backends
+from flask_caching.backends import RedisSentinelCache
 
 try:
     import redis
@@ -155,78 +157,6 @@ class TestFileSystemCache(GenericCacheTests):
     def make_cache(self, tmpdir):
         return lambda **kw: backends.FileSystemCache(cache_dir=str(tmpdir), **kw)
 
-    def test_filesystemcache_hashes(self, make_cache, hash_method):
-        cache = make_cache(hash_method=hash_method)
-        self.test_count_file_accuracy(cache)
-
-    def test_filesystemcache_prune(self, make_cache):
-        THRESHOLD = 13
-        c = make_cache(threshold=THRESHOLD)
-
-        for i in range(2 * THRESHOLD):
-            assert c.set(str(i), i)
-
-        nof_cache_files = c.get(c._fs_count_file)
-        assert nof_cache_files <= THRESHOLD
-
-    def test_filesystemcache_clear(self, c):
-        assert c.set("foo", "bar")
-        nof_cache_files = c.get(c._fs_count_file)
-        assert nof_cache_files == 1
-        assert c.clear()
-        nof_cache_files = c.get(c._fs_count_file)
-        assert nof_cache_files == 0
-        cache_files = c._list_dir()
-        assert len(cache_files) == 0
-
-    def test_no_threshold(self, make_cache):
-        THRESHOLD = 0
-        c = make_cache(threshold=THRESHOLD)
-
-        for i in range(10):
-            assert c.set(str(i), i)
-
-        cache_files = c._list_dir()
-        assert len(cache_files) == 10
-
-        # File count is not maintained with threshold = 0
-        nof_cache_files = c.get(c._fs_count_file)
-        assert nof_cache_files is None
-
-    def test_filecount_caching_none(self, make_cache):
-        c = make_cache()
-        for _ in range(3):
-            assert c.set("a", None)
-            assert c.get(c._fs_count_file) == 1
-
-    def test_filecount_after_deletion_in_has(self, make_cache):
-        c = make_cache()
-        assert c.set("foo", "bar", timeout=0.01)
-        assert c.get(c._fs_count_file) == 1
-        time.sleep(1)
-        assert c.has("foo") in (False, 0)
-        assert c.get(c._fs_count_file) == 0
-
-    def test_filecount_after_deletion_in_get(self, make_cache):
-        c = make_cache()
-        assert c.set("foo", "bar", timeout=0.01)
-        assert c.get(c._fs_count_file) == 1
-        time.sleep(1)
-        assert c.get("foo") is None
-        assert c.get(c._fs_count_file) == 0
-
-    def test_count_file_accuracy(self, c):
-        assert c.set("foo", "bar")
-        assert c.set("moo", "car")
-        c.add("moo", "tar")
-        assert c.get(c._fs_count_file) == 2
-        assert c.add("too", "far")
-        assert c.get(c._fs_count_file) == 3
-        assert c.delete("moo")
-        assert c.get(c._fs_count_file) == 2
-        assert c.clear()
-        assert c.get(c._fs_count_file) == 0
-
 
 # don't use pytest.mark.skipif on subclasses
 # https://bitbucket.org/hpk42/pytest/issue/568
@@ -268,6 +198,37 @@ class TestRedisCache(GenericCacheTests):
         with pytest.raises(ValueError) as exc_info:
             backends.RedisCache(host=None)
         assert str(exc_info.value) == "RedisCache host parameter may not be None"
+
+
+class TestRedisCacheClientsOverride(CacheTestsBase):
+    _can_use_fast_sleep = False
+
+    @pytest.fixture()
+    def make_cache(self, request):
+        c = RedisSentinelCache()
+        yield lambda: c
+
+    def test_client_override_reflected_on_cachelib_methods(self, c):
+        EXPECTED_GET_MANY_VALUES = ["bacon", "spam", "eggs"]
+
+        class DummyWriteClient:
+            def setex(self, *args, **kwargs):
+                return "spam"
+
+        class DummyReadClient:
+            def mget(self, *args, **kwargs):
+                values = [
+                    b"!" + pickle.dumps(v, pickle.HIGHEST_PROTOCOL)
+                    for v in EXPECTED_GET_MANY_VALUES
+                ]
+                return values
+
+        c._write_client = DummyWriteClient()
+        c._read_client = DummyReadClient()
+        actual_values = c.get_many("foo")
+        assert c.set("bacon", "eggs") == "spam"
+        for actual, expected in zip(actual_values, EXPECTED_GET_MANY_VALUES):
+            assert actual == expected
 
 
 class TestMemcachedCache(GenericCacheTests):

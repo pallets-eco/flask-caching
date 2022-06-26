@@ -59,8 +59,6 @@ class RedisCache(BaseCache, CachelibRedisCache):
             **kwargs
         )
 
-        self._write_client = self._read_clients = self._client
-
     @classmethod
     def factory(cls, app, config, args, kwargs):
         try:
@@ -148,10 +146,10 @@ class RedisSentinelCache(RedisCache):
         password=None,
         db=0,
         default_timeout=300,
-        key_prefix=None,
+        key_prefix="",
         **kwargs
     ):
-        super().__init__(default_timeout=default_timeout)
+        super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
 
         try:
             import redis.sentinel
@@ -182,9 +180,7 @@ class RedisSentinelCache(RedisCache):
         )
 
         self._write_client = sentinel.master_for(master)
-        self._read_clients = sentinel.slave_for(master)
-
-        self.key_prefix = key_prefix or ""
+        self._read_client = sentinel.slave_for(master)
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
@@ -228,7 +224,7 @@ class RedisClusterCache(RedisCache):
     def __init__(
         self, cluster="", password="", default_timeout=300, key_prefix="", **kwargs
     ):
-        super().__init__(default_timeout=default_timeout)
+        super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
 
         if kwargs.get("decode_responses", None):
             raise ValueError("decode_responses is not supported by RedisCache.")
@@ -248,6 +244,7 @@ class RedisClusterCache(RedisCache):
                 "Please give the correct cluster argument "
                 "e.g. host1:port1,host2:port2,host3:port3"
             ) from e
+
         # Skips the check of cluster-require-full-coverage config,
         # useful for clusters without the CONFIG command (like aws)
         skip_full_coverage_check = kwargs.pop("skip_full_coverage_check", True)
@@ -258,8 +255,9 @@ class RedisClusterCache(RedisCache):
             skip_full_coverage_check=skip_full_coverage_check,
             **kwargs
         )
-        self._write_client = self._read_clients = cluster
-        self.key_prefix = key_prefix
+
+        self._write_client = cluster
+        self._read_client = cluster
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
