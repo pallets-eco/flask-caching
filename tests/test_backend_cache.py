@@ -13,6 +13,7 @@ import time
 import pytest
 
 from flask_caching import backends
+from flask_caching.backends import RedisSentinelCache
 
 try:
     import redis
@@ -199,41 +200,34 @@ class TestRedisCache(GenericCacheTests):
         assert str(exc_info.value) == "RedisCache host parameter may not be None"
 
 
-class TestRedisSentinelCache(GenericCacheTests):
+class TestRedisCacheClientsOverride(CacheTestsBase):
     _can_use_fast_sleep = False
-
-    #     @pytest.fixture(scope="class", autouse=True)
-    #     def requirements(self, redis_server):
-    #         pass
 
     @pytest.fixture()
     def make_cache(self, request):
-        sentinels = [("111.1.1.1", 11111)]
-        c = backends.RedisSentinelCache(sentinels=sentinels)
+        c = RedisSentinelCache()
         yield lambda: c
-        c.clear()
 
-    def test_client_override_does_not_break_cachelib_methods(self, c):
-        expected_get_many_values = ["bacon", "spam", "eggs"]
+    def test_client_override_reflected_on_cachelib_methods(self, c):
+        EXPECTED_GET_MANY_VALUES = ["bacon", "spam", "eggs"]
 
         class DummyWriteClient:
             def setex(self, *args, **kwargs):
-                return "ok"
-
-        c._write_client = DummyWriteClient()
-        assert c.set("foo", "bar") == "ok"
+                return "spam"
 
         class DummyReadClient:
             def mget(self, *args, **kwargs):
                 values = [
                     b"!" + pickle.dumps(v, pickle.HIGHEST_PROTOCOL)
-                    for v in expected_get_many_values
+                    for v in EXPECTED_GET_MANY_VALUES
                 ]
                 return values
 
+        c._write_client = DummyWriteClient()
         c._read_client = DummyReadClient()
         actual_values = c.get_many("foo")
-        for actual, expected in zip(actual_values, expected_get_many_values):
+        assert c.set("bacon", "eggs") == "spam"
+        for actual, expected in zip(actual_values, EXPECTED_GET_MANY_VALUES):
             assert actual == expected
 
 
