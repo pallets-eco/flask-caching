@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
-import string
 import random
-from flask import render_template, render_template_string
+import string
+
+from flask import render_template
+from flask import render_template_string
 
 from flask_caching import make_template_fragment_key
 

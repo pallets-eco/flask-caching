@@ -1,7 +1,9 @@
 import random
 from datetime import datetime
 
-from flask import Flask, jsonify, render_template_string
+from flask import Flask
+from flask import jsonify
+from flask import render_template_string
 
 from flask_caching import Cache
 
@@ -67,7 +69,6 @@ def html(foo=None):
 
 @app.route("/template")
 def template():
-    dt = str(datetime.now())
     return render_template_string(
         """<html><body>foo cache:
             {% cache 60, "random" %}

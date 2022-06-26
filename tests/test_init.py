@@ -1,17 +1,15 @@
-from flask import Flask
 import pytest
+from flask import Flask
 
 from flask_caching import Cache
-from flask_caching.backends import (
-    FileSystemCache,
-    MemcachedCache,
-    NullCache,
-    RedisCache,
-    RedisSentinelCache,
-    SASLMemcachedCache,
-    SimpleCache,
-    SpreadSASLMemcachedCache,
-)
+from flask_caching.backends import FileSystemCache
+from flask_caching.backends import MemcachedCache
+from flask_caching.backends import NullCache
+from flask_caching.backends import RedisCache
+from flask_caching.backends import RedisSentinelCache
+from flask_caching.backends import SASLMemcachedCache
+from flask_caching.backends import SimpleCache
+from flask_caching.backends import SpreadSASLMemcachedCache
 
 
 @pytest.fixture

@@ -5,9 +5,9 @@ Flask-Caching
    :noindex:
 
 Flask-Caching is an extension to `Flask`_ that adds caching support for
-various backends to any Flask application. Besides providing support for all
-`werkzeug`_'s original caching backends through a uniformed API,
-it is also possible to develop your own caching backend by subclassing
+various backends to any Flask application. By running on top of `cachelib`_
+it supports all of `werkzeug`_'s original caching backends through a uniformed
+API. It is also possible to develop your own caching backend by subclassing
 :class:`flask_caching.backends.base.BaseCache` class.
 
 Version support
@@ -75,6 +75,17 @@ This decorator will use request.path by default for the cache_key::
 The cached decorator has another optional argument called ``unless``. This
 argument accepts a callable that returns True or False. If ``unless`` returns
 ``True`` then it will bypass the caching mechanism entirely.
+
+To dynamically determine the timeout within the view, you can return `CachedResponse`,
+a subclass of `flask.Response`::
+
+    @app.route("/")
+    @cache.cached()
+    def index():
+        return CachedResponse(
+            response=make_response(render_template('index.html')),
+            timeout=50,
+        )
 
 .. warning::
 
@@ -409,7 +420,7 @@ The following configuration values exist for Flask-Caching:
                                 RedisSentinelCache.
 ``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
                                 only for RedisSentinelCache.
-``CACHE_REDIS_CLUSTER``         A string of comma-separated Redis cluster node addresses. 
+``CACHE_REDIS_CLUSTER``         A string of comma-separated Redis cluster node addresses.
                                 e.g. host1:port1,host2:port2,host3:port3 . Used only for RedisClusterCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
@@ -620,7 +631,7 @@ default is 1M. Uses pickle.
 
 
 UWSGICache
-`````````
+``````````
 
 .. warning::
    ``UWSGICache`` is not maintained nor tested.  Use at your own risk.
@@ -714,3 +725,4 @@ Additional Information
 
 .. _Flask: http://flask.pocoo.org/
 .. _werkzeug: http://werkzeug.pocoo.org/
+.. _cachelib: https://github.com/pallets/cachelib

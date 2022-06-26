@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
-import sys
 import random
 import time
+
 import pytest
-from flask_caching import Cache, function_namespace
+
+from flask_caching import Cache
+from flask_caching import function_namespace
 
 
 def test_memoize(app, cache):
@@ -73,24 +74,23 @@ def test_memoize_timeout(app):
 
 
 def test_memoize_annotated(app, cache):
-    if sys.version_info >= (3, 0):
-        with app.test_request_context():
+    with app.test_request_context():
 
-            @cache.memoize(50)
-            def big_foo_annotated(a, b):
-                return a + b + random.randrange(0, 100000)
+        @cache.memoize(50)
+        def big_foo_annotated(a, b):
+            return a + b + random.randrange(0, 100000)
 
-            big_foo_annotated.__annotations__ = {
-                "a": int,
-                "b": int,
-                "return": int,
-            }
+        big_foo_annotated.__annotations__ = {
+            "a": int,
+            "b": int,
+            "return": int,
+        }
 
-            result = big_foo_annotated(5, 2)
+        result = big_foo_annotated(5, 2)
 
-            time.sleep(1)
+        time.sleep(1)
 
-            assert big_foo_annotated(5, 2) == result
+        assert big_foo_annotated(5, 2) == result
 
 
 def test_memoize_utf8_arguments(app, cache):
@@ -98,7 +98,7 @@ def test_memoize_utf8_arguments(app, cache):
 
         @cache.memoize()
         def big_foo(a, b):
-            return "{}-{}".format(a, b)
+            return f"{a}-{b}"
 
         big_foo("æøå", "chars")
 
@@ -108,9 +108,9 @@ def test_memoize_unicode_arguments(app, cache):
 
         @cache.memoize()
         def big_foo(a, b):
-            return u"{}-{}".format(a, b)
+            return f"{a}-{b}"
 
-        big_foo(u"æøå", "chars")
+        big_foo("æøå", "chars")
 
 
 def test_memoize_delete(app, cache):
@@ -301,13 +301,7 @@ def test_memoize_arg_kwarg_var_keyword(app, cache):
 
         @cache.memoize()
         def f(a, b, c=1, **kwargs):
-            return (
-                a
-                + b
-                + c
-                + random.randrange(0, 100000)
-                + sum(list(kwargs.values()))
-            )
+            return a + b + c + random.randrange(0, 100000) + sum(list(kwargs.values()))
 
         assert f(1, 2) == f(1, 2, c=1)
         assert f(1, 2) == f(1, 2, 1)
@@ -326,7 +320,7 @@ def test_memoize_classarg(app, cache):
     def bar(a):
         return a.value + random.random()
 
-    class Adder(object):
+    class Adder:  # noqa: B903
         def __init__(self, value):
             self.value = value
 
@@ -348,7 +342,7 @@ def test_memoize_classarg(app, cache):
 
 
 def test_memoize_classfunc(app, cache):
-    class Adder(object):
+    class Adder:
         def __init__(self, initial):
             self.initial = initial
 
@@ -366,7 +360,7 @@ def test_memoize_classfunc(app, cache):
 
 
 def test_memoize_classfunc_repr(app, cache):
-    class Adder(object):
+    class Adder:
         def __init__(self, initial):
             self.initial = initial
 
@@ -392,7 +386,7 @@ def test_memoize_classfunc_repr(app, cache):
 def test_memoize_classfunc_delete(app, cache):
     with app.test_request_context():
 
-        class Adder(object):
+        class Adder:
             def __init__(self, initial):
                 self.initial = initial
 
@@ -439,7 +433,7 @@ def test_memoize_classfunc_delete(app, cache):
 def test_memoize_classmethod_delete(app, cache):
     with app.test_request_context():
 
-        class Mock(object):
+        class Mock:
             @classmethod
             @cache.memoize(5)
             def big_foo(cls, a, b):
@@ -464,7 +458,7 @@ def test_memoize_classmethod_delete(app, cache):
 def test_memoize_classmethod_delete_with_args(app, cache):
     with app.test_request_context():
 
-        class Mock(object):
+        class Mock:
             @classmethod
             @cache.memoize(5)
             def big_foo(cls, a, b):
@@ -578,7 +572,11 @@ def test_memoize_multiple_arg_kwarg_calls(app, cache):
     with app.test_request_context():
 
         @cache.memoize()
-        def big_foo(a, b, c=[1, 1], d=[1, 1]):
+        def big_foo(a, b, c=None, d=None):
+            if c is None:
+                c = [1, 1]
+            if d is None:
+                d = [1, 1]
             return (
                 sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
             )  # noqa
@@ -594,7 +592,11 @@ def test_memoize_multiple_arg_kwarg_delete(app, cache):
     with app.test_request_context():
 
         @cache.memoize()
-        def big_foo(a, b, c=[1, 1], d=[1, 1]):
+        def big_foo(a, b, c=None, d=None):
+            if c is None:
+                c = [1, 1]
+            if d is None:
+                d = [1, 1]
             return (
                 sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
             )  # noqa
@@ -633,13 +635,9 @@ def test_memoize_kwargs_to_args(app, cache):
 
         expected = (1, 2, "foo", "bar")
 
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, 1, 2, "foo", "bar"
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, "foo", "bar")
         assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, 2, "foo", "bar", a=1
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 2, "foo", "bar", a=1)
         assert args == expected
         args, kwargs = cache._memoize_kwargs_to_args(
             big_foo, a=1, b=2, c="foo", d="bar"
@@ -649,9 +647,7 @@ def test_memoize_kwargs_to_args(app, cache):
             big_foo, d="bar", b=2, a=1, c="foo"
         )
         assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, 1, 2, d="bar", c="foo"
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, d="bar", c="foo")
         assert args == expected
 
 
@@ -832,7 +828,7 @@ def test_memoize_ignore_args(app, cache):
 def test_memoize_method_ignore_self_arg(app, cache):
     with app.test_request_context():
 
-        class Foo(object):
+        class Foo:
             @cache.memoize(50, args_to_ignore=["self"])
             def big_foo(self, a, b):
                 return a + b + random.randrange(0, 100000)

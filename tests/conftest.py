@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import errno
 import os
 
@@ -53,7 +52,7 @@ def redis_server(xprocess):
 
     try:
         xprocess.ensure("redis_server", Starter)
-    except IOError as e:
+    except OSError as e:
         # xprocess raises FileNotFoundError
         if e.errno == errno.ENOENT:
             pytest.skip("Redis is not installed.")
@@ -86,7 +85,7 @@ def memcache_server(xprocess):
 
     try:
         xprocess.ensure("memcached", Starter)
-    except IOError as e:
+    except OSError as e:
         # xprocess raises FileNotFoundError
         if e.errno == errno.ENOENT:
             pytest.skip("Memcached is not installed.")

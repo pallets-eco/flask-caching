@@ -1,9 +1,11 @@
-# -*- coding: utf-8 -*-
 import hashlib
 import time
 
+from flask import make_response
 from flask import request
 from flask.views import View
+
+from flask_caching import CachedResponse
 
 
 def test_cached_view(app, cache):
@@ -53,7 +55,30 @@ def test_cached_view_class(app, cache):
     rv = tc.get("/")
     assert the_time != rv.data.decode("utf-8")
 
+    
+def test_async_cached_view(app, cache):
+    import asyncio
+    import sys
 
+    if sys.version_info < (3, 7):
+        return
+
+    @app.route("/test-async")
+    @cache.cached(2)
+    async def cached_async_view():
+        await asyncio.sleep(0.1)
+        return str(time.time())
+
+    tc = app.test_client()
+    rv = tc.get("/test-async")
+    the_time = rv.data.decode("utf-8")
+
+    time.sleep(1)
+    
+    rv = tc.get("/test-async")
+    assert the_time == rv.data.decode("utf-8")
+
+    
 def test_cached_view_unless(app, cache):
     @app.route("/a")
     @cache.cached(5, unless=lambda: True)
@@ -146,8 +171,6 @@ def test_generate_cache_key_from_different_view(app, cache):
     def view_cake(flavor):
         # What's the cache key for apple cake? thanks for making me hungry
         view_cake.cake_cache_key = view_cake.make_cache_key("apple")
-        # print view_cake.cake_cache_key
-
         return str(time.time())
 
     view_cake.cake_cache_key = ""
@@ -157,18 +180,14 @@ def test_generate_cache_key_from_different_view(app, cache):
     def view_pie(flavor):
         # What's the cache key for apple cake?
         view_pie.cake_cache_key = view_cake.make_cache_key("apple")
-        # print view_pie.cake_cache_key
-
         return str(time.time())
 
     view_pie.cake_cache_key = ""
 
     tc = app.test_client()
-    rv1 = tc.get("/cake/chocolate")
-    rv2 = tc.get("/pie/chocolate")
+    tc.get("/cake/chocolate")
+    tc.get("/pie/chocolate")
 
-    # print view_cake.cake_cache_key
-    # print view_pie.cake_cache_key
     assert view_cake.cake_cache_key == view_pie.cake_cache_key
 
 
@@ -206,15 +225,11 @@ def test_make_cache_key_function_property(app, cache):
     rv = tc.get("/a/b")
     the_time = rv.data.decode("utf-8")
 
-    cache_key = cached_view.make_cache_key(
-        cached_view.uncached, foo=u"a", bar=u"b"
-    )
+    cache_key = cached_view.make_cache_key(cached_view.uncached, foo="a", bar="b")
     cache_data = cache.get(cache_key)
     assert the_time == cache_data
 
-    different_key = cached_view.make_cache_key(
-        cached_view.uncached, foo=u"b", bar=u"a"
-    )
+    different_key = cached_view.make_cache_key(cached_view.uncached, foo="b", bar="a")
     different_data = cache.get(different_key)
     assert the_time != different_data
 
@@ -263,6 +278,26 @@ def test_cache_timeout_property(app, cache):
     time.sleep(3)
     # it's been >7 seconds, cache is not still active
     assert time2 != tc.get("/a/b").data.decode("utf-8")
+
+
+def test_cache_timeout_dynamic(app, cache):
+    @app.route("/")
+    @cache.cached(timeout=1)
+    def cached_view():
+        # This should override the timeout to be 2 seconds
+        return CachedResponse(response=make_response(str(time.time())), timeout=2)
+
+    tc = app.test_client()
+
+    rv1 = tc.get("/")
+    time1 = rv1.data.decode("utf-8")
+    time.sleep(1)
+
+    # it's been 1 second, cache is still active
+    assert time1 == tc.get("/").data.decode("utf-8")
+    time.sleep(1)
+    # it's been >2 seconds, cache is not still active
+    assert time1 != tc.get("/").data.decode("utf-8")
 
 
 def test_generate_cache_key_from_query_string(app, cache):
@@ -333,9 +368,7 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
     tc = app.test_client()
 
     # Make our first query...
-    first_response = tc.get(
-        "/works?mock=true&offset=20&limit=15&user[]=123&user[]=124"
-    )
+    first_response = tc.get("/works?mock=true&offset=20&limit=15&user[]=123&user[]=124")
     first_time = first_response.get_data(as_text=True)
 
     # Make the second query...
@@ -350,9 +383,7 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
 
     # Last/third query with different parameters/values should
     # produce a different time.
-    third_response = tc.get(
-        "/works?mock=true&offset=20&limit=15&user[]=125&user[]=124"
-    )
+    third_response = tc.get("/works?mock=true&offset=20&limit=15&user[]=125&user[]=124")
     third_time = third_response.get_data(as_text=True)
 
     # ... making sure that different query parameter values
@@ -389,15 +420,11 @@ def test_generate_cache_key_from_request_body(app, cache):
     tc = app.test_client()
 
     # Make our request...
-    first_response = tc.post(
-        "/works/arg", data=dict(mock=True, value=1, test=2)
-    )
+    first_response = tc.post("/works/arg", data=dict(mock=True, value=1, test=2))
     first_time = first_response.get_data(as_text=True)
 
     # Make the request...
-    second_response = tc.post(
-        "/works/arg", data=dict(mock=True, value=1, test=2)
-    )
+    second_response = tc.post("/works/arg", data=dict(mock=True, value=1, test=2))
     second_time = second_response.get_data(as_text=True)
 
     # Now make sure the time for the first and second
@@ -406,9 +433,7 @@ def test_generate_cache_key_from_request_body(app, cache):
 
     # Last/third request with different body should
     # produce a different time.
-    third_response = tc.post(
-        "/works/arg", data=dict(mock=True, value=2, test=3)
-    )
+    third_response = tc.post("/works/arg", data=dict(mock=True, value=2, test=3))
     third_time = third_response.get_data(as_text=True)
 
     # ... making sure that different request bodies

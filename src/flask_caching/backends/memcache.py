@@ -1,6 +1,3 @@
-import re
-
-# -*- coding: utf-8 -*-
 """
     flask_caching.backends.memcache
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11,20 +8,18 @@ import re
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from time import time
+import pickle
+import re
 
-from flask_caching.backends.base import BaseCache, iteritems_wrapper
+from cachelib import MemcachedCache as CachelibMemcachedCache
 
-try:
-    import cPickle as pickle
-except ImportError:  # pragma: no cover
-    import pickle  # type: ignore
+from flask_caching.backends.base import BaseCache
 
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
 
 
-class MemcachedCache(BaseCache):
+class MemcachedCache(BaseCache, CachelibMemcachedCache):
 
     """A cache that uses memcached as backend.
 
@@ -61,109 +56,19 @@ class MemcachedCache(BaseCache):
     """
 
     def __init__(self, servers=None, default_timeout=300, key_prefix=None):
-        super(MemcachedCache, self).__init__(default_timeout)
-        if servers is None or isinstance(servers, (list, tuple)):
-            if servers is None:
-                servers = ["127.0.0.1:11211"]
-            self._client = self.import_preferred_memcache_lib(servers)
-            if self._client is None:
-                raise RuntimeError("no memcache module found")
-        else:
-            # NOTE: servers is actually an already initialized memcache
-            # client.
-            self._client = servers
-
-        self.key_prefix = key_prefix or None
+        BaseCache.__init__(self, default_timeout=default_timeout)
+        CachelibMemcachedCache.__init__(
+            self,
+            servers=servers,
+            default_timeout=default_timeout,
+            key_prefix=key_prefix,
+        )
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
         args.append(config["CACHE_MEMCACHED_SERVERS"])
         kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
         return cls(*args, **kwargs)
-
-    def _normalize_key(self, key):
-        key = str(key)
-        if self.key_prefix:
-            key = self.key_prefix + key
-        return key
-
-    def _normalize_timeout(self, timeout):
-        timeout = BaseCache._normalize_timeout(self, timeout)
-        if timeout > 0:
-            # NOTE: pylibmc expect the timeout as delta time up to
-            # 2592000 seconds (30 days)
-            if not hasattr(self, "mc_library"):
-                try:
-                    import pylibmc  # noqa
-                except ImportError:
-                    self.mc_library = None
-                else:
-                    self.mc_library = "pylibmc"
-
-            if self.mc_library != "pylibmc":
-                timeout = int(time()) + timeout
-            elif timeout > 2592000:
-                timeout = 0
-
-        return timeout
-
-    def get(self, key):
-        key = self._normalize_key(key)
-        # memcached doesn't support keys longer than that.  Because often
-        # checks for so long keys can occur because it's tested from user
-        # submitted data etc we fail silently for getting.
-        if _test_memcached_key(key):
-            return self._client.get(key)
-
-    def get_dict(self, *keys):
-        key_mapping = {}
-        have_encoded_keys = False
-        for key in keys:
-            encoded_key = self._normalize_key(key)
-            if not isinstance(key, str):
-                have_encoded_keys = True
-            if _test_memcached_key(key):
-                key_mapping[encoded_key] = key
-        _keys = list(key_mapping)
-        d = rv = self._client.get_multi(_keys)
-        if have_encoded_keys or self.key_prefix:
-            rv = {}
-            for key, value in d.items():
-                rv[key_mapping[key]] = value
-        if len(rv) < len(keys):
-            for key in keys:
-                if key not in rv:
-                    rv[key] = None
-        return rv
-
-    def add(self, key, value, timeout=None):
-        key = self._normalize_key(key)
-        timeout = self._normalize_timeout(timeout)
-        return self._client.add(key, value, timeout)
-
-    def set(self, key, value, timeout=None):
-        key = self._normalize_key(key)
-        timeout = self._normalize_timeout(timeout)
-        return self._client.set(key, value, timeout)
-
-    def get_many(self, *keys):
-        d = self.get_dict(*keys)
-        return [d[key] for key in keys]
-
-    def set_many(self, mapping, timeout=None):
-        new_mapping = {}
-        for key, value in iteritems_wrapper(mapping):
-            key = self._normalize_key(key)
-            new_mapping[key] = value
-
-        timeout = self._normalize_timeout(timeout)
-        failed_keys = self._client.set_multi(new_mapping, timeout)
-        return not failed_keys
-
-    def delete(self, key):
-        key = self._normalize_key(key)
-        if _test_memcached_key(key):
-            return self._client.delete(key)
 
     def delete_many(self, *keys):
         new_keys = []
@@ -173,19 +78,6 @@ class MemcachedCache(BaseCache):
                 new_keys.append(key)
         return self._client.delete_multi(new_keys)
 
-    def has(self, key):
-        key = self._normalize_key(key)
-        if _test_memcached_key(key):
-            try:
-                return self._client.append(key, "")
-            except AttributeError:
-                # GAEMemecache has no 'append' function
-                return True if self._client.get(key) is not None else False
-        return False
-
-    def clear(self):
-        return self._client.flush_all()
-
     def inc(self, key, delta=1):
         key = self._normalize_key(key)
         return self._client.incr(key, delta)
@@ -193,40 +85,6 @@ class MemcachedCache(BaseCache):
     def dec(self, key, delta=1):
         key = self._normalize_key(key)
         return self._client.decr(key, delta)
-
-    def import_preferred_memcache_lib(self, servers):
-        """Returns an initialized memcache client.  Used by the constructor."""
-        try:
-            import pylibmc
-        except ImportError:
-            pass
-        else:
-            self.mc_library = "pylibmc"
-            return pylibmc.Client(servers)
-
-        try:
-            from google.appengine.api import memcache
-        except ImportError:
-            pass
-        else:
-            self.mc_library = "google.appengine.api"
-            return memcache.Client()
-
-        try:
-            import memcache
-        except ImportError:
-            pass
-        else:
-            self.mc_library = "memcache"
-            return memcache.Client(servers)
-
-        try:
-            import libmc
-        except ImportError:
-            pass
-        else:
-            self.mc_library = "libmc"
-            return libmc.Client(servers)
 
 
 class SASLMemcachedCache(MemcachedCache):
@@ -237,11 +95,9 @@ class SASLMemcachedCache(MemcachedCache):
         key_prefix=None,
         username=None,
         password=None,
-        **kwargs
+        **kwargs,
     ):
-        super(SASLMemcachedCache, self).__init__(
-            default_timeout=default_timeout
-        )
+        super().__init__(default_timeout=default_timeout)
 
         if servers is None:
             servers = ["127.0.0.1:11211"]
@@ -284,7 +140,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         """
         self.chunksize = kwargs.get("chunksize", 1048448)
         self.maxchunk = kwargs.get("maxchunk", 32)
-        super(SpreadSASLMemcachedCache, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def factory(cls, app, config, args, kwargs):
@@ -301,7 +157,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
     def delete(self, key):
         for skey in self._genkeys(key):
-            super(SpreadSASLMemcachedCache, self).delete(skey)
+            super().delete(skey)
 
     def set(self, key, value, timeout=None, chunk=True):
         """Set a value in cache, potentially spreading it across multiple key.
@@ -318,9 +174,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if chunk:
             return self._set(key, value, timeout=timeout)
         else:
-            return super(SpreadSASLMemcachedCache, self).set(
-                key, value, timeout=timeout
-            )
+            return super().set(key, value, timeout=timeout)
 
     def _set(self, key, value, timeout=None):
         # pickling/unpickling add an overhead,
@@ -333,16 +187,12 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         chks = range(0, len_ser, self.chunksize)
 
         if len(chks) > self.maxchunk:
-            raise ValueError(
-                "Cannot store value in less than %s keys" % self.maxchunk
-            )
+            raise ValueError("Cannot store value in less than %s keys" % self.maxchunk)
 
         for i in chks:
-            values["%s.%s" % (key, i // self.chunksize)] = serialized[
-                i : i + self.chunksize
-            ]
+            values[f"{key}.{i // self.chunksize}"] = serialized[i : i + self.chunksize]
 
-        super(SpreadSASLMemcachedCache, self).set_many(values, timeout)
+        super().set_many(values, timeout)
 
     def get(self, key, chunk=True):
         """Get a cached value.
@@ -353,14 +203,14 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         if chunk:
             return self._get(key)
         else:
-            return super(SpreadSASLMemcachedCache, self).get(key)
+            return super().get(key)
 
     def _genkeys(self, key):
-        return ["%s.%s" % (key, i) for i in range(self.maxchunk)]
+        return [f"{key}.{i}" for i in range(self.maxchunk)]
 
     def _get(self, key):
-        to_get = ["%s.%s" % (key, i) for i in range(self.maxchunk)]
-        result = super(SpreadSASLMemcachedCache, self).get_many(*to_get)
+        to_get = [f"{key}.{i}" for i in range(self.maxchunk)]
+        result = super().get_many(*to_get)
         serialized = b"".join(v for v in result if v is not None)
 
         if not serialized:

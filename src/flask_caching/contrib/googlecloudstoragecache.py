@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 import json
 import logging
@@ -12,8 +11,8 @@ logger = logging.getLogger(__name__)
 try:
     from google.auth.credentials import AnonymousCredentials
     from google.cloud import storage, exceptions
-except ImportError:
-    raise RuntimeError("no google-cloud-storage module found")
+except ImportError as e:
+    raise RuntimeError("no google-cloud-storage module found") from e
 
 
 class GoogleCloudStorageCache(BaseCache):
@@ -51,7 +50,7 @@ class GoogleCloudStorageCache(BaseCache):
         anonymous=False,
         **kwargs
     ):
-        super(GoogleCloudStorageCache, self).__init__(default_timeout)
+        super().__init__(default_timeout)
         if not isinstance(bucket, str):
             raise ValueError("GCSCache bucket parameter must be a string")
         if anonymous:
