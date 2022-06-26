@@ -19,6 +19,11 @@ def test_cache_set(app, cache):
     assert cache.get("hi") == "hello"
 
 
+def test_cache_has(app, cache):
+    cache.add("hi", "hello")
+    assert cache.has("hi")
+
+
 def test_cache_add(app, cache):
     cache.add("hi", "hello")
     assert cache.get("hi") == "hello"
