@@ -101,6 +101,20 @@ a subclass of `flask.Response`::
     ``@route`` decorator, and not the result of your view function.
 
 
+Caching Pluggable View Classes
+------------------------------
+
+Flask's pluggable view classes are also supported. To cache them, use the same
+:meth:`~Cache.cached` decorator on the ``dispatch_request`` method::
+
+    from flask.views import View
+
+    class MyView(View):
+        @cache.cached(timeout=50)
+        def dispatch_request(self):
+            return 'Cached for 50s'
+
+
 Caching Other Functions
 -----------------------
 

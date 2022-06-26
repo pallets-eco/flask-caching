@@ -3,6 +3,7 @@ import time
 
 from flask import make_response
 from flask import request
+from flask.views import View
 
 from flask_caching import CachedResponse
 
@@ -30,6 +31,31 @@ def test_cached_view(app, cache):
     assert the_time != rv.data.decode("utf-8")
 
 
+def test_cached_view_class(app, cache):
+    class CachedView(View):
+        @cache.cached(2)
+        def dispatch_request(self):
+            return str(time.time())
+
+    app.add_url_rule("/", view_func=CachedView.as_view('name'))
+
+    tc = app.test_client()
+
+    rv = tc.get("/")
+    the_time = rv.data.decode("utf-8")
+
+    time.sleep(1)
+
+    rv = tc.get("/")
+
+    assert the_time == rv.data.decode("utf-8")
+
+    time.sleep(1)
+
+    rv = tc.get("/")
+    assert the_time != rv.data.decode("utf-8")
+
+    
 def test_async_cached_view(app, cache):
     import asyncio
     import sys
@@ -48,11 +74,11 @@ def test_async_cached_view(app, cache):
     the_time = rv.data.decode("utf-8")
 
     time.sleep(1)
-
+    
     rv = tc.get("/test-async")
     assert the_time == rv.data.decode("utf-8")
 
-
+    
 def test_cached_view_unless(app, cache):
     @app.route("/a")
     @cache.cached(5, unless=lambda: True)
