@@ -7,6 +7,7 @@
     :copyright: (c) 2014 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+import pickle
 import time
 
 import pytest
@@ -196,6 +197,44 @@ class TestRedisCache(GenericCacheTests):
         with pytest.raises(ValueError) as exc_info:
             backends.RedisCache(host=None)
         assert str(exc_info.value) == "RedisCache host parameter may not be None"
+
+
+class TestRedisSentinelCache(GenericCacheTests):
+    _can_use_fast_sleep = False
+
+    #     @pytest.fixture(scope="class", autouse=True)
+    #     def requirements(self, redis_server):
+    #         pass
+
+    @pytest.fixture()
+    def make_cache(self, request):
+        sentinels = [("111.1.1.1", 11111)]
+        c = backends.RedisSentinelCache(sentinels=sentinels)
+        yield lambda: c
+        c.clear()
+
+    def test_client_override_does_not_break_cachelib_methods(self, c):
+        expected_get_many_values = ["bacon", "spam", "eggs"]
+
+        class DummyWriteClient:
+            def setex(self, *args, **kwargs):
+                return "ok"
+
+        c._write_client = DummyWriteClient()
+        assert c.set("foo", "bar") == "ok"
+
+        class DummyReadClient:
+            def mget(self, *args, **kwargs):
+                values = [
+                    b"!" + pickle.dumps(v, pickle.HIGHEST_PROTOCOL)
+                    for v in expected_get_many_values
+                ]
+                return values
+
+        c._read_client = DummyReadClient()
+        actual_values = c.get_many("foo")
+        for actual, expected in zip(actual_values, expected_get_many_values):
+            assert actual == expected
 
 
 class TestMemcachedCache(GenericCacheTests):
