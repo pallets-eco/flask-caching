@@ -4,7 +4,8 @@ Changelog
 Version 2.0.0
 -------------
 
-- `flask_caching.backends.FileSystemCache` internal implementations have been removed. It now shares 100% of `cachelib.FileSystemCache` API and is fully compatible.
+- fix bug where ``flask_caching.backends.RedisSentinelCache.get_many`` would query wrong host&port combination.
+- ``flask_caching.backends.FileSystemCache`` internal implementations have been removed. It now shares 100% of ``cachelib.FileSystemCache`` API and is fully compatible.
 
 
 Version 1.11.1
