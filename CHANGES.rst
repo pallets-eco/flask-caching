@@ -4,11 +4,11 @@ Changelog
 Version 2.0.0
 -------------
 
-Released 2022-05-29
+Released 2022-06-26
 
-- fix bug where ``flask_caching.backends.RedisSentinelCache.get_many`` would query wrong host&port combination.
-- ``flask_caching.backends.FileSystemCache`` internal implementations have been removed. It now shares 100% of ``cachelib.FileSystemCache`` API and is fully compatible.
-- Add proxy to underlaying ``has`` method of cache clients
+- fix bug where ``flask_caching.backends.RedisSentinelCache.get_many`` would query wrong host&port combination. :pr:`372`
+- ``flask_caching.backends.FileSystemCache`` internal implementations have been removed. It now shares 100% of ``cachelib.FileSystemCache`` API and is fully compatible. :pr:`369`
+- Add proxy to underlaying ``has`` method of cache clients. :pr:`356`
 
 
 Version 1.11.1
