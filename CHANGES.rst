@@ -7,8 +7,9 @@ Version 2.0.0
 Released 2022-06-26
 
 - fix bug where ``flask_caching.backends.RedisSentinelCache.get_many`` would query wrong host&port combination. :pr:`372`
-- ``flask_caching.backends.FileSystemCache`` internal implementations have been removed. It now shares 100% of ``cachelib.FileSystemCache`` API and is fully compatible. :pr:`369`
+- Remove ``flask_caching.backends.FileSystemCache`` method overrides. It now shares 100% of ``cachelib.FileSystemCache`` API and is fully compatible. Functionality relient on implementation details of said overrides from older releases might not work anymore. :pr:`369`
 - Add proxy to underlaying ``has`` method of cache clients. :pr:`356`
+- ``flask_caching.backends.FileSystemCache`` now stores timestamps in a universal (non-frammed) way following the lastest version of ``cachelib.FileSystemCache``. The change also reduces overhead from 17 bytes (via previous method using pickle) to 4 bytes (using python's ``struct``). This, however, will break compatibily since older timestamps are serialized with a different strategy.
 
 
 Version 1.11.1
