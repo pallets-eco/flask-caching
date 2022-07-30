@@ -4,7 +4,7 @@ Changelog
 Version 2.0.1
 -------------
 
-Unreleased
+Released 2022-07-30
 
 - Relax dependency pin to allow Flask 2.x.x
 
