@@ -193,7 +193,7 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.has(*args, **kwargs)
 
-    def set(self, *args, **kwargs) -> bool:
+    def set(self, *args, **kwargs) -> Optional[bool]:
         """Proxy function for internal cache object."""
         return self.cache.set(*args, **kwargs)
 
@@ -209,7 +209,7 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.delete_many(*args, **kwargs)  # type: ignore
 
-    def clear(self) -> None:
+    def clear(self) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.clear()
 
