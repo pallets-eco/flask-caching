@@ -48,20 +48,6 @@ idna==3.3
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==4.12.0
-    # via
-    #   build
-    #   click
-    #   flask
-    #   pallets-sphinx-themes
-    #   pep517
-    #   pluggy
-    #   pre-commit
-    #   pytest
-    #   redis
-    #   sphinx
-    #   tox
-    #   virtualenv
 iniconfig==1.1.1
     # via pytest
 itsdangerous==2.1.2
@@ -119,7 +105,7 @@ pytest==7.1.2
     #   pytest-xprocess
 pytest-asyncio==0.19.0
     # via -r tests.in
-pytest-xprocess==0.19.0
+pytest-xprocess==0.20.0
     # via -r tests.in
 pytz==2022.1
     # via babel
@@ -169,13 +155,6 @@ tomli==2.0.1
     #   pytest
 tox==3.25.1
     # via -r dev.in
-typing-extensions==4.3.0
-    # via
-    #   asgiref
-    #   async-timeout
-    #   importlib-metadata
-    #   pytest-asyncio
-    #   redis
 urllib3==1.26.11
     # via requests
 virtualenv==20.16.2
@@ -188,10 +167,6 @@ wheel==0.37.1
     # via pip-tools
 wrapt==1.14.1
     # via deprecated
-zipp==3.8.1
-    # via
-    #   importlib-metadata
-    #   pep517
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
