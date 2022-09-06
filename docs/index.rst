@@ -616,8 +616,8 @@ Set ``CACHE_TYPE`` to ``SpreadSASLMemcachedCache`` to use this type.  The old
 name, ``spreadsaslmemcached`` is deprecated and will be removed in
 Flask-Caching 2.0.
 
-Same as SASLMemcachedCache however, it has the ablity to spread value across
-multiple keys if it is bigger than the memcached treshold which by
+Same as SASLMemcachedCache however, it has the ability to spread value across
+multiple keys if it is bigger than the memcached threshold which by
 default is 1M. Uses pickle.
 
 .. versionadded:: 0.11

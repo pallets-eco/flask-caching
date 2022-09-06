@@ -471,7 +471,7 @@ def test_cache_with_query_string_and_source_check_enabled(app, cache):
     def view_works():
         return str(time.time())
 
-    # ... and we overide the function attached to the view
+    # ... and we override the function attached to the view
     app.view_functions["works"] = view_works
 
     tc = app.test_client()
@@ -534,7 +534,7 @@ def test_cache_with_query_string_and_source_check_disabled(app, cache):
     def view_works():
         return str(time.time())
 
-    # ... and we overide the function attached to the view
+    # ... and we override the function attached to the view
     app.view_functions["works"] = view_works
 
     tc = app.test_client()
