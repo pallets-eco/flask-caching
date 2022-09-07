@@ -230,14 +230,15 @@ class RedisClusterCache(RedisCache):
             raise ValueError("decode_responses is not supported by RedisCache.")
 
         try:
-            from rediscluster import RedisCluster
+            from redis import RedisCluster
+            from redis.cluster import ClusterNode
         except ImportError as e:
-            raise RuntimeError("no rediscluster module found") from e
+            raise RuntimeError("no redis.cluster module found") from e
 
         try:
             nodes = [(node.split(":")) for node in cluster.split(",")]
             startup_nodes = [
-                {"host": node[0].strip(), "port": node[1].strip()} for node in nodes
+                ClusterNode(node[0].strip(), node[1].strip()) for node in nodes
             ]
         except IndexError as e:
             raise ValueError(

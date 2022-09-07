@@ -353,8 +353,8 @@ The following configuration values exist for Flask-Caching:
                                   **redis**)
                                 * **RedisSentinelCache** (redis required; old
                                   name is **redissentinel**)
-                                * **RedisClusterCache** (redis and rediscluster
-                                  required; old name is **rediscluster**)
+                                * **RedisClusterCache** (redis required; old
+                                  name is **rediscluster**)
                                 * **UWSGICache** (uwsgi required; old name is
                                   **uwsgi**)
                                 * **MemcachedCache** (pylibmc or memcache
