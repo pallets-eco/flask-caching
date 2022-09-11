@@ -316,7 +316,7 @@ def test_cache_forced_update_params(app, cache):
 
 
 def test_generator(app, cache):
-    """ test function return generator"""
+    """test function return generator"""
     with app.test_request_context():
 
         @cache.cached()
