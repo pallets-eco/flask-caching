@@ -7,13 +7,15 @@ import pytest
 import flask_caching as fsc
 
 try:
-    __import__("pytest_xprocess")
     from xprocess import ProcessStarter
 except ImportError:
+    try:
+        __import__("pytest_xprocess")
+    except ImportError:
 
-    @pytest.fixture(scope="session")
-    def xprocess():
-        pytest.skip("pytest-xprocess not installed.")
+        @pytest.fixture(scope="session")
+        def xprocess():
+            pytest.skip("pytest-xprocess not installed.")
 
 
 @pytest.fixture
