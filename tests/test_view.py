@@ -305,7 +305,9 @@ def test_cache_memoize_timeout_dynamic_via_callable_timeout(app, cache):
     @app.route("/")
     @cache.memoize(
         # This should override the timeout to be 2 seconds
-        timeout=lambda rv: 2 if isinstance(rv, Response) else 1
+        timeout=lambda rv: 2
+        if isinstance(rv, Response)
+        else 1
     )
     def cached_view():
         return make_response(str(time.time()))
@@ -323,9 +325,7 @@ def test_cache_memoize_timeout_dynamic_via_callable_timeout(app, cache):
 
 def test_cache_cached_reponse_overrides_callable_timeout(app, cache):
     @app.route("/")
-    @cache.cached(
-        timeout=lambda rv: 1  # second, to be be overridden by CachedResponse
-    )
+    @cache.cached(timeout=lambda rv: 1)  # timeout to be be overridden by CachedResponse
     def cached_view():
         # This should override the timeout to be 2 seconds
         return CachedResponse(response=make_response(str(time.time())), timeout=2)
