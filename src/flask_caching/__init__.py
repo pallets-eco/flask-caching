@@ -236,7 +236,7 @@ class Cache:
 
     def cached(
         self,
-        timeout: Optional[int] = None,
+        timeout: Optional[Union[int, Callable]] = None,
         key_prefix: str = "view/%s",
         unless: Optional[Callable] = None,
         forced_update: Optional[Callable] = None,
@@ -406,14 +406,17 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
-                        cache_timeout = decorated_function.cache_timeout
+                        timeout = decorated_function.cache_timeout
                         if isinstance(rv, CachedResponse):
-                            cache_timeout = rv.timeout or cache_timeout
+                            timeout = rv.timeout or timeout
+                        elif callable(timeout):
+                            timeout = timeout(rv)
+
                         try:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=cache_timeout,
+                                timeout=timeout,
                             )
                         except Exception:
                             if self.app.debug:
@@ -592,6 +595,9 @@ class Cache:
 
         def make_cache_key(f, *args, **kwargs):
             _timeout = getattr(timeout, "cache_timeout", timeout)
+            if callable(_timeout):
+                _timeout = 0  # placeholder until timeout(rv) is doable
+
             fname, version_data = self._memoize_version(
                 f,
                 args=args,
@@ -724,7 +730,7 @@ class Cache:
 
     def memoize(
         self,
-        timeout: Optional[int] = None,
+        timeout: Optional[Union[int, Callable]] = None,
         make_name: Optional[Callable] = None,
         unless: Optional[Callable] = None,
         forced_update: Optional[Callable] = None,
@@ -878,11 +884,15 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
+                        timeout = decorated_function.cache_timeout
+                        if callable(timeout):
+                            timeout = timeout(rv)
+
                         try:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=decorated_function.cache_timeout,
+                                timeout=timeout,
                             )
                         except Exception:
                             if self.app.debug:
