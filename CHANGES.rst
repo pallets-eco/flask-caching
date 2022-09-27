@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 2.0.3
+-------------
+
+- added support for callable `timeout` in `@cached` and `@memoized`
+- modified try-except import strategy re pytest-xprocess
+
 Version 2.0.2
 -------------
 

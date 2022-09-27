@@ -288,8 +288,13 @@ class Cache:
 
                     readable and writable
 
-        :param timeout: Default None. If set to an integer, will cache for that
-                        amount of time. Unit of time is in seconds.
+        :param timeout: Default None. If set to an integer or a callable
+                        which returns and integer, it will cache for
+                        that amount of time. As a callable it will be
+                        invoked after the cached function evaluation
+                        and should expect the value from that as its
+                        one argument. The callable's return type should
+                        be None or int. Unit of time is in seconds.
 
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key. `request.path` will be the
@@ -781,8 +786,13 @@ class Cache:
                     readable and writable
 
 
-        :param timeout: Default None. If set to an integer, will cache for that
-                        amount of time. Unit of time is in seconds.
+        :param timeout: Default None. If set to an integer or a callable
+                        which returns and integer, it will cache for
+                        that amount of time. As a callable it will be
+                        invoked after the cached function evaluation
+                        and should expect the value from that as its
+                        one argument. The callable's return type should
+                        be None or int. Unit of time is in seconds.
         :param make_name: Default None. If set this is a function that accepts
                           a single argument, the function name, and returns a
                           new string to be used as the function name.
