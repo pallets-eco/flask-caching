@@ -405,7 +405,7 @@ class Cache:
 
     def cached(
         self,
-        timeout: int | None = None,
+        timeout: int | Callable[..., Any] | None = None,
         key_prefix: str | Callable[[], str] = "view/%s",
         unless: Callable[..., Any] | None = None,
         forced_update: Callable[..., Any] | None = None,
@@ -608,6 +608,9 @@ class Cache:
                         cache_timeout = cached_fn.cache_timeout
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
+                        elif callable(cache_timeout):
+                            cache_timeout = cache_timeout(rv)
+
                         try:
                             self.set(
                                 cache_key,
@@ -802,6 +805,9 @@ class Cache:
 
         def make_cache_key(f: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
             _timeout = timeout.cache_timeout if timeout is not None else None
+            if callable(_timeout):
+                _timeout = 0  # placeholder until timeout(rv) is doable
+
             fname, version_data = self._memoize_version(
                 f,
                 args=args,
@@ -943,7 +949,7 @@ class Cache:
 
     def memoize(
         self,
-        timeout: int | None = None,
+        timeout: int | Callable[..., Any] | None = None,
         make_name: Callable[..., str] | None = None,
         unless: Callable[..., bool] | None = None,
         forced_update: Callable[..., bool] | None = None,
@@ -1110,11 +1116,15 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
+                        cache_timeout = memoized_fn.cache_timeout
+                        if callable(cache_timeout):
+                            cache_timeout = cache_timeout(rv)
+
                         try:
                             self.set(
                                 cache_key,
                                 rv,
-                                timeout=memoized_fn.cache_timeout,
+                                timeout=cache_timeout,
                             )
                         except Exception:
                             if self.app.debug:
