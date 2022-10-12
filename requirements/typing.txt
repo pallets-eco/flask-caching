@@ -4,7 +4,7 @@
 #
 #    pip-compile typing.in
 #
-mypy==0.971
+mypy==0.981
     # via -r typing.in
 mypy-extensions==0.4.3
     # via mypy
