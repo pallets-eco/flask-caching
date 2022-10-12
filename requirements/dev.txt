@@ -145,15 +145,14 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
 toml==0.10.2
-    # via
-    #   pre-commit
-    #   tox
+    # via pre-commit
 tomli==2.0.1
     # via
     #   build
     #   pep517
     #   pytest
-tox==3.25.1
+    #   tox
+tox==3.26.0
     # via -r dev.in
 urllib3==1.26.11
     # via requests
