@@ -74,7 +74,7 @@ pallets-sphinx-themes==2.0.2
     # via -r docs.in
 pep517==0.13.0
     # via build
-pip-tools==6.9.0
+pip-tools==6.10.0
     # via -r dev.in
 platformdirs==2.5.2
     # via virtualenv
@@ -147,11 +147,7 @@ sphinxcontrib-serializinghtml==1.1.5
 toml==0.10.2
     # via pre-commit
 tomli==2.0.1
-    # via
-    #   build
-    #   pep517
-    #   pytest
-    #   tox
+    # via pytest
 tox==3.27.0
     # via -r dev.in
 urllib3==1.26.11
