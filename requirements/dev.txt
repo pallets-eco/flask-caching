@@ -147,7 +147,7 @@ toml==0.10.2
     # via pre-commit
 tomli==2.0.1
     # via pytest
-tox==3.27.0
+tox==3.27.1
     # via -r dev.in
 urllib3==1.26.11
     # via requests
