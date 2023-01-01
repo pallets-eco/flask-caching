@@ -4,7 +4,7 @@
 #
 #    pip-compile tests.in
 #
-asgiref==3.5.2
+asgiref==3.6.0
     # via -r tests.in
 async-timeout==4.0.2
     # via redis
