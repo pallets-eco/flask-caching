@@ -143,7 +143,7 @@ sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
 toml==0.10.2
     # via pre-commit
-tox==3.27.1
+tox==3.28.0
     # via -r dev.in
 urllib3==1.26.11
     # via requests
