@@ -8,7 +8,7 @@ mypy==0.981
     # via -r typing.in
 mypy-extensions==0.4.3
     # via mypy
-types-redis==4.3.21.6
+types-redis==4.3.21.7
     # via -r typing.in
 typing-extensions==4.3.0
     # via mypy
