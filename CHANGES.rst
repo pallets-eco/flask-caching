@@ -5,6 +5,7 @@ Version 2.0.2
 -------------
 
 - migrate ``flask_caching.backends.RedisCluster`` dependency from redis-py-cluster to redis-py
+- bug fix: make the ``make_cache_key`` attributed of decorated view functions writeable. :pr:`431`, issue `#97`
 
 Version 2.0.1
 -------------
