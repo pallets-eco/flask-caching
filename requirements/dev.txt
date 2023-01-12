@@ -116,7 +116,7 @@ six==1.16.0
     # via tox
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==5.3.0
+sphinx==6.0.0
     # via
     #   -r docs.in
     #   pallets-sphinx-themes

@@ -42,7 +42,7 @@ requests==2.28.1
     # via sphinx
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==5.3.0
+sphinx==6.0.0
     # via
     #   -r docs.in
     #   pallets-sphinx-themes
