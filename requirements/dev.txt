@@ -151,7 +151,7 @@ virtualenv==20.16.2
     #   tox
 werkzeug==2.2.1
     # via flask
-wheel==0.37.1
+wheel==0.38.1
     # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:
