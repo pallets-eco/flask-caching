@@ -79,7 +79,7 @@ pluggy==1.0.0
     # via
     #   pytest
     #   tox
-pre-commit==2.20.0
+pre-commit==2.21.0
     # via -r dev.in
 psutil==5.9.1
     # via pytest-xprocess
@@ -141,8 +141,6 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
-toml==0.10.2
-    # via pre-commit
 tox==3.28.0
     # via -r dev.in
 urllib3==1.26.11
