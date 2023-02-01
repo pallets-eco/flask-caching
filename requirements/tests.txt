@@ -10,7 +10,7 @@ async-timeout==4.0.2
     # via redis
 attrs==22.1.0
     # via pytest
-cachelib==0.9.0
+cachelib==0.10.2
     # via -r tests.in
 click==8.1.3
     # via flask
