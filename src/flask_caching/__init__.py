@@ -362,7 +362,9 @@ class Cache:
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = decorated_function.make_cache_key(*args, use_request=True, **kwargs)
+                        cache_key = decorated_function.make_cache_key(
+                            *args, use_request=True, **kwargs
+                        )
 
                     if (
                         callable(forced_update)
@@ -429,7 +431,7 @@ class Cache:
                 for arg_name, arg in zip(argspec_args, args):
                     kwargs[arg_name] = arg
 
-                use_request = kwargs.pop('use_request', False)
+                use_request = kwargs.pop("use_request", False)
                 return _make_cache_key(args, kwargs, use_request=use_request)
 
             def _make_cache_key_query_string():

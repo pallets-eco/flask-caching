@@ -51,7 +51,6 @@ class FileSystemCache(BaseFactory, CachelibFileSystemCache):
         hash_method=hashlib.md5,
         ignore_errors=False,
     ):
-
         CachelibFileSystemCache.__init__(
             self,
             cache_dir=cache_dir,

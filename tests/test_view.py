@@ -217,7 +217,7 @@ def test_set_make_cache_key_property(app, cache):
     def cached_view():
         return str(time.time())
 
-    cached_view.make_cache_key = lambda *args, **kwargs: request.args['foo']
+    cached_view.make_cache_key = lambda *args, **kwargs: request.args["foo"]
 
     tc = app.test_client()
 
