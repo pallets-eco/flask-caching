@@ -13,12 +13,12 @@ import logging
 
 from cachelib import FileSystemCache as CachelibFileSystemCache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseFactory
 
 logger = logging.getLogger(__name__)
 
 
-class FileSystemCache(BaseCache, CachelibFileSystemCache):
+class FileSystemCache(BaseFactory, CachelibFileSystemCache):
 
     """A cache that stores the items on the file system.  This cache depends
     on being the only user of the `cache_dir`.  Make absolutely sure that
@@ -52,7 +52,6 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         ignore_errors=False,
     ):
 
-        BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibFileSystemCache.__init__(
             self,
             cache_dir=cache_dir,
@@ -70,7 +69,6 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         kwargs.update(
             dict(
                 threshold=config["CACHE_THRESHOLD"],
-                ignore_errors=config["CACHE_IGNORE_ERRORS"],
             )
         )
         return cls(*args, **kwargs)

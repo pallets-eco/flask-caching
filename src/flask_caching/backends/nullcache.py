@@ -8,10 +8,10 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from flask_caching.backends.base import BaseCache
+from cachelib import BaseCache as CachelibBaseCache
 
 
-class NullCache(BaseCache):
+class NullCache(CachelibBaseCache):
     """A cache that doesn't cache. This can be useful for unit testing.
 
     :param default_timeout: a dummy parameter that is ignored but exists

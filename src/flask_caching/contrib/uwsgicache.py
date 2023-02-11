@@ -10,10 +10,10 @@
 """
 from cachelib import UWSGICache as CachelibUWSGICache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseFactory
 
 
-class UWSGICache(BaseCache, CachelibUWSGICache):
+class UWSGICache(BaseFactory, CachelibUWSGICache):
     """Implements the cache using uWSGI's caching framework.
 
     .. note::
@@ -29,7 +29,6 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
     """
 
     def __init__(self, default_timeout=300, cache=""):
-        BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibUWSGICache.__init__(
             self,
             cache=cache,

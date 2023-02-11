@@ -12,13 +12,13 @@ import logging
 
 from cachelib import SimpleCache as CachelibSimpleCache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseFactory
 
 
 logger = logging.getLogger(__name__)
 
 
-class SimpleCache(BaseCache, CachelibSimpleCache):
+class SimpleCache(BaseFactory, CachelibSimpleCache):
     """Simple memory cache for single process environments. This class exists
     mainly for the development server and is not 100% thread safe.  It tries
     to use as many atomic operations as possible and no locks for simplicity
@@ -49,7 +49,6 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
         kwargs.update(
             dict(
                 threshold=config["CACHE_THRESHOLD"],
-                ignore_errors=config["CACHE_IGNORE_ERRORS"],
             )
         )
         return cls(*args, **kwargs)

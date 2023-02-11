@@ -13,13 +13,13 @@ import re
 
 from cachelib import MemcachedCache as CachelibMemcachedCache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseFactory
 
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
 
 
-class MemcachedCache(BaseCache, CachelibMemcachedCache):
+class MemcachedCache(BaseFactory, CachelibMemcachedCache):
 
     """A cache that uses memcached as backend.
 

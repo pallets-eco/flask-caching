@@ -2,7 +2,9 @@ import datetime
 import json
 import logging
 
-from flask_caching.backends.base import BaseCache
+from cachelib import BaseCache as CachelibBaseCache
+
+from flask_caching.backends.base import BaseFactory
 
 
 logger = logging.getLogger(__name__)
@@ -15,7 +17,7 @@ except ImportError as e:
     raise RuntimeError("no google-cloud-storage module found") from e
 
 
-class GoogleCloudStorageCache(BaseCache):
+class GoogleCloudStorageCache(BaseFactory, CachelibBaseCache):
     """Uses an Google Cloud Storage bucket as a cache backend.
     Note: User-contributed functionality. This project does not guarantee that
     this functionality will be maintained or functional at any given time.

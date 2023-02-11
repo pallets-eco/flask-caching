@@ -73,8 +73,8 @@ def test_cache_unlink_if_not(app):
     assert cache.get("biggerkey2") is None
 
 
-def test_cache_delete_many_ignored(app):
-    cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_IGNORE_ERRORS": True})
+def test_cache_delete_many(app):
+    cache = Cache(config={"CACHE_TYPE": "simple"})
     cache.init_app(app)
 
     cache.set("hi", "hello")

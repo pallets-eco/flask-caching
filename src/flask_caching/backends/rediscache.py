@@ -12,10 +12,10 @@ import pickle
 
 from cachelib import RedisCache as CachelibRedisCache
 
-from flask_caching.backends.base import BaseCache
+from flask_caching.backends.base import BaseFactory
 
 
-class RedisCache(BaseCache, CachelibRedisCache):
+class RedisCache(BaseFactory, CachelibRedisCache):
     """Uses the Redis key-value store as a cache backend.
 
     The first argument can be either a string denoting address of the Redis
