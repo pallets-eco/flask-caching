@@ -146,7 +146,7 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
-tox==4.4.5
+tox==4.4.6
     # via -r dev.in
 urllib3==1.26.11
     # via requests
