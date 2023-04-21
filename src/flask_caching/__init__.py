@@ -246,6 +246,7 @@ class Cache:
         cache_none: bool = False,
         make_cache_key: Optional[Callable] = None,
         source_check: Optional[bool] = None,
+        endpoint_params: Optional[list] = None
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -361,7 +362,7 @@ class Cache:
 
                 try:
                     if make_cache_key is not None and callable(make_cache_key):
-                        cache_key = make_cache_key(*args, **kwargs)
+                        cache_key = make_cache_key(f, endpoint_params, *args, **kwargs)
                     else:
                         cache_key = decorated_function.make_cache_key(*args, use_request=True, **kwargs)
 
@@ -399,7 +400,8 @@ class Cache:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
                     return self._call_fn(f, *args, **kwargs)
-
+                if found and self.app.debug:
+                    logger(f'Cache used for key: {cache_key}')
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
                     if inspect.isgenerator(rv):
