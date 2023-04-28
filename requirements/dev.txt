@@ -10,8 +10,6 @@ asgiref==3.6.0
     # via -r tests.in
 async-timeout==4.0.2
     # via redis
-attrs==22.1.0
-    # via pytest
 babel==2.10.3
     # via sphinx
 build==0.8.0
@@ -102,7 +100,7 @@ pylibmc==1.6.3
     # via -r tests.in
 pyproject-api==1.5.1
     # via tox
-pytest==7.2.1
+pytest==7.3.1
     # via
     #   -r tests.in
     #   pytest-asyncio
