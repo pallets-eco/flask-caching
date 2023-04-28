@@ -40,7 +40,7 @@ docutils==0.18.1
     # via
     #   sphinx
     #   sphinx-tabs
-filelock==3.9.0
+filelock==3.10.7
     # via
     #   tox
     #   virtualenv
@@ -80,7 +80,7 @@ pep517==0.13.0
     # via build
 pip-tools==6.12.2
     # via -r dev.in
-platformdirs==3.0.0
+platformdirs==3.2.0
     # via
     #   tox
     #   virtualenv
@@ -100,7 +100,7 @@ pygments==2.12.0
     #   sphinx-tabs
 pylibmc==1.6.3
     # via -r tests.in
-pyproject-api==1.5.0
+pyproject-api==1.5.1
     # via tox
 pytest==7.2.1
     # via
@@ -146,11 +146,11 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
-tox==4.4.6
+tox==4.4.8
     # via -r dev.in
 urllib3==1.26.11
     # via requests
-virtualenv==20.19.0
+virtualenv==20.21.0
     # via
     #   pre-commit
     #   tox
