@@ -87,6 +87,11 @@ a subclass of `flask.Response`::
             timeout=50,
         )
 
+.. versionchanged:: 2.0.3
+    A dynamic timeout can also be achieved via setting ``@cached``'s `timeout` argument
+    to a callable which takes the decorated function's output as a positional argument
+    and returns `None` or an integer. Callable timeout is also available to ``@memoized``.
+
 .. warning::
 
     When using ``cached`` on a view, take care to put it between Flask's
@@ -178,6 +183,11 @@ every time this information is needed you might do something like the following:
         class Person(db.Model):
             def __repr__(self):
                 return "%s(%s)" % (self.__class__.__name__, self.id)
+
+.. versionchanged:: 2.0.3
+    A dynamic timeout can be achieved via setting ``@memoized``'s `timeout` argument
+    to a callable which takes the decorated function's output as a positional argument
+    and returns `None` or an integer. Callable timeout is also available to ``@cached``.
 
 
 Deleting memoize cache
