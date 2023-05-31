@@ -211,6 +211,33 @@ def test_cache_key_property(app, cache):
         assert the_time == cache_data
 
 
+def test_set_make_cache_key_property(app, cache):
+    @app.route("/")
+    @cache.cached(5)
+    def cached_view():
+        return str(time.time())
+
+    cached_view.make_cache_key = lambda *args, **kwargs: request.args['foo']
+
+    tc = app.test_client()
+
+    rv = tc.get("/?foo=a")
+    a = rv.data.decode("utf-8")
+
+    rv = tc.get("/?foo=b")
+    b = rv.data.decode("utf-8")
+    assert a != b
+
+    tc = app.test_client()
+    rv = tc.get("/?foo=a")
+    a_2 = rv.data.decode("utf-8")
+    assert a == a_2
+
+    rv = tc.get("/?foo=b")
+    b_2 = rv.data.decode("utf-8")
+    assert b == b_2
+
+
 def test_make_cache_key_function_property(app, cache):
     @app.route("/<foo>/<bar>")
     @cache.memoize(5)

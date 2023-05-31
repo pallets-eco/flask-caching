@@ -4,11 +4,21 @@
 #
 #    pip-compile typing.in
 #
+cffi==1.15.1
+    # via cryptography
+cryptography==39.0.0
+    # via
+    #   types-pyopenssl
+    #   types-redis
 mypy==0.981
     # via -r typing.in
 mypy-extensions==0.4.3
     # via mypy
-types-redis==4.3.21.6
+pycparser==2.21
+    # via cffi
+types-pyopenssl==23.0.0.2
+    # via types-redis
+types-redis==4.5.4.1
     # via -r typing.in
 typing-extensions==4.3.0
     # via mypy
