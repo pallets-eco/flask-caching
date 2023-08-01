@@ -18,7 +18,7 @@ pycparser==2.21
     # via cffi
 types-pyopenssl==23.0.0.2
     # via types-redis
-types-redis==4.5.4.1
+types-redis==4.6.0.3
     # via -r typing.in
 typing-extensions==4.3.0
     # via mypy
