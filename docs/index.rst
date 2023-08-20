@@ -139,7 +139,7 @@ Make Custom `Cache Key`
 Sometimes you want to define your cache key for each route. Using the same ``@cached``
 decorator you are able to specify how this key is generated. This might be useful when
 the key for cache is should not be just the default key_prefix, but has to be derived
-from other parameters in a request. An example useacse would be for caching POST routes.
+from other parameters in a request. An example usecase would be for caching POST routes.
 Where the cache key should be derived from the data in that request, rather than just the
 route/view itself.
 
