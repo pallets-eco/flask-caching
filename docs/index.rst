@@ -133,6 +133,33 @@ returned::
 
     cached_comments = get_all_comments()
 
+Make Custom `Cache Key`
+-----------------------
+
+Sometimes you want to define your cache key for each route. Using the same ``@cached``
+decorator you are able to specify how this key is generated. This might be useful when
+the key for cache is should not be just the default key_prefix, but has to be derived
+from other parameters in a request. An example useacse would be for caching POST routes.
+Where the cache key should be derived from the data in that request, rather than just the
+route/view itself.
+
+``make_cache_key`` can be used to specify such a function. The function should return a 
+string which should act like the key to the required value that is being cached::
+
+   def make_key():
+      """A function which is called to derive the key for a computed value.
+         The key in this case is the concat value of all the json request
+         parameters. Other strategy could to use any hashing function.
+      :returns: unique string for which the value should be cached.
+      """
+      user_data = request.get_json()
+      return ",".join([f"{key}={value}" for key, value in user_data.items()])
+
+   @app.route("/hello", methods=["POST"])
+   @cache.cached(timeout=60, make_cache_key=make_key)
+   def some_func():
+      ....
+
 
 Memoization
 -----------
