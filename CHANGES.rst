@@ -1,6 +1,8 @@
 Changelog
 =========
 
+- Added docs and example for make_cache_key
+
 Version 2.0.2
 -------------
 
