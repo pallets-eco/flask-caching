@@ -10,9 +10,9 @@ cryptography==39.0.0
     # via
     #   types-pyopenssl
     #   types-redis
-mypy==0.981
+mypy==1.5.1
     # via -r typing.in
-mypy-extensions==0.4.3
+mypy-extensions==1.0.0
     # via mypy
 pycparser==2.21
     # via cffi
