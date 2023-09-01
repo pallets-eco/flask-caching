@@ -12,6 +12,8 @@ async-timeout==4.0.2
     # via redis
 babel==2.10.3
     # via sphinx
+blinker==1.6.2
+    # via flask
 build==0.8.0
     # via pip-tools
 cachelib==0.10.2
@@ -42,7 +44,7 @@ filelock==3.10.7
     # via
     #   tox
     #   virtualenv
-flask==2.2.3
+flask==2.3.3
     # via -r tests.in
 identify==2.5.2
     # via pre-commit
@@ -152,7 +154,7 @@ virtualenv==20.21.0
     # via
     #   pre-commit
     #   tox
-werkzeug==2.2.3
+werkzeug==2.3.7
     # via flask
 wheel==0.38.1
     # via pip-tools
