@@ -372,9 +372,9 @@ The following configuration values exist for Flask-Caching:
                                 the cache class instantiation.
 ``CACHE_OPTIONS``               Optional dictionary to pass during the
                                 cache class instantiation.
-``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
+``CACHE_DEFAULT_TIMEOUT``       The timeout that is used if no other
                                 timeout is specified. Unit of time is
-                                seconds.
+                                seconds. Defaults to ``300``.
 ``CACHE_IGNORE_ERRORS``         If set to any errors that occurred during the
                                 deletion process will be ignored. However, if
                                 it is set to ``False`` it will stop on the
@@ -384,11 +384,12 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_THRESHOLD``             The maximum number of items the cache
                                 will store before it starts deleting
                                 some. Used only for SimpleCache and
-                                FileSystemCache
+                                FileSystemCache. Defaults to ``500``.
 ``CACHE_KEY_PREFIX``            A prefix that is added before all keys.
                                 This makes it possible to use the same
                                 memcached server for different apps.
-                                Used only for RedisCache and MemcachedCache
+                                Used only for RedisCache and MemcachedCache.
+                                Defaults to ``flask_cache_``.
 ``CACHE_SOURCE_CHECK``          The default condition applied to function
                                 decorators which controls if the source code of
                                 the function should be included when forming the
