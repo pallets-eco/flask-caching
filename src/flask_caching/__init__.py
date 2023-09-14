@@ -246,7 +246,6 @@ class Cache:
         cache_none: bool = False,
         make_cache_key: Optional[Callable] = None,
         source_check: Optional[bool] = None,
-        endpoint_params: Optional[list] = None,
         response_hit_indication: Optional[bool] = False,
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
@@ -366,7 +365,7 @@ class Cache:
 
                 try:
                     if make_cache_key is not None and callable(make_cache_key):
-                        cache_key = make_cache_key(f, endpoint_params, *args, **kwargs)
+                        cache_key = make_cache_key(f, *args, **kwargs)
                     else:
                         cache_key = decorated_function.make_cache_key(*args, use_request=True, **kwargs)
 
