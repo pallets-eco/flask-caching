@@ -6,7 +6,7 @@
 #
 alabaster==0.7.12
     # via sphinx
-asgiref==3.6.0
+asgiref==3.7.2
     # via -r tests.in
 babel==2.10.3
     # via sphinx
