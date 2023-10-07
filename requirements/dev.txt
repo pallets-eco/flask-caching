@@ -113,7 +113,7 @@ pyyaml==6.0
     # via pre-commit
 redis==5.0.0
     # via -r tests.in
-requests==2.28.1
+requests==2.31.0
     # via sphinx
 snowballstemmer==2.2.0
     # via sphinx
