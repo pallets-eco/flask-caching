@@ -8,8 +8,6 @@ alabaster==0.7.12
     # via sphinx
 asgiref==3.6.0
     # via -r tests.in
-async-timeout==4.0.2
-    # via redis
 babel==2.10.3
     # via sphinx
 build==0.8.0
@@ -113,7 +111,7 @@ pytz==2022.1
     # via babel
 pyyaml==6.0
     # via pre-commit
-redis==4.5.4
+redis==5.0.0
     # via -r tests.in
 requests==2.28.1
     # via sphinx
