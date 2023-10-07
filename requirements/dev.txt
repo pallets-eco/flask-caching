@@ -144,7 +144,7 @@ sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
 tox==4.11.0
     # via -r dev.in
-urllib3==1.26.11
+urllib3==1.26.17
     # via requests
 virtualenv==20.24.4
     # via
