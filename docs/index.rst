@@ -133,6 +133,33 @@ returned::
 
     cached_comments = get_all_comments()
 
+Make Custom `Cache Key`
+-----------------------
+
+Sometimes you want to define your cache key for each route. Using the same ``@cached``
+decorator you are able to specify how this key is generated. This might be useful when
+the key for cache is should not be just the default key_prefix, but has to be derived
+from other parameters in a request. An example usecase would be for caching POST routes.
+Where the cache key should be derived from the data in that request, rather than just the
+route/view itself.
+
+``make_cache_key`` can be used to specify such a function. The function should return a 
+string which should act like the key to the required value that is being cached::
+
+   def make_key():
+      """A function which is called to derive the key for a computed value.
+         The key in this case is the concat value of all the json request
+         parameters. Other strategy could to use any hashing function.
+      :returns: unique string for which the value should be cached.
+      """
+      user_data = request.get_json()
+      return ",".join([f"{key}={value}" for key, value in user_data.items()])
+
+   @app.route("/hello", methods=["POST"])
+   @cache.cached(timeout=60, make_cache_key=make_key)
+   def some_func():
+      ....
+
 
 Memoization
 -----------
@@ -372,9 +399,9 @@ The following configuration values exist for Flask-Caching:
                                 the cache class instantiation.
 ``CACHE_OPTIONS``               Optional dictionary to pass during the
                                 cache class instantiation.
-``CACHE_DEFAULT_TIMEOUT``       The default timeout that is used if no
+``CACHE_DEFAULT_TIMEOUT``       The timeout that is used if no other
                                 timeout is specified. Unit of time is
-                                seconds.
+                                seconds. Defaults to ``300``.
 ``CACHE_IGNORE_ERRORS``         If set to any errors that occurred during the
                                 deletion process will be ignored. However, if
                                 it is set to ``False`` it will stop on the
@@ -384,11 +411,12 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_THRESHOLD``             The maximum number of items the cache
                                 will store before it starts deleting
                                 some. Used only for SimpleCache and
-                                FileSystemCache
+                                FileSystemCache. Defaults to ``500``.
 ``CACHE_KEY_PREFIX``            A prefix that is added before all keys.
                                 This makes it possible to use the same
                                 memcached server for different apps.
-                                Used only for RedisCache and MemcachedCache
+                                Used only for RedisCache and MemcachedCache.
+                                Defaults to ``flask_cache_``.
 ``CACHE_SOURCE_CHECK``          The default condition applied to function
                                 decorators which controls if the source code of
                                 the function should be included when forming the
