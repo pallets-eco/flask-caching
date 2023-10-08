@@ -4,7 +4,7 @@ Changelog
 Version 2.1.0 
 -------------
 
-Unreleased
+Released 2024-10-08
 
 - fix type signature in ``flask_caching.utils.make_template_fragment_key``. :pr:`430`
 - Added docs and example for make_cache_key
