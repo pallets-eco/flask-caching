@@ -1,12 +1,14 @@
 Changelog
 =========
 
+Version 2.1.0 
+-------------
+
 Unreleased
-----------
 
 - fix type signature in ``flask_caching.utils.make_template_fragment_key``. :pr:`430`
 - Added docs and example for make_cache_key
-
+- support Flask 3
 
 Version 2.0.2
 -------------
