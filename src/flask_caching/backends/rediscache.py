@@ -229,9 +229,14 @@ class RedisClusterCache(RedisCache):
         if kwargs.get("decode_responses", None):
             raise ValueError("decode_responses is not supported by RedisCache.")
 
+        try:
+            from redis import RedisCluster
+            from redis.cluster import ClusterNode
+        except ImportError as e:
+            raise RuntimeError("no redis.cluster module found") from e
+
         if kwargs.get("redis_url", None):
             cluster = RedisCluster.from_url(kwargs["redis_url"])
-
         else:
             try:
                 nodes = [(node.split(":")) for node in cluster.split(",")]
