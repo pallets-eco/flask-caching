@@ -15,18 +15,13 @@ import logging
 import uuid
 import warnings
 from collections import OrderedDict
-from typing import Any
-from typing import Callable
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, List, Callable, Optional, Tuple, Union
 
 from flask import current_app
 from flask import Flask
 from flask import request
 from flask import Response
 from flask import url_for
-from markupsafe import Markup
 from werkzeug.utils import import_string
 
 from flask_caching.backends.base import BaseCache
@@ -38,7 +33,7 @@ from flask_caching.utils import get_id
 from flask_caching.utils import make_template_fragment_key  # noqa: F401
 from flask_caching.utils import wants_args
 
-__version__ = "2.0.2"
+__version__ = "2.1.0"
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +180,7 @@ class Cache:
         app = current_app or self.app
         return app.extensions["cache"][self]
 
-    def get(self, *args, **kwargs) -> Optional[Union[str, Markup]]:
+    def get(self, *args, **kwargs) -> Any:
         """Proxy function for internal cache object."""
         return self.cache.get(*args, **kwargs)
 
@@ -205,7 +200,7 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.delete(*args, **kwargs)
 
-    def delete_many(self, *args, **kwargs) -> bool:
+    def delete_many(self, *args, **kwargs) -> List[str]:
         """Proxy function for internal cache object."""
         return self.cache.delete_many(*args, **kwargs)
 
@@ -217,15 +212,15 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.get_many(*args, **kwargs)
 
-    def set_many(self, *args, **kwargs):
+    def set_many(self, *args, **kwargs) -> List[Any]:
         """Proxy function for internal cache object."""
         return self.cache.set_many(*args, **kwargs)
 
-    def get_dict(self, *args, **kwargs):
+    def get_dict(self, *args, **kwargs) -> Dict[str, Any]:
         """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
-    def unlink(self, *args, **kwargs) -> bool:
+    def unlink(self, *args, **kwargs) -> List[str]:
         """Proxy function for internal cache object
         only support Redis
         """
@@ -474,7 +469,7 @@ class Cache:
 
                 return cache_key
 
-            def _make_cache_key(args, kwargs, use_request):
+            def _make_cache_key(args, kwargs, use_request) -> str:
                 if query_string:
                     return _make_cache_key_query_string()
                 else:

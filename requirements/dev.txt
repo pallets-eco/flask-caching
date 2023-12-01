@@ -6,23 +6,21 @@
 #
 alabaster==0.7.12
     # via sphinx
-asgiref==3.6.0
+asgiref==3.7.2
     # via -r tests.in
-async-timeout==4.0.2
-    # via redis
 babel==2.10.3
     # via sphinx
 build==0.8.0
     # via pip-tools
 cachelib==0.10.2
     # via -r tests.in
-cachetools==5.3.0
+cachetools==5.3.1
     # via tox
-certifi==2022.12.7
+certifi==2023.7.22
     # via requests
 cfgv==3.3.1
     # via pre-commit
-chardet==5.1.0
+chardet==5.2.0
     # via tox
 charset-normalizer==2.1.0
     # via requests
@@ -32,17 +30,17 @@ click==8.1.3
     #   pip-tools
 colorama==0.4.6
     # via tox
-distlib==0.3.6
+distlib==0.3.7
     # via virtualenv
 docutils==0.18.1
     # via
     #   sphinx
     #   sphinx-tabs
-filelock==3.10.7
+filelock==3.12.3
     # via
     #   tox
     #   virtualenv
-flask==2.2.3
+flask==2.2.5
     # via -r tests.in
 identify==2.5.2
     # via pre-commit
@@ -64,7 +62,7 @@ markupsafe==2.1.1
     #   werkzeug
 nodeenv==1.7.0
     # via pre-commit
-packaging==23.0
+packaging==23.1
     # via
     #   build
     #   pallets-sphinx-themes
@@ -76,13 +74,13 @@ pallets-sphinx-themes==2.0.3
     # via -r docs.in
 pep517==0.13.0
     # via build
-pip-tools==6.12.2
+pip-tools==7.3.0
     # via -r dev.in
-platformdirs==3.2.0
+platformdirs==3.10.0
     # via
     #   tox
     #   virtualenv
-pluggy==1.0.0
+pluggy==1.3.0
     # via
     #   pytest
     #   tox
@@ -92,20 +90,20 @@ psutil==5.9.1
     # via pytest-xprocess
 py==1.11.0
     # via pytest-xprocess
-pygments==2.12.0
+pygments==2.15.0
     # via
     #   sphinx
     #   sphinx-tabs
 pylibmc==1.6.3
     # via -r tests.in
-pyproject-api==1.5.1
+pyproject-api==1.6.1
     # via tox
 pytest==7.3.1
     # via
     #   -r tests.in
     #   pytest-asyncio
     #   pytest-xprocess
-pytest-asyncio==0.21.0
+pytest-asyncio==0.21.1
     # via -r tests.in
 pytest-xprocess==0.22.2
     # via -r tests.in
@@ -113,19 +111,20 @@ pytz==2022.1
     # via babel
 pyyaml==6.0
     # via pre-commit
-redis==4.5.4
+redis==5.0.0
     # via -r tests.in
-requests==2.28.1
+requests==2.31.0
     # via sphinx
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==5.3.0
+sphinx==7.2.6
     # via
     #   -r docs.in
     #   pallets-sphinx-themes
     #   sphinx-issues
     #   sphinx-tabs
     #   sphinxcontrib-log-cabinet
+    #   sphinxcontrib-serializinghtml
 sphinx-issues==3.0.1
     # via -r docs.in
 sphinx-tabs==3.4.1
@@ -142,13 +141,13 @@ sphinxcontrib-log-cabinet==1.0.1
     # via -r docs.in
 sphinxcontrib-qthelp==1.0.3
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-serializinghtml==1.1.9
     # via sphinx
-tox==4.4.8
+tox==4.11.0
     # via -r dev.in
-urllib3==1.26.11
+urllib3==1.26.17
     # via requests
-virtualenv==20.21.0
+virtualenv==20.24.4
     # via
     #   pre-commit
     #   tox
