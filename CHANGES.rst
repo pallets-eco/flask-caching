@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version 2.1.0 
+-------------
+
+Released 2024-10-08
+
+- fix type signature in ``flask_caching.utils.make_template_fragment_key``. :pr:`430`
+- Added docs and example for make_cache_key
+- support Flask 3
+
 Version 2.0.2
 -------------
 
@@ -8,7 +17,8 @@ Released 2023-01-12
 
 - fix issue with boto3 dependencie due to latest cachelib released
 - migrate ``flask_caching.backends.RedisCluster`` dependency from redis-py-cluster to redis-py
-- bug fix: make the ``make_cache_key`` attributed of decorated view functions writeable. :pr:`431`, issue `#97`
+- bug fix: make the ``make_cache_key`` attributed of decorated view functions writeable. :pr:`431`, :issue:`97`
+
 
 Version 2.0.1
 -------------
@@ -42,12 +52,12 @@ Version 1.11.0
 
 Released 2022-05-27
 
-- Add suport for cached/memoized generators. :pr:`#286`
-- Add support for Flask 2.0 async. :pr:`#282`
-- Cachelib is now used as backend. :pr:`#308`
-- Drop support for python 3.6. :pr:`#332`
+- Add suport for cached/memoized generators. :pr:`286`
+- Add support for Flask 2.0 async. :pr:`282`
+- Cachelib is now used as backend. :pr:`308`
+- Drop support for python 3.6. :pr:`332`
 - Add support for dynamic cache timeouts `#296`
-- Fix bug in ``CACHE_OPTIONS`` reading for redis in ``RedisSentinelCache``. :pr:`#343`
+- Fix bug in ``CACHE_OPTIONS`` reading for redis in ``RedisSentinelCache``. :pr:`343`
 
 
 Version 1.10.1
@@ -56,11 +66,11 @@ Version 1.10.1
 Released 2021-03-17
 
 - A ``GoogleCloudStorageCache`` backend has been added to the user contributed
-  caching backends. :pr:`#214`
+  caching backends. :pr:`214`
 - Fix a regression introduced in the last release which broke all applications
   subclassing the ``Cache`` class.
 - Add test_generic_get_bytes test case.
-  :pr:`#236`
+  :pr:`236`
 - Various improvements and fixes.
 
 
@@ -79,28 +89,28 @@ Released 2021-03-04
   contributed backends.
 - Switch from Travis-CI to GitHub Actions
 - Fix add() in RedisCache without a timeout.
-  :pr:`#218`
+  :pr:`218`
 - Fix error in how the FileSystemCache counts the number of files.
-  :pr:`#210`
+  :pr:`210`
 - Type Annotations have been added.
-  :pr:`#198`
+  :pr:`198`
 - Add some basic logging to SimpleCache and FileSystemCache for better
   observability.
-  :pr:`#203`
+  :pr:`203`
 - Add option in memoize to ignore args
-  :pr:`#201`
+  :pr:`201`
 - Stop marking wheels as Python 2 compatible.
-  :pr:`#196`
+  :pr:`196`
 - Fix ``default_timeout`` not being properly passed to its super constructor.
-  :pr:`#187`
+  :pr:`187`
 - Fix ``kwargs`` not being passed on in function ``_memoize_make_cache_key``.
-  :pr:`#184`
+  :pr:`184`
 - Add a Redis Cluster Mode caching backend.
-  :pr:`#173`
+  :pr:`173`
 - Do not let PIP install this package on unsupported Python Versions.
-  :pr:`#179`
+  :pr:`179`
 - Fix uWSGI initialization by checking if uWSGI has the 'cache2' option
-  enabled. :pr:`#176`
+  enabled. :pr:`176`
 - Documentation updates and fixes.
 
 
@@ -110,11 +120,11 @@ Version 1.9.0
 Released 2020-06-02
 
 - Add an option to include the functions source code when generating the cache
-  key. :pr:`#156`
+  key. :pr:`156`
 - Add an feature that allows one to completely control the way how cache keys
   are generated. For example, one can now implement a function that generates a
   cache key the based on POST requests.
-  :pr:`#159`
+  :pr:`159`
 - Fix the cache backend naming collisions by renaming them from ``simple`` to
   ``simplecache``, ``null`` to ``nullcache`` and ``filesystem`` to
   ``filesystemcache``.
@@ -133,13 +143,13 @@ Released 2019-11-24
 - **BREAKING:** Removed support for Python 2. Python 3.5 and upwards are
   supported as of now.
 - Add option to specify if ``None`` is a cached value or not. See
-  :pr:`#140` and
+  :pr:`140` and
   `#141`
 - Allow to use ``__caching_id__`` rather than ``__repr__`` as an object
   caching key.
-  :pr:`#123`
+  :pr:`123`
 - The RedisCache backend now support generating the key_prefix via a callable.
-  :pr:`#109`
+  :pr:`109`
 - Emit a warning if the ``CACHE_TYPE`` is set to ``filesystem`` but no
   ``CACHE_DIR`` is set.
 - Fixes Google App Engine Memcache backend.
@@ -156,7 +166,7 @@ Released 2019-05-28
 **This is the last version supporting Python 2!**
 
 - Do not run a cached/memoized function if the cached return value is None.
-  :pr:`#108`
+  :pr:`108`
 
 
 Version 1.7.1
@@ -165,7 +175,7 @@ Version 1.7.1
 Released 2019-04-16
 
 - Fix introspecting Python 3 functions by using varkw.
-  :pr:`#101`
+  :pr:`101`
 - Remove leftover files (``uwsgi.py``) in PyPI package. See issue
   `#102` for more details.
 
@@ -177,7 +187,7 @@ Released 2019-03-29
 
 - Added a feature called 'response_filter' which enables one to only
   cache views depending on the response code.
-  :pr:`#99`
+  :pr:`99`
 - A DeprecationWarning got turned into a TypeError.
 
 
@@ -192,7 +202,7 @@ Released 2019-03-06
   deletion mode, one has to flip the config setting ``CACHE_IGNORE_ERRORS`` to
   ``True``. This was and still is only relevant for the **filesystem** and
   **simple** cache backends.
-  :pr:`#94`
+  :pr:`94`
 - Re-added the ``gaememcached`` CACHE_TYPE for improved backwards compatibility.
 - Documentation improvements
 
@@ -203,11 +213,11 @@ Version 1.5.0
 Released 2019-02-23
 
 - Add support for a Redis Sentinel Cluster.
-  :pr:`#90`
+  :pr:`90`
 - Parameterize the hash function so alternatives can be used.
-  :pr:`#77`
+  :pr:`77`
 - Include the deprecated ``werkzeug.contrib.cache`` module in Flask-Caching.
-  :pr:`#75`
+  :pr:`75`
 
 
 Version 1.4.0
@@ -216,16 +226,16 @@ Version 1.4.0
 Released 2018-04-16
 
 - Fix logic for creating key for var args in memoize.
-  :pr:`#70`
+  :pr:`70`
 - Allow older Werkzeug versions by making the UWSGICache backend conditional.
-  :pr:`#55`
+  :pr:`55`
 - Some documentation improvements.
-  :pr:`#48`,
+  :pr:`48`,
   `#51`,
   `#56`,
   `#67`
 - Some CI improvements.
-  :pr:`#49`,
+  :pr:`49`,
   `#50`
 
 
@@ -235,7 +245,7 @@ Version 1.3.3
 Released 2017-06-25
 
 - Add support for multiple query params and use md5 for consistent hashing.
-  :pr:`#43`
+  :pr:`43`
 
 
 Version 1.3.2
@@ -266,7 +276,7 @@ Released 2017-06-17
 - Provide a keyword `query_string` to the cached decorator in order to create
   the same cache key for different query string requests,
   so long as they have the same key/value (order does not matter).
-  :pr:`#35`
+  :pr:`35`
 - Use pytest as test suite and test runner. Additionally, the tests have
   been split up into multiple files instead of having one big file.
 
