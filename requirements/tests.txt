@@ -45,5 +45,5 @@ pytest-xprocess==0.22.2
     # via -r tests.in
 redis==5.0.0
     # via -r tests.in
-werkzeug==2.2.3
+werkzeug==3.0.1
     # via flask
