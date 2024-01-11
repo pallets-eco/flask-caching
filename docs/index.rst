@@ -406,8 +406,8 @@ The following configuration values exist for Flask-Caching:
                                 deletion process will be ignored. However, if
                                 it is set to ``False`` it will stop on the
                                 first error. This option is only relevant for
-                                the backends **filesystem** and **simple**.
-                                Defaults to ``False``.
+                                the backends **FileSystemCache** and
+                                **SimpleCache**. Defaults to ``False``.
 ``CACHE_THRESHOLD``             The maximum number of items the cache
                                 will store before it starts deleting
                                 some. Used only for SimpleCache and
