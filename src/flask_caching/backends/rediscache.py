@@ -89,11 +89,6 @@ class RedisCache(BaseCache, CachelibRedisCache):
 
         return new_class
 
-    def _get_prefix(self):
-        return (
-            self.key_prefix if isinstance(self.key_prefix, str) else self.key_prefix()
-        )
-
     def dump_object(self, value):
         """Dumps an object into a string for redis.  By default it serializes
         integers as regular string and pickle dumps everything else.
