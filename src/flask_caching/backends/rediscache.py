@@ -56,7 +56,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
             db=db,
             default_timeout=default_timeout,
             key_prefix=key_prefix,
-            **kwargs
+            **kwargs,
         )
 
     @classmethod
@@ -176,7 +176,7 @@ class RedisSentinelCache(RedisCache):
             password=password,
             db=db,
             sentinel_kwargs=sentinel_kwargs,
-            **kwargs
+            **kwargs,
         )
 
         self._write_client = sentinel.master_for(master)
@@ -235,27 +235,30 @@ class RedisClusterCache(RedisCache):
         except ImportError as e:
             raise RuntimeError("no redis.cluster module found") from e
 
-        try:
-            nodes = [(node.split(":")) for node in cluster.split(",")]
-            startup_nodes = [
-                ClusterNode(node[0].strip(), node[1].strip()) for node in nodes
-            ]
-        except IndexError as e:
-            raise ValueError(
-                "Please give the correct cluster argument "
-                "e.g. host1:port1,host2:port2,host3:port3"
-            ) from e
+        if kwargs.get("redis_url", None):
+            cluster = RedisCluster.from_url(kwargs["redis_url"])
+        else:
+            try:
+                nodes = [(node.split(":")) for node in cluster.split(",")]
+                startup_nodes = [
+                    ClusterNode(node[0].strip(), node[1].strip()) for node in nodes
+                ]
+            except IndexError as e:
+                raise ValueError(
+                    "Please give the correct cluster argument "
+                    "e.g. host1:port1,host2:port2,host3:port3"
+                ) from e
 
-        # Skips the check of cluster-require-full-coverage config,
-        # useful for clusters without the CONFIG command (like aws)
-        skip_full_coverage_check = kwargs.pop("skip_full_coverage_check", True)
+            # Skips the check of cluster-require-full-coverage config,
+            # useful for clusters without the CONFIG command (like aws)
+            skip_full_coverage_check = kwargs.pop("skip_full_coverage_check", True)
 
-        cluster = RedisCluster(
-            startup_nodes=startup_nodes,
-            password=password,
-            skip_full_coverage_check=skip_full_coverage_check,
-            **kwargs
-        )
+            cluster = RedisCluster(
+                startup_nodes=startup_nodes,
+                password=password,
+                skip_full_coverage_check=skip_full_coverage_check,
+                **kwargs,
+            )
 
         self._write_client = cluster
         self._read_client = cluster
@@ -268,6 +271,7 @@ class RedisClusterCache(RedisCache):
                 password=config.get("CACHE_REDIS_PASSWORD", ""),
                 default_timeout=config.get("CACHE_DEFAULT_TIMEOUT", 300),
                 key_prefix=config.get("CACHE_KEY_PREFIX", ""),
+                redis_url=config.get("CACHE_REDIS_URL", ""),
             )
         )
         return cls(*args, **kwargs)
