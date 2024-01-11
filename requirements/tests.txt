@@ -6,17 +6,23 @@
 #
 asgiref==3.7.2
     # via -r tests.in
+async-timeout==4.0.3
+    # via redis
 cachelib==0.10.2
     # via -r tests.in
 click==8.1.3
     # via flask
+exceptiongroup==1.2.0
+    # via pytest
 flask==2.2.5
     # via -r tests.in
+importlib-metadata==7.0.1
+    # via flask
 iniconfig==1.1.1
     # via pytest
 itsdangerous==2.1.2
     # via flask
-jinja2==3.1.2
+jinja2==3.1.3
     # via flask
 markupsafe==2.1.1
     # via
@@ -45,5 +51,11 @@ pytest-xprocess==0.22.2
     # via -r tests.in
 redis==5.0.0
     # via -r tests.in
+tomli==2.0.1
+    # via pytest
+typing-extensions==4.9.0
+    # via asgiref
 werkzeug==2.2.3
     # via flask
+zipp==3.17.0
+    # via importlib-metadata
