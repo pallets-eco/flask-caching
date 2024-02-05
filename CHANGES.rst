@@ -1,6 +1,15 @@
 Changelog
 =========
 
+
+Version 2.1.1
+-------------
+
+Un Released 2024-02-00
+
+- add indication if cache is used  in the response header.
+
+
 Version 2.1.0 
 -------------
 
@@ -9,6 +18,7 @@ Released 2024-10-08
 - fix type signature in ``flask_caching.utils.make_template_fragment_key``. :pr:`430`
 - Added docs and example for make_cache_key
 - support Flask 3
+
 
 Version 2.0.2
 -------------
