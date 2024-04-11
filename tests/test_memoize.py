@@ -842,4 +842,4 @@ def test_memoize_function_ignore_kwarg(app, cache):
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
 
-        assert big_foo(5, 2) == big_foo(5, b=2)
+        assert big_foo(5, 2) == big_foo(5, b=3)
