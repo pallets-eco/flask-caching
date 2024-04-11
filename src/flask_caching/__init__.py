@@ -638,7 +638,7 @@ class Cache:
 
         # If the function uses VAR_KEYWORD type of parameters,
         # we need to pass these further
-        kw_keys_remaining = list(kwargs.keys())
+        kw_keys_remaining = [key for key in kwargs.keys() if key not in args_to_ignore]
         arg_names = get_arg_names(f)
         args_len = len(arg_names)
 
