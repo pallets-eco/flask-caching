@@ -1,7 +1,13 @@
 Changelog
 =========
 
-Version 2.1.0 
+Version 2.2.0
+-------------
+
+- Drop py37 support
+
+
+Version 2.1.0
 -------------
 
 Released 2024-10-08

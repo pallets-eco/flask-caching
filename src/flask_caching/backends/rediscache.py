@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 import pickle
 
 from cachelib import RedisCache as CachelibRedisCache
