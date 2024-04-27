@@ -4,7 +4,9 @@ Changelog
 Version 2.2.0
 -------------
 
-- Drop py37 support
+- Drop python 3.7 support
+- python 3.11 officially supported
+- Fix issue causing `args_to_ignore` to not work with `flask_caching.Cache.memoize` decorator when keyword arguments were used in the decorated function call
 
 
 Version 2.1.0
