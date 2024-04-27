@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 import hashlib
 import logging
 
@@ -19,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 class FileSystemCache(BaseCache, CachelibFileSystemCache):
-
     """A cache that stores the items on the file system.  This cache depends
     on being the only user of the `cache_dir`.  Make absolutely sure that
     nobody but this cache stores files there or otherwise the cache will

@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 from cachelib import UWSGICache as CachelibUWSGICache
 
 from flask_caching.backends.base import BaseCache
