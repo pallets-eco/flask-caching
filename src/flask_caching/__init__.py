@@ -251,6 +251,7 @@ class Cache:
         cache_none: bool = False,
         make_cache_key: Optional[Callable] = None,
         source_check: Optional[bool] = None,
+        response_hit_indication: Optional[bool] = False,
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -351,6 +352,10 @@ class Cache:
                              formed with the function's source code hash in
                              addition to other parameters that may be included
                              in the formation of the key.
+
+        :param response_hit_indication: Default False.
+                             If True, it will add to response header field 'hit_cache'
+                             if used cache.
         """
 
         def decorator(f):
@@ -406,6 +411,16 @@ class Cache:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
                     return self._call_fn(f, *args, **kwargs)
+                if found and self.app.debug:
+                    logger.info(f"Cache used for key: {cache_key}")
+                if response_hit_indication:
+
+                    def apply_caching(response):
+                        if found:
+                            response.headers["hit_cache"] = found
+                        return response
+
+                    self.app.after_request_funcs[None].append(apply_caching)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
