@@ -5,7 +5,8 @@ Changelog
 Version 2.3.0
 -------------
 
-- add indication if cache is used  in the response header.
+Released 2024-05-04
+
 - Added ``response_hit_indication`` flag to ``Cache.cached`` decorator for appending 'hit_cache' headers to responses, indicating cache hits.
 
 
