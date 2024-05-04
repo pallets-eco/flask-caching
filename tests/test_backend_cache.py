@@ -7,6 +7,7 @@
     :copyright: (c) 2014 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+
 import pickle
 import time
 
@@ -189,9 +190,9 @@ class TestRedisCache(GenericCacheTests):
         c.clear()
 
     def test_compat(self, c):
-        assert c._write_client.set(c._get_prefix() + "foo", "Awesome")
+        assert c._write_client.set(c.key_prefix + "foo", "Awesome")
         assert c.get("foo") == b"Awesome"
-        assert c._write_client.set(c._get_prefix() + "foo", "42")
+        assert c._write_client.set(c.key_prefix + "foo", "42")
         assert c.get("foo") == 42
 
     def test_empty_host(self):

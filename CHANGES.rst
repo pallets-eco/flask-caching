@@ -2,15 +2,22 @@ Changelog
 =========
 
 
-Version 2.1.1
+Version 2.3.0
 -------------
 
-Un Released 2024-02-00
-
 - add indication if cache is used  in the response header.
+- Added ``response_hit_indication`` flag to ``Cache.cached`` decorator for appending 'hit_cache' headers to responses, indicating cache hits.
 
 
-Version 2.1.0 
+Version 2.2.0
+-------------
+
+- Drop python 3.7 support
+- python 3.11 officially supported
+- Fix issue causing `args_to_ignore` to not work with `flask_caching.Cache.memoize` decorator when keyword arguments were used in the decorated function call
+
+
+Version 2.1.0
 -------------
 
 Released 2024-10-08

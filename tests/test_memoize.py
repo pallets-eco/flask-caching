@@ -834,3 +834,12 @@ def test_memoize_method_ignore_self_arg(app, cache):
                 return a + b + random.randrange(0, 100000)
 
         assert Foo().big_foo(5, 2) == Foo().big_foo(5, 2)
+
+
+def test_memoize_function_ignore_kwarg(app, cache):
+    with app.test_request_context():
+        @cache.memoize(50, args_to_ignore=["b"])
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        assert big_foo(5, 2) == big_foo(5, b=3)

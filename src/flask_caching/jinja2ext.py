@@ -41,6 +41,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 from jinja2 import nodes
 from jinja2.ext import Extension
 
