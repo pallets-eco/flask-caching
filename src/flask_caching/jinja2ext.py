@@ -93,11 +93,22 @@ class CacheExtension(Extension):
 
         #: Delete key if timeout is 'del'
         if timeout == "del":
-            cache.delete(key)
-            return caller()
+            try:
+                cache.delete(key)
+                return caller()
+            except Exception as e:
+                if cache.app.debug:
+                    raise e
+                else:
+                    return caller()
 
-        rv = cache.get(key)
-        if rv is None:
-            rv = caller()
-            cache.set(key, rv, timeout)
-        return rv
+        try:
+            rv = cache.get(key)
+            if rv is None:
+                rv = caller()
+                cache.set(key, rv, timeout)
+        except Exception as e:
+            if cache.app.debug:
+                raise e
+            else:
+                return caller()
