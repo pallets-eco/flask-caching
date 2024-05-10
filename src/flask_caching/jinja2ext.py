@@ -107,6 +107,7 @@ class CacheExtension(Extension):
             if rv is None:
                 rv = caller()
                 cache.set(key, rv, timeout)
+            return rv
         except Exception as e:
             if cache.app.debug:
                 raise e
