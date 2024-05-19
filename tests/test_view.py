@@ -217,7 +217,7 @@ def test_set_make_cache_key_property(app, cache):
     def cached_view():
         return str(time.time())
 
-    cached_view.make_cache_key = lambda *args, **kwargs: request.args['foo']
+    cached_view.make_cache_key = lambda *args, **kwargs: request.args["foo"]
 
     tc = app.test_client()
 
@@ -573,3 +573,17 @@ def test_cache_with_query_string_and_source_check_disabled(app, cache):
     # Now make sure the time for the first and third responses are the same
     # i.e. cached is used since cache will not check for source changes!
     assert third_time == first_time
+
+
+def test_hit_cache(app, cache):
+    @app.route("/")
+    @cache.cached(10, response_hit_indication=True)
+    def cached_view():
+        # This should override the timeout to be 2 seconds
+        return {"data": "data"}
+
+    tc = app.test_client()
+
+    assert tc.get("/").headers.get("hit_cache") is None
+    assert tc.get("/").headers.get("hit_cache") == "True"
+    assert tc.get("/").headers.get("hit_cache") == "True"

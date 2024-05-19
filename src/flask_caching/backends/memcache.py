@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 import pickle
 import re
 
@@ -20,7 +21,6 @@ _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
 
 
 class MemcachedCache(BaseCache, CachelibMemcachedCache):
-
     """A cache that uses memcached as backend.
 
     The first argument can either be an object that resembles the API of a

@@ -7,6 +7,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 import base64
 import functools
 import hashlib
@@ -15,7 +16,13 @@ import logging
 import uuid
 import warnings
 from collections import OrderedDict
-from typing import Any, Dict, List, Callable, Optional, Tuple, Union
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 from flask import current_app
 from flask import Flask
@@ -33,7 +40,7 @@ from flask_caching.utils import get_id
 from flask_caching.utils import make_template_fragment_key  # noqa: F401
 from flask_caching.utils import wants_args
 
-__version__ = "2.1.0"
+__version__ = "2.3.0"
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +120,8 @@ class Cache:
         if config["CACHE_TYPE"] == "null" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
                 "Flask-Caching: CACHE_TYPE is set to null, "
-                "caching is effectively disabled."
+                "caching is effectively disabled.",
+                stacklevel=2,
             )
 
         if (
@@ -122,7 +130,8 @@ class Cache:
         ):
             warnings.warn(
                 f"Flask-Caching: CACHE_TYPE is set to {config['CACHE_TYPE']} but no "
-                "CACHE_DIR is set."
+                "CACHE_DIR is set.",
+                stacklevel=2,
             )
 
         self.source_check = config["CACHE_SOURCE_CHECK"]
@@ -155,6 +164,7 @@ class Cache:
                 "is deprecated.  Use the a full path to backend classes "
                 "directly.",
                 category=DeprecationWarning,
+                stacklevel=2,
             )
 
         if config["CACHE_OPTIONS"]:
@@ -245,6 +255,7 @@ class Cache:
         cache_none: bool = False,
         make_cache_key: Optional[Callable] = None,
         source_check: Optional[bool] = None,
+        response_hit_indication: Optional[bool] = False,
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -345,6 +356,10 @@ class Cache:
                              formed with the function's source code hash in
                              addition to other parameters that may be included
                              in the formation of the key.
+
+        :param response_hit_indication: Default False.
+                             If True, it will add to response header field 'hit_cache'
+                             if used cache.
         """
 
         def decorator(f):
@@ -362,7 +377,9 @@ class Cache:
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = decorated_function.make_cache_key(*args, use_request=True, **kwargs)
+                        cache_key = decorated_function.make_cache_key(
+                            *args, use_request=True, **kwargs
+                        )
 
                     if (
                         callable(forced_update)
@@ -398,6 +415,16 @@ class Cache:
                         raise
                     logger.exception("Exception possibly due to cache backend.")
                     return self._call_fn(f, *args, **kwargs)
+                if found and self.app.debug:
+                    logger.info(f"Cache used for key: {cache_key}")
+                if response_hit_indication:
+
+                    def apply_caching(response):
+                        if found:
+                            response.headers["hit_cache"] = found
+                        return response
+
+                    self.app.after_request_funcs[None].append(apply_caching)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
@@ -429,7 +456,7 @@ class Cache:
                 for arg_name, arg in zip(argspec_args, args):
                     kwargs[arg_name] = arg
 
-                use_request = kwargs.pop('use_request', False)
+                use_request = kwargs.pop("use_request", False)
                 return _make_cache_key(args, kwargs, use_request=use_request)
 
             def _make_cache_key_query_string():
@@ -642,7 +669,7 @@ class Cache:
 
         # If the function uses VAR_KEYWORD type of parameters,
         # we need to pass these further
-        kw_keys_remaining = list(kwargs.keys())
+        kw_keys_remaining = [key for key in kwargs.keys() if key not in args_to_ignore]
         arg_names = get_arg_names(f)
         args_len = len(arg_names)
 

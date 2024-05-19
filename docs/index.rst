@@ -143,7 +143,7 @@ from other parameters in a request. An example usecase would be for caching POST
 Where the cache key should be derived from the data in that request, rather than just the
 route/view itself.
 
-``make_cache_key`` can be used to specify such a function. The function should return a 
+``make_cache_key`` can be used to specify such a function. The function should return a
 string which should act like the key to the required value that is being cached::
 
    def make_key():
@@ -406,8 +406,8 @@ The following configuration values exist for Flask-Caching:
                                 deletion process will be ignored. However, if
                                 it is set to ``False`` it will stop on the
                                 first error. This option is only relevant for
-                                the backends **filesystem** and **simple**.
-                                Defaults to ``False``.
+                                the backends **FileSystemCache** and
+                                **SimpleCache**. Defaults to ``False``.
 ``CACHE_THRESHOLD``             The maximum number of items the cache
                                 will store before it starts deleting
                                 some. Used only for SimpleCache and

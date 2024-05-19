@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
+
 import pickle
 
 from cachelib import RedisCache as CachelibRedisCache
@@ -88,11 +89,6 @@ class RedisCache(BaseCache, CachelibRedisCache):
         new_class = cls(*args, **kwargs)
 
         return new_class
-
-    def _get_prefix(self):
-        return (
-            self.key_prefix if isinstance(self.key_prefix, str) else self.key_prefix()
-        )
 
     def dump_object(self, value):
         """Dumps an object into a string for redis.  By default it serializes
