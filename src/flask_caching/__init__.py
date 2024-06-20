@@ -241,7 +241,7 @@ class Cache:
 
     def cached(
         self,
-        timeout: Optional[int] = None,
+        timeout: Optional[Union[int, Callable]] = None,
         key_prefix: str = "view/%s",
         unless: Optional[Callable] = None,
         forced_update: Optional[Callable] = None,
@@ -296,6 +296,11 @@ class Cache:
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
+
+                        .. versionchanged:: 2.0.3
+                            Can optionally be a callable which expects one
+                            argument, the result of the cached function
+                            evaluation, and returns None or an integer.
 
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key. `request.path` will be the
@@ -428,14 +433,17 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
-                        cache_timeout = decorated_function.cache_timeout
+                        timeout = decorated_function.cache_timeout
                         if isinstance(rv, CachedResponse):
-                            cache_timeout = rv.timeout or cache_timeout
+                            timeout = rv.timeout or timeout
+                        elif callable(timeout):
+                            timeout = timeout(rv)
+
                         try:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=cache_timeout,
+                                timeout=timeout,
                             )
                         except Exception:
                             if self.app.debug:
@@ -615,6 +623,9 @@ class Cache:
 
         def make_cache_key(f, *args, **kwargs):
             _timeout = getattr(timeout, "cache_timeout", timeout)
+            if callable(_timeout):
+                _timeout = 0  # placeholder until timeout(rv) is doable
+
             fname, version_data = self._memoize_version(
                 f,
                 args=args,
@@ -747,7 +758,7 @@ class Cache:
 
     def memoize(
         self,
-        timeout: Optional[int] = None,
+        timeout: Optional[Union[int, Callable]] = None,
         make_name: Optional[Callable] = None,
         unless: Optional[Callable] = None,
         forced_update: Optional[Callable] = None,
@@ -800,17 +811,26 @@ class Cache:
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
+
+                        .. versionchanged:: 2.0.3
+                            Can optionally be a callable which expects one
+                            argument, the result of the cached function
+                            evaluation, and returns None or an integer.
+
         :param make_name: Default None. If set this is a function that accepts
                           a single argument, the function name, and returns a
                           new string to be used as the function name.
                           If not set then the function name is used.
+
         :param unless: Default None. Cache will *always* execute the caching
                        facilities unless this callable is true.
                        This will bypass the caching entirely.
+
         :param forced_update: Default None. If this callable is true,
                               cache value will be updated regardless cache
                               is expired or not. Useful for background
                               renewal of cached functions.
+
         :param response_filter: Default None. If not None, the callable is
                                 invoked after the cached funtion evaluation,
                                 and is given one arguement, the response
@@ -819,6 +839,7 @@ class Cache:
                                 caching of code 500 responses.
         :param hash_method: Default hashlib.md5. The hash method used to
                             generate the keys for cached results.
+
         :param cache_none: Default False. If set to True, add a key exists
                            check when cache.get returns None. This will likely
                            lead to wrongly returned None values in concurrent
@@ -833,6 +854,7 @@ class Cache:
                              formed with the function's source code hash in
                              addition to other parameters that may be included
                              in the formation of the key.
+
         :param args_to_ignore: List of arguments that will be ignored while
                                generating the cache key. Default to None.
                                This means that those arguments may change
@@ -901,11 +923,15 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
+                        timeout = decorated_function.cache_timeout
+                        if callable(timeout):
+                            timeout = timeout(rv)
+
                         try:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=decorated_function.cache_timeout,
+                                timeout=timeout,
                             )
                         except Exception:
                             if self.app.debug:
