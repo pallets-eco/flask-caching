@@ -32,7 +32,7 @@ psutil==5.9.8
     # via pytest-xprocess
 pylibmc==1.6.3
     # via -r tests.in
-pytest==8.2.0
+pytest==8.2.2
     # via
     #   -r tests.in
     #   pytest-asyncio
