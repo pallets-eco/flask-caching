@@ -18,7 +18,7 @@ cachelib==0.13.0
     # via -r tests.in
 cachetools==5.3.3
     # via tox
-certifi==2024.2.2
+certifi==2024.7.4
     # via requests
 cfgv==3.4.0
     # via pre-commit
