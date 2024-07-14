@@ -1,6 +1,8 @@
 Changelog
 =========
 
+- fix ``response_hit_indication`` return True always #570.
+
 
 Version 2.3.0
 -------------
