@@ -25,8 +25,8 @@ from typing import Tuple
 from typing import Union
 
 from flask import current_app
-from flask import g
 from flask import Flask
+from flask import g
 from flask import request
 from flask import Response
 from flask import url_for
@@ -69,8 +69,8 @@ class CachedResponse(Response):
 
 
 def apply_caching(response):
-    if g.get('flask_cashing_found'):
-        response.headers["hit_cache"] = g.get('flask_cashing_found')
+    if g.get("flask_cashing_found"):
+        response.headers["hit_cache"] = g.get("flask_cashing_found")
     return response
 
 
@@ -364,7 +364,10 @@ class Cache:
                              If True, it will add to response header field 'hit_cache'
                              if used cache.
         """
-        if response_hit_indication and apply_caching not in self.app.after_request_funcs[None]:
+        if (
+            response_hit_indication
+            and apply_caching not in self.app.after_request_funcs[None]
+        ):
             self.app.after_request_funcs[None].append(apply_caching)
 
         def decorator(f):
@@ -424,7 +427,6 @@ class Cache:
                     logger.info(f"Cache used for key: {cache_key}")
                 if response_hit_indication:
                     g.flask_cashing_found = found
-
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
