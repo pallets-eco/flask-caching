@@ -577,8 +577,14 @@ def test_cache_with_query_string_and_source_check_disabled(app, cache):
 
 def test_hit_cache(app, cache):
     @app.route("/")
-    @cache.cached(10, response_hit_indication=True)
+    @cache.cached(2, response_hit_indication=True)
     def cached_view():
+        # This should override the timeout to be 2 seconds
+        return {"data": "data"}
+
+    @app.route("/indication-false")
+    @cache.cached(2, response_hit_indication=False)
+    def indication_false_cached_view():
         # This should override the timeout to be 2 seconds
         return {"data": "data"}
 
@@ -587,3 +593,13 @@ def test_hit_cache(app, cache):
     assert tc.get("/").headers.get("hit_cache") is None
     assert tc.get("/").headers.get("hit_cache") == "True"
     assert tc.get("/").headers.get("hit_cache") == "True"
+    time.sleep(2)
+    assert tc.get("/").headers.get("hit_cache") is None
+
+    # indication-false
+
+    assert tc.get("/indication-false").headers.get("hit_cache") is None
+    assert tc.get("/indication-false").headers.get("hit_cache") is None
+    assert tc.get("/indication-false").headers.get("hit_cache") is None
+    time.sleep(2)
+    assert tc.get("/indication-false").headers.get("hit_cache") is None

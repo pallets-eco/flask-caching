@@ -838,6 +838,7 @@ def test_memoize_method_ignore_self_arg(app, cache):
 
 def test_memoize_function_ignore_kwarg(app, cache):
     with app.test_request_context():
+
         @cache.memoize(50, args_to_ignore=["b"])
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)
