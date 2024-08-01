@@ -41,7 +41,7 @@ pytest-asyncio==0.23.7
     # via -r tests.in
 pytest-xprocess==1.0.2
     # via -r tests.in
-redis==5.0.4
+redis==5.0.8
     # via -r tests.in
 werkzeug==3.0.3
     # via flask
