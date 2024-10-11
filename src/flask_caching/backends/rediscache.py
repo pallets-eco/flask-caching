@@ -84,7 +84,8 @@ class RedisCache(BaseCache, CachelibRedisCache):
 
         redis_url = config.get("CACHE_REDIS_URL")
         if redis_url:
-            kwargs["host"] = redis_from_url(redis_url, db=kwargs.pop("db", None))
+            redis_kwargs = config.pop("CACHE_OPTIONS", None) or {}
+            kwargs["host"] = redis_from_url(redis_url, db=kwargs.pop("db", None), **redis_kwargs)
 
         new_class = cls(*args, **kwargs)
 
