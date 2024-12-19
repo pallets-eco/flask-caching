@@ -26,6 +26,7 @@ from typing import Union
 
 from flask import current_app
 from flask import Flask
+from flask import g
 from flask import request
 from flask import Response
 from flask import url_for
@@ -414,10 +415,11 @@ class Cache:
                 if found and self.app.debug:
                     logger.info(f"Cache used for key: {cache_key}")
                 if response_hit_indication:
+                    g.flask_caching_hit_cache = found
 
                     def apply_caching(response):
-                        if found:
-                            response.headers["hit_cache"] = found
+                        if g.flask_caching_hit_cache:
+                            response.headers["hit_cache"] = g.flask_caching_hit_cache
                         return response
 
                     self.app.after_request_funcs[None].append(apply_caching)
