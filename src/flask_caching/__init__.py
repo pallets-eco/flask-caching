@@ -422,7 +422,8 @@ class Cache:
                             response.headers["hit_cache"] = g.flask_caching_hit_cache
                         return response
 
-                    self.app.after_request_funcs[None].append(apply_caching)
+                    if "apply_caching" not in self.app.after_request_funcs[None]:
+                        self.app.after_request_funcs[None].append(apply_caching)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
