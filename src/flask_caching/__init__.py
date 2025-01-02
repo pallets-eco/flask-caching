@@ -418,7 +418,7 @@ class Cache:
                     g.flask_caching_hit_cache = found
 
                     def apply_caching(response):
-                        if g.flask_caching_hit_cache:
+                        if g.get("flask_caching_hit_cache"):
                             response.headers["hit_cache"] = g.flask_caching_hit_cache
                         return response
 
