@@ -123,7 +123,7 @@ non-view related functions. The only stipulation is that you replace the
 ``key_prefix``, otherwise it will use the request.path cache_key.
 Keys control what should be fetched from the cache. If, for example, a key
 does not exist in the cache, a new key-value entry will be created in the
-cache. Otherwise the the value (i.e. the cached result) of the key will be
+cache. Otherwise the value (i.e. the cached result) of the key will be
 returned::
 
     @cache.cached(timeout=50, key_prefix='all_comments')
