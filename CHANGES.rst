@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+Unreleased
+----------
+
+- Update ``intersphinx_mapping`` for Sphinx 8 compatibility. :pr:`599`, :issue:`598`
+
+
 Version 2.3.0
 -------------
 
