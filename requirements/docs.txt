@@ -8,7 +8,7 @@ alabaster==0.7.16
     # via sphinx
 babel==2.15.0
     # via sphinx
-certifi==2024.2.2
+certifi==2024.7.4
     # via requests
 charset-normalizer==3.3.2
     # via requests
@@ -38,7 +38,7 @@ requests==2.32.0
     # via sphinx
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.3.7
+sphinx==8.0.2
     # via
     #   -r docs.in
     #   pallets-sphinx-themes
@@ -63,5 +63,5 @@ sphinxcontrib-qthelp==1.0.7
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.10
     # via sphinx
-urllib3==2.2.1
+urllib3==2.2.2
     # via requests

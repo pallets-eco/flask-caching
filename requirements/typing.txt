@@ -10,7 +10,7 @@ cryptography==42.0.7
     # via
     #   types-pyopenssl
     #   types-redis
-mypy==1.10.0
+mypy==1.11.1
     # via -r typing.in
 mypy-extensions==1.0.0
     # via mypy
@@ -20,7 +20,7 @@ types-cffi==1.16.0.20240331
     # via types-pyopenssl
 types-pyopenssl==24.1.0.20240425
     # via types-redis
-types-redis==4.6.0.20240425
+types-redis==4.6.0.20240726
     # via -r typing.in
 types-setuptools==69.5.0.20240519
     # via types-cffi
