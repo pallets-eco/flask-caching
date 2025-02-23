@@ -146,7 +146,7 @@ tox==4.16.0
     # via -r dev.in
 urllib3==2.2.2
     # via requests
-virtualenv==20.26.3
+virtualenv==20.26.6
     # via
     #   pre-commit
     #   tox
