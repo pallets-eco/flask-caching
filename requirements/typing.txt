@@ -6,7 +6,7 @@
 #
 cffi==1.16.0
     # via cryptography
-cryptography==42.0.7
+cryptography==44.0.1
     # via
     #   types-pyopenssl
     #   types-redis
