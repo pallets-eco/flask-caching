@@ -10,6 +10,12 @@ Released 2025-02-22
 
 
 
+Version 2.4.0
+-------------
+
+- Fixed tests to detect ``pytest-xprocess`` against versions 0.19.0 and newer correctly. :issue:`592`
+
+
 Version 2.3.0
 -------------
 

@@ -7,7 +7,6 @@ import pytest
 import flask_caching as fsc
 
 try:
-    __import__("pytest_xprocess")
     from xprocess import ProcessStarter
 except ImportError:
 
