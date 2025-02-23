@@ -150,7 +150,7 @@ virtualenv==20.26.3
     # via
     #   pre-commit
     #   tox
-werkzeug==3.0.3
+werkzeug==3.0.6
     # via flask
 wheel==0.43.0
     # via pip-tools
