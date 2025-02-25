@@ -10,6 +10,12 @@ Released 2025-02-22
 
 
 
+Version 2.4.0
+-------------
+
+- added support for callable `timeout` in `@cached` and `@memoized`
+
+
 Version 2.3.0
 -------------
 
@@ -36,6 +42,7 @@ Released 2024-10-08
 - support Flask 3
 
 
+
 Version 2.0.2
 -------------
 
@@ -44,6 +51,7 @@ Released 2023-01-12
 - fix issue with boto3 dependencie due to latest cachelib released
 - migrate ``flask_caching.backends.RedisCluster`` dependency from redis-py-cluster to redis-py
 - bug fix: make the ``make_cache_key`` attributed of decorated view functions writeable. :pr:`431`, :issue:`97`
+
 
 
 Version 2.0.1

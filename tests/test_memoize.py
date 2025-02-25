@@ -73,6 +73,31 @@ def test_memoize_timeout(app):
         assert big_foo(5, 2) != result
 
 
+def test_memoize_dynamic_timeout_via_callable_timeout(app):
+    app.config["CACHE_DEFAULT_TIMEOUT"] = 1
+    cache = Cache(app)
+
+    with app.test_request_context():
+
+        @cache.memoize(
+            # This should override the timeout to be 2 seconds
+            timeout=lambda rv: 2
+            if isinstance(rv, int)
+            else 1
+        )
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+        assert big_foo(5, 2) == result
+
+        time.sleep(1)  # after 1 second, cache is still active
+        assert big_foo(5, 2) == result
+
+        time.sleep(1)  # after 2 seconds, cache is not still active
+        assert big_foo(5, 2) != result
+
+
 def test_memoize_annotated(app, cache):
     with app.test_request_context():
 

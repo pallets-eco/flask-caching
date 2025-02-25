@@ -3,6 +3,7 @@ import time
 
 from flask import make_response
 from flask import request
+from flask import Response
 from flask.views import View
 
 from flask_caching import CachedResponse
@@ -307,7 +308,7 @@ def test_cache_timeout_property(app, cache):
     assert time2 != tc.get("/a/b").data.decode("utf-8")
 
 
-def test_cache_timeout_dynamic(app, cache):
+def test_cache_timeout_dynamic_via_cached_reponse(app, cache):
     @app.route("/")
     @cache.cached(timeout=1)
     def cached_view():
@@ -324,6 +325,46 @@ def test_cache_timeout_dynamic(app, cache):
     assert time1 == tc.get("/").data.decode("utf-8")
     time.sleep(1)
     # it's been >2 seconds, cache is not still active
+    assert time1 != tc.get("/").data.decode("utf-8")
+
+
+def test_cache_memoize_timeout_dynamic_via_callable_timeout(app, cache):
+    @app.route("/")
+    @cache.memoize(
+        # This should override the timeout to be 2 seconds
+        timeout=lambda rv: 2
+        if isinstance(rv, Response)
+        else 1
+    )
+    def cached_view():
+        return make_response(str(time.time()))
+
+    tc = app.test_client()
+    rv1 = tc.get("/")
+    time1 = rv1.data.decode("utf-8")
+
+    time.sleep(1)  # after 1 second, cache is still active
+    assert time1 == tc.get("/").data.decode("utf-8")
+
+    time.sleep(1)  # after 2 seconds, cache is not still active
+    assert time1 != tc.get("/").data.decode("utf-8")
+
+
+def test_cache_cached_reponse_overrides_callable_timeout(app, cache):
+    @app.route("/")
+    @cache.cached(timeout=lambda rv: 1)  # timeout to be be overridden by CachedResponse
+    def cached_view():
+        # This should override the timeout to be 2 seconds
+        return CachedResponse(response=make_response(str(time.time())), timeout=2)
+
+    tc = app.test_client()
+    rv1 = tc.get("/")
+    time1 = rv1.data.decode("utf-8")
+
+    time.sleep(1)  # after 1 second, cache is still active
+    assert time1 == tc.get("/").data.decode("utf-8")
+
+    time.sleep(1)  # after 2 seconds, cache is not still active
     assert time1 != tc.get("/").data.decode("utf-8")
 
 
