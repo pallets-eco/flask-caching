@@ -16,7 +16,7 @@ build==1.2.1
     # via pip-tools
 cachelib==0.13.0
     # via -r tests.in
-cachetools==5.3.3
+cachetools==5.5.2
     # via tox
 certifi==2024.7.4
     # via requests
@@ -38,7 +38,7 @@ docutils==0.21.2
     # via
     #   sphinx
     #   sphinx-tabs
-filelock==3.15.4
+filelock==3.18.0
     # via
     #   tox
     #   virtualenv
@@ -64,7 +64,7 @@ markupsafe==2.1.5
     #   werkzeug
 nodeenv==1.8.0
     # via pre-commit
-packaging==24.1
+packaging==24.2
     # via
     #   build
     #   pallets-sphinx-themes
@@ -76,7 +76,7 @@ pallets-sphinx-themes==2.1.3
     # via -r docs.in
 pip-tools==7.4.1
     # via -r dev.in
-platformdirs==4.2.2
+platformdirs==4.3.7
     # via
     #   tox
     #   virtualenv
@@ -94,7 +94,7 @@ pygments==2.18.0
     #   sphinx-tabs
 pylibmc==1.6.3
     # via -r tests.in
-pyproject-api==1.7.1
+pyproject-api==1.9.0
     # via tox
 pyproject-hooks==1.1.0
     # via
@@ -142,11 +142,11 @@ sphinxcontrib-qthelp==1.0.7
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.10
     # via sphinx
-tox==4.16.0
+tox==4.25.0
     # via -r dev.in
 urllib3==2.2.2
     # via requests
-virtualenv==20.26.3
+virtualenv==20.30.0
     # via
     #   pre-commit
     #   tox
