@@ -200,6 +200,47 @@ class TestRedisCache(GenericCacheTests):
             backends.RedisCache(host=None)
         assert str(exc_info.value) == "RedisCache host parameter may not be None"
 
+    def test_redis_cache_adds_version_info(self):
+        """Test that RedisCache.factory adds Flask-Caching version info."""
+        from flask import Flask
+        from flask_caching.utils import get_flask_caching_version
+
+        app = Flask(__name__)
+        config = {
+            "CACHE_REDIS_HOST": "localhost",
+            "CACHE_REDIS_PORT": 6379,
+            "CACHE_DEFAULT_TIMEOUT": 300,
+        }
+
+        cache = backends.RedisCache.factory(app, config, [], {})
+
+        # Check that lib_name and lib_version were set in connection pool
+        conn_kwargs = cache._write_client.connection_pool.connection_kwargs
+        assert conn_kwargs.get("lib_name") == "Flask-Caching"
+        assert conn_kwargs.get("lib_version") == get_flask_caching_version()
+
+    def test_redis_cache_respects_custom_version_info(self):
+        """Test that custom lib_name and lib_version are not overridden."""
+        from flask import Flask
+
+        app = Flask(__name__)
+        config = {
+            "CACHE_REDIS_HOST": "localhost",
+            "CACHE_REDIS_PORT": 6379,
+            "CACHE_DEFAULT_TIMEOUT": 300,
+        }
+        kwargs = {
+            "lib_name": "MyCustomApp",
+            "lib_version": "1.2.3",
+        }
+
+        cache = backends.RedisCache.factory(app, config, [], kwargs)
+
+        # Check that custom values were preserved
+        conn_kwargs = cache._write_client.connection_pool.connection_kwargs
+        assert conn_kwargs.get("lib_name") == "MyCustomApp"
+        assert conn_kwargs.get("lib_version") == "1.2.3"
+
 
 class TestRedisCacheClientsOverride(CacheTestsBase):
     _can_use_fast_sleep = False
