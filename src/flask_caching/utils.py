@@ -144,29 +144,51 @@ def get_flask_caching_version() -> str:
             return "unknown"
 
 
+def get_redis_py_version() -> str:
+    """Get the redis-py version string.
+
+    Returns:
+        redis-py version in the format 'major.minor.patch'
+        or 'unknown' if not available.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("redis")
+    except Exception:
+        return "unknown"
+
+
 def add_redis_version_info(kwargs):
     """Add version identification for redis-py client.
 
     This function adds library identification to Redis connection kwargs,
     allowing Redis operators to see which library is using the connection.
 
-    Only sets lib_name and lib_version if not already provided by user,
-    ensuring user-provided values are never overridden.
+    On redis-py >= 7 the modern ``driver_info`` parameter is used and the
+    formatted name follows the pattern ``redis-py(flask-caching_v<version>)``.
+    On older redis-py versions the legacy ``lib_name``/``lib_version``
+    parameters are set instead.
+
+    User-provided values for ``driver_info``, ``lib_name`` or ``lib_version``
+    are never overridden.
 
     Args:
         kwargs: Dictionary of keyword arguments to pass to Redis client.
-                Will be modified in-place to add 'lib_name' and 'lib_version'
-                if they are not already present.
-
-    Example:
-        >>> kwargs = {}
-        >>> add_redis_version_info(kwargs)
-        >>> kwargs['lib_name']
-        'Flask-Caching'
-        >>> kwargs['lib_version']
-        '2.3.1'
+                Will be modified in-place.
     """
-    if "lib_name" not in kwargs:
-        flask_caching_ver = get_flask_caching_version()
-        kwargs["lib_name"] = "Flask-Caching"
-        kwargs["lib_version"] = flask_caching_ver
+    if "driver_info" in kwargs or "lib_name" in kwargs:
+        return
+
+    flask_caching_ver = get_flask_caching_version()
+
+    try:
+        from redis.client import DriverInfo
+    except ImportError:
+        kwargs["lib_name"] = f"redis-py(flask-caching_v{flask_caching_ver})"
+        kwargs["lib_version"] = get_redis_py_version()
+        return
+
+    kwargs["driver_info"] = DriverInfo().add_upstream_driver(
+        "flask-caching", flask_caching_ver
+    )
