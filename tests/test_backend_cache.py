@@ -203,7 +203,7 @@ class TestRedisCache(GenericCacheTests):
     def test_redis_cache_adds_version_info(self):
         """Test that RedisCache.factory adds Flask-Caching version info."""
         from flask import Flask
-        from flask_caching.utils import get_flask_caching_version
+        from flask_caching.utils import get_flask_caching_version, get_redis_py_version
 
         app = Flask(__name__)
         config = {
@@ -216,8 +216,10 @@ class TestRedisCache(GenericCacheTests):
 
         # Check that lib_name and lib_version were set in connection pool
         conn_kwargs = cache._write_client.connection_pool.connection_kwargs
-        assert conn_kwargs.get("lib_name") == "Flask-Caching"
-        assert conn_kwargs.get("lib_version") == get_flask_caching_version()
+        flask_caching_ver = get_flask_caching_version()
+        expected_lib_name = f"redis-py(flask-caching_v{flask_caching_ver})"
+        assert conn_kwargs.get("lib_name") == expected_lib_name
+        assert conn_kwargs.get("lib_version") == get_redis_py_version()
 
     def test_redis_cache_respects_custom_version_info(self):
         """Test that custom lib_name and lib_version are not overridden."""

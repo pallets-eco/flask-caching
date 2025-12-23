@@ -136,11 +136,29 @@ def get_flask_caching_version() -> str:
             return "unknown"
 
 
+def get_redis_py_version() -> str:
+    """Get the redis-py version string.
+
+    Returns:
+        redis-py version in the format 'major.minor.patch'
+        or 'unknown' if not available.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("redis")
+    except Exception:
+        return "unknown"
+
+
 def add_redis_version_info(kwargs):
     """Add version identification for redis-py client.
 
     This function adds library identification to Redis connection kwargs,
     allowing Redis operators to see which library is using the connection.
+
+    Follows the format: lib_name='redis-py(flask-caching_v2.3.1)'
+    and lib_version='<redis-py version>'.
 
     Only sets lib_name and lib_version if not already provided by user,
     ensuring user-provided values are never overridden.
@@ -154,11 +172,12 @@ def add_redis_version_info(kwargs):
         >>> kwargs = {}
         >>> add_redis_version_info(kwargs)
         >>> kwargs['lib_name']
-        'Flask-Caching'
+        'redis-py(flask-caching_v2.3.1)'
         >>> kwargs['lib_version']
-        '2.3.1'
+        '5.0.8'
     """
     if "lib_name" not in kwargs:
         flask_caching_ver = get_flask_caching_version()
-        kwargs["lib_name"] = "Flask-Caching"
-        kwargs["lib_version"] = flask_caching_ver
+        redis_py_ver = get_redis_py_version()
+        kwargs["lib_name"] = f"redis-py(flask-caching_v{flask_caching_ver})"
+        kwargs["lib_version"] = redis_py_ver

@@ -4,9 +4,10 @@ Changelog
 Unreleased
 ----------
 
-- Redis backends now identify themselves to Redis servers as Flask-Caching
-  using the ``lib_name`` and ``lib_version`` parameters, following redis-py
-  best practices.
+- Redis backends now identify themselves to Redis servers using the
+  ``lib_name`` and ``lib_version`` parameters. The format follows redis-py
+  conventions: ``lib_name`` is set to ``redis-py(flask-caching_v<version>)``
+  and ``lib_version`` is set to the redis-py version. :issue:`630`
 
 
 Version 2.3.1
