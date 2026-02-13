@@ -144,13 +144,34 @@ class Cache:
 
         self._set_cache(app, config)
 
+    #: Mapping from old-style lowercase CACHE_TYPE names to backend class names.
+    #: This allows short names like "simple" to resolve directly to the class
+    #: (e.g. SimpleCache) instead of the deprecated wrapper functions.
+    _CACHE_TYPE_ALIASES = {
+        "null": "NullCache",
+        "simple": "SimpleCache",
+        "filesystem": "FileSystemCache",
+        "redis": "RedisCache",
+        "redissentinel": "RedisSentinelCache",
+        "rediscluster": "RedisClusterCache",
+        "uwsgi": "UWSGICache",
+        "memcached": "MemcachedCache",
+        "gaememcached": "MemcachedCache",
+        "saslmemcached": "SASLMemcachedCache",
+        "spreadsaslmemcached": "SpreadSASLMemcachedCache",
+    }
+
     def _set_cache(self, app: Flask, config) -> None:
         import_me = config["CACHE_TYPE"]
         if "." not in import_me:
-            plain_name_used = True
-            import_me = "flask_caching.backends." + import_me
-        else:
-            plain_name_used = False
+            # Map old-style lowercase names to class names so they resolve
+            # to BaseCache subclasses instead of deprecated wrapper functions.
+            if import_me in self._CACHE_TYPE_ALIASES:
+                import_me = (
+                    "flask_caching.backends." + self._CACHE_TYPE_ALIASES[import_me]
+                )
+            else:
+                import_me = "flask_caching.backends." + import_me
 
         cache_factory = import_string(import_me)
         cache_args = config["CACHE_ARGS"][:]
@@ -158,14 +179,6 @@ class Cache:
 
         if isinstance(cache_factory, type) and issubclass(cache_factory, BaseCache):
             cache_factory = cache_factory.factory
-        elif plain_name_used:
-            warnings.warn(
-                "Using the initialization functions in flask_caching.backend "
-                "is deprecated.  Use the a full path to backend classes "
-                "directly.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
 
         if config["CACHE_OPTIONS"]:
             cache_options.update(config["CACHE_OPTIONS"])
