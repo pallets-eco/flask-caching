@@ -1,7 +1,6 @@
 import inspect
 import string
-from typing import Callable
-from typing import List
+from collections.abc import Callable
 from typing import Optional
 
 TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
@@ -17,7 +16,7 @@ def wants_args(f: Callable) -> bool:
     return bool(arg_spec.args or arg_spec.varargs or arg_spec.varkw)
 
 
-def get_function_parameters(f: Callable) -> List:
+def get_function_parameters(f: Callable) -> list:
     """Get function parameters
     :param f
     :return: Parameter list of function
@@ -25,7 +24,7 @@ def get_function_parameters(f: Callable) -> List:
     return list(inspect.signature(f).parameters.values())
 
 
-def get_arg_names(f: Callable) -> List[str]:
+def get_arg_names(f: Callable) -> list[str]:
     """Return arguments of function
     :param f:
     :return: String list of arguments
@@ -104,7 +103,7 @@ def function_namespace(f, args=None):
 
 
 def make_template_fragment_key(
-    fragment_name: str, vary_on: Optional[List[str]] = None
+    fragment_name: str, vary_on: Optional[list[str]] = None
 ) -> str:
     """Make a cache key for a specific fragment name."""
     if vary_on:

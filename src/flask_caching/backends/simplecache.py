@@ -1,12 +1,12 @@
 """
-    flask_caching.backends.simple
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+flask_caching.backends.simple
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The simple cache backend.
+The simple cache backend.
 
-    :copyright: (c) 2018 by Peter Justin.
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2018 by Peter Justin.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 import logging
@@ -14,7 +14,6 @@ import logging
 from cachelib import SimpleCache as CachelibSimpleCache
 
 from flask_caching.backends.base import BaseCache
-
 
 logger = logging.getLogger(__name__)
 

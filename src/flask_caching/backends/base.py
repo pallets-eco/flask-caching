@@ -1,13 +1,13 @@
 """
-    flask_caching.backends.base
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+flask_caching.backends.base
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    This module contains the BaseCache that other caching
-    backends have to implement.
+This module contains the BaseCache that other caching
+backends have to implement.
 
-    :copyright: (c) 2018 by Peter Justin.
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2018 by Peter Justin.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 from cachelib import BaseCache as CachelibBaseCache

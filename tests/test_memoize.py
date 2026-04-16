@@ -577,9 +577,7 @@ def test_memoize_multiple_arg_kwarg_calls(app, cache):
                 c = [1, 1]
             if d is None:
                 d = [1, 1]
-            return (
-                sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
-            )  # noqa
+            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
 
         result_a = big_foo([5, 3, 2], [1], c=[3, 3], d=[3, 3])
 
@@ -597,9 +595,7 @@ def test_memoize_multiple_arg_kwarg_delete(app, cache):
                 c = [1, 1]
             if d is None:
                 d = [1, 1]
-            return (
-                sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
-            )  # noqa
+            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
 
         result_a = big_foo([5, 3, 2], [1], c=[3, 3], d=[3, 3])
         cache.delete_memoized(big_foo, [5, 3, 2], [1], [3, 3], [3, 3])
@@ -838,6 +834,7 @@ def test_memoize_method_ignore_self_arg(app, cache):
 
 def test_memoize_function_ignore_kwarg(app, cache):
     with app.test_request_context():
+
         @cache.memoize(50, args_to_ignore=["b"])
         def big_foo(a, b):
             return a + b + random.randrange(0, 100000)

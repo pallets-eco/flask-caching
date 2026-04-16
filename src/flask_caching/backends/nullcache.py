@@ -1,12 +1,12 @@
 """
-    flask_caching.backends.null
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+flask_caching.backends.null
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The null cache backend. A caching backend that doesn't cache.
+The null cache backend. A caching backend that doesn't cache.
 
-    :copyright: (c) 2018 by Peter Justin.
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2018 by Peter Justin.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 from flask_caching.backends.base import BaseCache
