@@ -49,8 +49,14 @@ docs = [
     "sphinxcontrib-log-cabinet",
 ]
 tests = [
+    "flask[async]",
     "pytest",
     "pytest-cov",
+    "pytest-asyncio",
+    "pytest-xprocess",
+    "pylibmc",
+    "redis",
+    "asgiref"
 ]
 typing = [
     "mypy",

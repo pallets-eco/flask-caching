@@ -22,7 +22,7 @@ def app(request):
         request.module.__name__, template_folder=os.path.dirname(__file__)
     )
     app.testing = True
-    app.config["CACHE_TYPE"] = "simple"
+    app.config["CACHE_TYPE"] = "SimpleCache"
     return app
 
 
