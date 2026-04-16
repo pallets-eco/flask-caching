@@ -6,7 +6,7 @@ Version 2.3.1
 
 Released 2025-02-22
 
-- Relax cachelib version to allow latest releases 
+- Relax cachelib version to allow latest releases
 
 
 
