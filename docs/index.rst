@@ -548,6 +548,7 @@ Set ``CACHE_TYPE`` to ``RedisSentinel`` to use this type.  The old name,
 - CACHE_REDIS_SENTINELS
 - CACHE_REDIS_SENTINEL_MASTER
 - CACHE_REDIS_PASSWORD
+- CACHE_REDIS_SENTINEL_PASSWORD
 - CACHE_REDIS_DB
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
