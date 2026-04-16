@@ -4,13 +4,13 @@ import logging
 
 from flask_caching.backends.base import BaseCache
 
-
 logger = logging.getLogger(__name__)
 
 
 try:
     from google.auth.credentials import AnonymousCredentials
-    from google.cloud import storage, exceptions
+    from google.cloud import exceptions
+    from google.cloud import storage
 except ImportError as e:
     raise RuntimeError("no google-cloud-storage module found") from e
 
@@ -48,7 +48,7 @@ class GoogleCloudStorageCache(BaseCache):
         default_timeout=300,
         delete_expired_objects_on_read=False,
         anonymous=False,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(default_timeout)
         if not isinstance(bucket, str):

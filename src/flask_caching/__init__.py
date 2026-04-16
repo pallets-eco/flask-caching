@@ -1,11 +1,11 @@
 """
-    flask_caching
-    ~~~~~~~~~~~~~
+flask_caching
+~~~~~~~~~~~~~
 
-    Adds cache support to your application.
+Adds cache support to your application.
 
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 import base64
@@ -16,8 +16,8 @@ import logging
 import uuid
 import warnings
 from collections import OrderedDict
+from collections.abc import Callable
 from typing import Any
-from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -137,7 +137,8 @@ class Cache:
         self.source_check = config["CACHE_SOURCE_CHECK"]
 
         if self.with_jinja2_ext:
-            from .jinja2ext import CacheExtension, JINJA_CACHE_ATTR_NAME
+            from .jinja2ext import CacheExtension
+            from .jinja2ext import JINJA_CACHE_ATTR_NAME
 
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
             app.jinja_env.add_extension(CacheExtension)
@@ -210,7 +211,7 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.delete(*args, **kwargs)
 
-    def delete_many(self, *args, **kwargs) -> List[str]:
+    def delete_many(self, *args, **kwargs) -> list[str]:
         """Proxy function for internal cache object."""
         return self.cache.delete_many(*args, **kwargs)
 
@@ -222,15 +223,15 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.get_many(*args, **kwargs)
 
-    def set_many(self, *args, **kwargs) -> List[Any]:
+    def set_many(self, *args, **kwargs) -> list[Any]:
         """Proxy function for internal cache object."""
         return self.cache.set_many(*args, **kwargs)
 
-    def get_dict(self, *args, **kwargs) -> Dict[str, Any]:
+    def get_dict(self, *args, **kwargs) -> dict[str, Any]:
         """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
-    def unlink(self, *args, **kwargs) -> List[str]:
+    def unlink(self, *args, **kwargs) -> list[str]:
         """Proxy function for internal cache object
         only support Redis
         """
@@ -449,7 +450,7 @@ class Cache:
                 # (the way `url_for` expects them)
                 argspec_args = inspect.getfullargspec(f).args
 
-                for arg_name, arg in zip(argspec_args, args):
+                for arg_name, arg in zip(argspec_args, args, strict=False):
                     kwargs[arg_name] = arg
 
                 use_request = kwargs.pop("use_request", False)
@@ -543,7 +544,7 @@ class Cache:
         timeout: Optional[int] = None,
         forced_update: Optional[Union[bool, Callable]] = False,
         args_to_ignore: Optional[Any] = None,
-    ) -> Union[Tuple[str, str], Tuple[str, None]]:
+    ) -> Union[tuple[str, str], tuple[str, None]]:
         """Updates the hash version associated with a memoized function or
         method.
         """
@@ -597,7 +598,7 @@ class Cache:
 
         if dirty:
             self.cache.set_many(
-                dict(zip(fetch_keys, version_data_list)), timeout=timeout
+                dict(zip(fetch_keys, version_data_list, strict=False)), timeout=timeout
             )
 
         return fname, "".join(version_data_list)
