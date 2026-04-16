@@ -30,8 +30,8 @@ jobs:
           - {name: 'PyPy', python: pypy-3.8, os: ubuntu-latest, tox: pypy38}
           - {name: 'mypy', python: '3.9', os: ubuntu-latest, tox: typing}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
     - name: Install APT dependencies
@@ -49,7 +49,7 @@ jobs:
       id: pip-cache
       run: echo "::set-output name=dir::$(pip cache dir)"
     - name: cache pip
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
         key: pip|${{ runner.os }}|${{ matrix.python }}|${{ hashFiles('setup.py') }}|${{ hashFiles('requirements/*.txt') }}

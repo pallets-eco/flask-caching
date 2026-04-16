@@ -112,3 +112,72 @@ def make_template_fragment_key(
     else:
         vary_on = []
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
+
+
+def get_flask_caching_version() -> str:
+    """Get the flask-caching version string.
+
+    Returns:
+        flask-caching version in the format 'major.minor.patch'
+        or 'unknown' if not available.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("flask-caching")
+    except Exception:
+        # importlib.metadata not available or package metadata not found
+        # Fallback to __version__ from __init__.py
+        try:
+            from flask_caching import __version__
+
+            return __version__
+        except (ImportError, AttributeError):
+            return "unknown"
+
+
+def get_redis_py_version() -> str:
+    """Get the redis-py version string.
+
+    Returns:
+        redis-py version in the format 'major.minor.patch'
+        or 'unknown' if not available.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("redis")
+    except Exception:
+        return "unknown"
+
+
+def add_redis_version_info(kwargs):
+    """Add version identification for redis-py client.
+
+    This function adds library identification to Redis connection kwargs,
+    allowing Redis operators to see which library is using the connection.
+
+    Follows the format: lib_name='redis-py(flask-caching_v2.3.1)'
+    and lib_version='<redis-py version>'.
+
+    Only sets lib_name and lib_version if not already provided by user,
+    ensuring user-provided values are never overridden.
+
+    Args:
+        kwargs: Dictionary of keyword arguments to pass to Redis client.
+                Will be modified in-place to add 'lib_name' and 'lib_version'
+                if they are not already present.
+
+    Example:
+        >>> kwargs = {}
+        >>> add_redis_version_info(kwargs)
+        >>> kwargs['lib_name']
+        'redis-py(flask-caching_v2.3.1)'
+        >>> kwargs['lib_version']
+        '5.0.8'
+    """
+    if "lib_name" not in kwargs:
+        flask_caching_ver = get_flask_caching_version()
+        redis_py_ver = get_redis_py_version()
+        kwargs["lib_name"] = f"redis-py(flask-caching_v{flask_caching_ver})"
+        kwargs["lib_version"] = redis_py_ver
