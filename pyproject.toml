@@ -1,6 +1,6 @@
 [project]
 name = "Flask-Caching"
-version = "2.3.1"
+version = "2.4.0"
 description = "Adds caching support to Flask applications."
 readme = "README.md"
 license = "BSD-3-Clause"
