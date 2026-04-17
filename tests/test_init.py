@@ -1,3 +1,5 @@
+import importlib.util
+
 import pytest
 from flask import Flask
 
@@ -14,7 +16,7 @@ from flask_caching.backends import SpreadSASLMemcachedCache
 # pylibmc doesn't have any wheels for python > 3.11
 pylibmc_available = False
 try:
-    import pylibmc
+    importlib.util.find_spec("pylibmc")
 except ImportError:
     pylibmc_available = False
 

@@ -1,7 +1,6 @@
 import inspect
 import string
 from collections.abc import Callable
-from typing import Optional
 
 TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
 # Used to remove control characters and whitespace from cache keys.
@@ -103,11 +102,11 @@ def function_namespace(f, args=None):
 
 
 def make_template_fragment_key(
-    fragment_name: str, vary_on: Optional[list[str]] = None
+    fragment_name: str, vary_on: list[str] | None = None
 ) -> str:
     """Make a cache key for a specific fragment name."""
     if vary_on:
-        fragment_name = "%s_" % fragment_name
+        fragment_name = f"{fragment_name}_"
     else:
         vary_on = []
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))

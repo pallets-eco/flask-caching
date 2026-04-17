@@ -37,18 +37,7 @@ extensions = [
     "sphinx_issues",
 ]
 
-# Path to GitHub repo {group}/{project}  (note that `group` is the GitHub user or organization)
 issues_github_path = "pallets-eco/flask-caching"
-
-# which is the equivalent to:
-issues_uri = "https://github.com/{group}/{project}/issues/{issue}"
-issues_prefix = "#"
-issues_pr_uri = "https://github.com/{group}/{project}/pull/{pr}"
-issues_pr_prefix = "#"
-issues_commit_uri = "https://github.com/{group}/{project}/commit/{commit}"
-issues_commit_prefix = "@"
-issues_user_uri = "https://github.com/{user}"
-issues_user_prefix = "@"
 
 
 # Add any paths that contain templates here, relative to this directory.

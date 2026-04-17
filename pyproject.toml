@@ -179,7 +179,7 @@ use_frozen_constraints = true
 dependency_groups = ["tests"]
 env_tmp_dir = "{toxworkdir}/tmp/{envname}"
 commands = [[
-    "pytest", "-v", "--tb=short", "--basetemp={env_tmp_dir}",
+    "pytest", "-v", "--capture=tee-sys", "--tb=short", "--basetemp={env_tmp_dir}",
     {replace = "posargs", default = [], extend = true},
 ]]
 

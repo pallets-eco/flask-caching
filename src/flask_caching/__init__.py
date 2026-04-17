@@ -18,10 +18,6 @@ import warnings
 from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 from typing import Union
 
 from flask import current_app
@@ -72,7 +68,7 @@ class Cache:
 
     def __init__(
         self,
-        app: Optional[Flask] = None,
+        app: Flask | None = None,
         with_jinja2_ext: bool = True,
         config=None,
     ) -> None:
@@ -199,7 +195,7 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.has(*args, **kwargs)
 
-    def set(self, *args, **kwargs) -> Optional[bool]:
+    def set(self, *args, **kwargs) -> bool | None:
         """Proxy function for internal cache object."""
         return self.cache.set(*args, **kwargs)
 
@@ -242,17 +238,17 @@ class Cache:
 
     def cached(
         self,
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
         key_prefix: str = "view/%s",
-        unless: Optional[Callable] = None,
-        forced_update: Optional[Callable] = None,
-        response_filter: Optional[Callable] = None,
+        unless: Callable | None = None,
+        forced_update: Callable | None = None,
+        response_filter: Callable | None = None,
         query_string: bool = False,
         hash_method: Callable = hashlib.md5,
         cache_none: bool = False,
-        make_cache_key: Optional[Callable] = None,
-        source_check: Optional[bool] = None,
-        response_hit_indication: Optional[bool] = False,
+        make_cache_key: Callable | None = None,
+        source_check: bool | None = None,
+        response_hit_indication: bool | None = False,
     ) -> Callable:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
@@ -537,13 +533,13 @@ class Cache:
     def _memoize_version(
         self,
         f: Callable,
-        args: Optional[Any] = None,
+        args: Any | None = None,
         kwargs=None,
         reset: bool = False,
         delete: bool = False,
-        timeout: Optional[int] = None,
-        forced_update: Optional[Union[bool, Callable]] = False,
-        args_to_ignore: Optional[Any] = None,
+        timeout: int | None = None,
+        forced_update: Union[bool, Callable] | None = False,
+        args_to_ignore: Any | None = None,
     ) -> Union[tuple[str, str], tuple[str, None]]:
         """Updates the hash version associated with a memoized function or
         method.
@@ -605,12 +601,12 @@ class Cache:
 
     def _memoize_make_cache_key(
         self,
-        make_name: Optional[Callable] = None,
-        timeout: Optional[Callable] = None,
+        make_name: Callable | None = None,
+        timeout: Callable | None = None,
         forced_update: bool = False,
         hash_method: Callable = hashlib.md5,
-        source_check: Optional[bool] = False,
-        args_to_ignore: Optional[Any] = None,
+        source_check: bool | None = False,
+        args_to_ignore: Any | None = None,
     ) -> Callable:
         """Function used to create the cache_key for memoized functions."""
 
@@ -725,7 +721,7 @@ class Cache:
         )
 
     def _bypass_cache(
-        self, unless: Optional[Callable], f: Callable, *args, **kwargs
+        self, unless: Callable | None, f: Callable, *args, **kwargs
     ) -> bool:
         """Determines whether or not to bypass the cache by calling unless().
         Supports both unless() that takes in arguments and unless()
@@ -748,15 +744,15 @@ class Cache:
 
     def memoize(
         self,
-        timeout: Optional[int] = None,
-        make_name: Optional[Callable] = None,
-        unless: Optional[Callable] = None,
-        forced_update: Optional[Callable] = None,
-        response_filter: Optional[Callable] = None,
+        timeout: int | None = None,
+        make_name: Callable | None = None,
+        unless: Callable | None = None,
+        forced_update: Callable | None = None,
+        response_filter: Callable | None = None,
         hash_method: Callable = hashlib.md5,
         cache_none: bool = False,
-        source_check: Optional[bool] = None,
-        args_to_ignore: Optional[Any] = None,
+        source_check: bool | None = None,
+        args_to_ignore: Any | None = None,
     ) -> Callable:
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.

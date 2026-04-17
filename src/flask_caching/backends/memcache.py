@@ -186,7 +186,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         chks = range(0, len_ser, self.chunksize)
 
         if len(chks) > self.maxchunk:
-            raise ValueError("Cannot store value in less than %s keys" % self.maxchunk)
+            raise ValueError(f"Cannot store value in less than {self.maxchunk} keys")
 
         for i in chks:
             values[f"{key}.{i // self.chunksize}"] = serialized[i : i + self.chunksize]

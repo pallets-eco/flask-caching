@@ -98,7 +98,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
         integers as regular string and pickle dumps everything else.
         """
         t = type(value)
-        if t == int:
+        if isinstance(t, int):
             return str(value).encode("ascii")
         return b"!" + pickle.dumps(value)
 
