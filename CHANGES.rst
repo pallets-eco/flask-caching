@@ -1,19 +1,24 @@
 Changelog
 =========
 
+Version 2.4.0
+-------------
+
+Unreleased
+
+- Modernize project setup
+- Update ``intersphinx_mapping`` for Sphinx 8 compatibility. :pr:`599`, :issue:`598`
+- Pass CACHE_OPTIONS as kwargs to redis_from_url. :pr:`591`
+- Pass sentinel_kwargs to redis client via CACHE_OPTIONS :pr:`626`
+- Fix ``response_hit_indication`` return True always. :pr:`579`, :pr:`596`, :issue:`595`, :issue:`570`
+
+
 Version 2.3.1
 -------------
 
 Released 2025-02-22
 
 - Relax cachelib version to allow latest releases
-
-
-
-Unreleased
-----------
-
-- Update ``intersphinx_mapping`` for Sphinx 8 compatibility. :pr:`599`, :issue:`598`
 
 
 Version 2.3.0
