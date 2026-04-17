@@ -447,11 +447,11 @@ dependencies = [
 dev = [
     { name = "asgiref" },
     { name = "flask", extra = ["async"] },
+    { name = "libmc" },
     { name = "mypy" },
     { name = "pallets-sphinx-themes" },
     { name = "pre-commit" },
     { name = "pre-commit-uv" },
-    { name = "pylibmc" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -489,7 +489,7 @@ pre-commit = [
 tests = [
     { name = "asgiref" },
     { name = "flask", extra = ["async"] },
-    { name = "pylibmc" },
+    { name = "libmc" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -512,11 +512,11 @@ requires-dist = [
 dev = [
     { name = "asgiref" },
     { name = "flask", extras = ["async"] },
+    { name = "libmc" },
     { name = "mypy" },
     { name = "pallets-sphinx-themes" },
     { name = "pre-commit" },
     { name = "pre-commit-uv" },
-    { name = "pylibmc" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -548,7 +548,7 @@ pre-commit = [
 tests = [
     { name = "asgiref" },
     { name = "flask", extras = ["async"] },
-    { name = "pylibmc" },
+    { name = "libmc" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -666,6 +666,37 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
+]
+
+[[package]]
+name = "libmc"
+version = "1.4.15"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/27/098e7b4f250ba539b597734a8941d847a23271e1446936202c53e422b8b5/libmc-1.4.15-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:ca61580d6063bc8a8871cf71d55b3631c225be7b267d73366dd2300f265bd27a", size = 166640, upload-time = "2025-11-27T07:12:57.373Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/cb/6f3db065ef291f245bfa15622aeff69144e969c1331b6a62e9a8e0e5d864/libmc-1.4.15-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:51d0e7a43afaa00a4dc996b66e75ad96557e375bd2e81ae7a84072a702a48d28", size = 159204, upload-time = "2025-11-27T07:12:58.792Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/97/7f783f7bee0333ea2976b107eeef13cc871d27ac98fa6abd8cf3aba8066a/libmc-1.4.15-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:8f9376c398819a84352e103d76ea6b3bead734fb246d9e30b2a0103657ad7f08", size = 1565192, upload-time = "2025-11-27T07:13:00.153Z" },
+    { url = "https://files.pythonhosted.org/packages/14/16/b5c6a8f3e4ed71ed6f9093b790533a52cc0fa7d0d75e0d356c569a5df322/libmc-1.4.15-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:2b65f67d246c957c2f99154a7df487874bcd30e09099958c15a298a9eae97a4f", size = 2568543, upload-time = "2025-11-27T07:13:01.42Z" },
+    { url = "https://files.pythonhosted.org/packages/72/f9/dc553e191446e57a7c4738fbe37986975273e147911bb53a9d3753b6273f/libmc-1.4.15-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:df6840860ff6c50f4be98ae82c1a2c0c3d12524667b4dda9444830f74f859a8c", size = 166239, upload-time = "2025-11-27T07:13:02.5Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/ba/7d5ae537a445f702c584336416915b83ec69f2e405ac6b99549ecdecbaf4/libmc-1.4.15-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9d203a1083e5a9c2d327abe45d25dc2bbe743fc4fa8a114abaf863b533c542b9", size = 159120, upload-time = "2025-11-27T07:13:03.788Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/50/af925f952706b289f5a8872b2f6343ff7c796f8ebc03970420e2c42b8f62/libmc-1.4.15-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7f4bcc8e727c9d8e0cbe61846f4d973aceb8eb3013eaf59c554ca60e72b9dbb5", size = 1607225, upload-time = "2025-11-27T07:13:04.733Z" },
+    { url = "https://files.pythonhosted.org/packages/64/ae/432dc61537ef1f2be7ad2b2a523ccb84575bbd02bc4987ea538d093563ce/libmc-1.4.15-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:52f3194fe04afef831e528404a6fec105a0b681947ec0abc256bdc6e932f1a58", size = 2614171, upload-time = "2025-11-27T07:13:06.155Z" },
+    { url = "https://files.pythonhosted.org/packages/31/a2/bf9350cf14f1500d535c94686817c0b11ea5381508df280d1c982c5c2878/libmc-1.4.15-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:08e72ae3e5265737dac047f92c46b9d858d9cef4609cd2dda4f195334ddb25e9", size = 167968, upload-time = "2025-11-27T07:13:07.313Z" },
+    { url = "https://files.pythonhosted.org/packages/08/6c/abfad380889a2c756f641baf87e0d396e7ac2003e0ba3db5c7146dbe487b/libmc-1.4.15-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:05c13ff89cc4fb6bb4ad48cde88329e940bda5105ce04f706faeec14d18a1296", size = 158971, upload-time = "2025-11-27T07:13:08.659Z" },
+    { url = "https://files.pythonhosted.org/packages/94/b7/3a7b95ebd3e6e2cf7421bf8cff5a19e2391d2dac3a796a2fbc1b93bef8fe/libmc-1.4.15-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a307812df7207fc1971287262f5bc449e6038744f14b1ec0aa609c73b4690153", size = 1589085, upload-time = "2025-11-27T07:13:09.632Z" },
+    { url = "https://files.pythonhosted.org/packages/76/bf/c67efe2c070fe97b2958157d9c1fd997b429dc3d41b54fbd5bee57f3afcf/libmc-1.4.15-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:7261edca8a487ebf599806d4865e205e706ed16a2a3ac24dc264870d5e2b6007", size = 2579594, upload-time = "2025-11-27T07:13:10.837Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/b5/41b5ea6c8edf43939db5966e153dd7922ba433a7f7f035b82eb5e336a91d/libmc-1.4.15-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:74022314a8e4cd7ff8569d1421f0847e6b1ff6758b63c41ab45849c1fcf5d858", size = 167633, upload-time = "2025-11-27T07:13:12.566Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/6f/d4bf95367d9139698db916fa538a553cb23692847430e5b63b9eca27ee3b/libmc-1.4.15-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:87f1da1289736baa7a18860f168efc8e60f045747a2b75ec911910e16fab2bbc", size = 158562, upload-time = "2025-11-27T07:13:13.913Z" },
+    { url = "https://files.pythonhosted.org/packages/67/86/5068a2e66ddbb29bfda001d40512811147119d5d7d7eab5fdd108c65ad1b/libmc-1.4.15-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f2e4f14bdb50795d4f82c32a039752796eea434f66e0114ef5f28474fa3ee198", size = 1588620, upload-time = "2025-11-27T07:13:14.993Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/d4/4cc213103867a3b00d6a7a2f0ee988fae0b0f57a074c8ea6d5c80f4d0dc7/libmc-1.4.15-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:de6b382fe8ba61bdf6058e5dcef3270cf3d97af68a13e642702b7140219e429a", size = 2581169, upload-time = "2025-11-27T07:13:16.62Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/6b/f7f7e1aef50021e8764e91f8146ae62c40b351b7eee6401d6aa647fcb901/libmc-1.4.15-cp314-cp314-macosx_10_13_x86_64.whl", hash = "sha256:2530f664162ab08797a41d1805f9f324ca350e418a1a8a8827feb5291ac38d6b", size = 167872, upload-time = "2025-11-27T07:13:18.171Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/61/cd1610bf541b44144c45b9b6dced5d47351211803c1f69cf01b6fa7f049e/libmc-1.4.15-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:618f31936e9fa7d0c575b5e11515f2b936c9763eac50324c1a36bba5fdc025d9", size = 159512, upload-time = "2025-11-27T07:13:19.159Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/1b/e023a6ee7721566f6c2501c5eb8eb15e512f5663cd15a498f21a8c20e2a6/libmc-1.4.15-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:dfc00f9c3b307b5322a7661f79316a3bd928900be104de607c554fedf836343b", size = 1578108, upload-time = "2025-11-27T07:13:20.262Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/3e/691f5ff9a4faeec271fc0452823c1f8fedc2cb4f472a3e2d2a6c07167d05/libmc-1.4.15-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:4244fcfea2745ea6b2a9abbf942e1afe66d0c21cf72dae469fd47081d3376dcb", size = 2571655, upload-time = "2025-11-27T07:13:21.478Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/1c/3870786c1d6a0aa36490906f8014d809b9cdbc756b67fc24a1271625e554/libmc-1.4.15-cp314-cp314t-macosx_10_13_x86_64.whl", hash = "sha256:a99ea1c0b40768a9199c84baa0632c4663578526c99a06249fd4ab5301686418", size = 177305, upload-time = "2025-11-27T07:13:22.69Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/f0/f030dd0d77c56e52e1e75c95fb286a393524d59ca5c590f710abda5f4baf/libmc-1.4.15-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:0c0ca6d9a540092375f59e901e109a52cb545423a9b93a7bc75ccedc3881fd56", size = 171525, upload-time = "2025-11-27T07:13:23.686Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/86/027101e2cd1627659799d097043cea9ef713a8675cb44f5a249b7baf3237/libmc-1.4.15-cp314-cp314t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:8a6ecfe2dffc28b8e97fbc09187bd90868a81a924180a09b74bab2505e619467", size = 1586612, upload-time = "2025-11-27T07:13:25.121Z" },
+    { url = "https://files.pythonhosted.org/packages/23/d4/9204267087e0654aa2eb677ce47aa6b245e0a3707e16e67056d7f51b2a0c/libmc-1.4.15-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:cdb625ef424c18f9b2d8b9026e790da8777338640736f1b6b0088bff4266a050", size = 2577309, upload-time = "2025-11-27T07:13:26.96Z" },
 ]
 
 [[package]]
@@ -1030,22 +1061,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c3/b2/bc9c9196916376152d655522fdcebac55e66de6603a76a02bca1b6414f6c/pygments-2.20.0.tar.gz", hash = "sha256:6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f", size = 4955991, upload-time = "2026-03-29T13:29:33.898Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f4/7e/a72dd26f3b0f4f2bf1dd8923c85f7ceb43172af56d63c7383eb62b332364/pygments-2.20.0-py3-none-any.whl", hash = "sha256:81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176", size = 1231151, upload-time = "2026-03-29T13:29:30.038Z" },
-]
-
-[[package]]
-name = "pylibmc"
-version = "1.6.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ad/eb/8767d00eef0d4012e63a1b76025da5dbf307888246b2b50476841416c12b/pylibmc-1.6.3.tar.gz", hash = "sha256:eefa46115537abad65fbe2e032acd1b3463d9bf9e335af4b0916df4e4d3206e0", size = 63224, upload-time = "2022-08-30T07:33:38.884Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/81/be8a1ebe285624bce6d99344a8352f3464c953df0a3318563f640645fe91/pylibmc-1.6.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a7baf4b78720f8b72839b3642b374754cb77cf57dab465a70ed1764d943e19d5", size = 206661, upload-time = "2022-08-30T07:32:59.972Z" },
-    { url = "https://files.pythonhosted.org/packages/30/bb/abb098e96171582b15cef0cc937c998491c4992421c6a51ad9e7684332f8/pylibmc-1.6.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:dd98054a571bd450200a61a12b9ada3424678d17a25456bbf9a6100470401e52", size = 205918, upload-time = "2022-08-30T07:33:01.926Z" },
-    { url = "https://files.pythonhosted.org/packages/70/ee/89801506426dc260009b2c610b7b4a07dfbe02e6acb25ae4c245769c438d/pylibmc-1.6.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e847cdc78d82964236599ff5b312bc97fde3d10f4b93c9ee17dc33b7cf3c032a", size = 1175032, upload-time = "2022-08-30T07:33:03.907Z" },
-    { url = "https://files.pythonhosted.org/packages/f9/68/3442b0a78c203428aad9a2c50bf06d51cbde1d225e2a98cdf59a2f1067a7/pylibmc-1.6.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4f46b5aa0364bca5e02000f5d62eb408d834a20722ffaf7dae20f75e7d009e6c", size = 1224178, upload-time = "2022-08-30T07:33:05.9Z" },
-    { url = "https://files.pythonhosted.org/packages/20/55/c6c66d6c54e185463514a2d45c60115ee39193a6466bcd89d6bdc543e68b/pylibmc-1.6.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:3c35816082848723455071670770d89b5a531d40e9063fe4e942ea456f86da49", size = 206686, upload-time = "2022-08-30T07:33:08.877Z" },
-    { url = "https://files.pythonhosted.org/packages/d1/74/91958c0cfbab6dd40a770ef1fa283f63fb3efc78f3d69a0f2ebd9a343ab6/pylibmc-1.6.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9d2ff6d702eb5ae502e29d97772dc85c749d596c6cb8c82a5d18f175fd4eabcc", size = 205913, upload-time = "2022-08-30T07:33:10.16Z" },
-    { url = "https://files.pythonhosted.org/packages/03/81/12de24d610512264318f180209a63131b9b9e7eb033b93baf7b9c613f51b/pylibmc-1.6.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e589b7e70dec4daf0da1216789713c753d85611d70cfcd32574161cc75b1527e", size = 1177563, upload-time = "2022-08-30T07:33:12.469Z" },
-    { url = "https://files.pythonhosted.org/packages/35/00/dc4d8c01b13a81e25f779271ed0d88f800f111d71ac3b010f6f8b4dc1b50/pylibmc-1.6.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7b93e381dec1520a3fec922765e04679ac553d2f3fda830a5faa7cdc527280a2", size = 1226742, upload-time = "2022-08-30T07:33:14.123Z" },
 ]
 
 [[package]]

@@ -7,7 +7,6 @@ import pytest
 import flask_caching as fsc
 
 try:
-    __import__("pytest_xprocess")
     from xprocess import ProcessStarter
 except ImportError:
 
@@ -66,7 +65,7 @@ def redis_server(xprocess):
 @pytest.fixture(scope="class")
 def memcache_server(xprocess):
     try:
-        import pylibmc as memcache
+        import libmc as memcache
     except ImportError:
         try:
             from google.appengine.api import memcache
@@ -76,7 +75,7 @@ def memcache_server(xprocess):
             except ImportError:
                 pytest.skip(
                     "Python package for memcache is not installed. Need one of "
-                    "pylibmc', 'google.appengine', or 'memcache'."
+                    "libmc', 'google.appengine', or 'memcache'."
                 )
 
     class Starter(ProcessStarter):

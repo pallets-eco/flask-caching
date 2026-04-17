@@ -22,7 +22,7 @@ except ImportError:
     redis = None
 
 try:
-    import pylibmc as memcache
+    import libmc as memcache
 except ImportError:
     try:
         from google.appengine.api import memcache

@@ -54,9 +54,9 @@ tests = [
     "pytest-cov",
     "pytest-asyncio",
     "pytest-xprocess",
-    "pylibmc",
+    "libmc",
     "redis",
-    "asgiref"
+    "asgiref",
 ]
 typing = [
     "mypy",
@@ -131,6 +131,7 @@ exclude_also = [
 testpaths = ["tests"]
 filterwarnings = [
     "error",
+    "default::pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.mypy]
