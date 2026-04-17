@@ -1,12 +1,12 @@
 """
-    flask_caching.backends.filesystem
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+flask_caching.backends.filesystem
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The filesystem caching backend.
+The filesystem caching backend.
 
-    :copyright: (c) 2018 by Peter Justin.
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2018 by Peter Justin.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 import hashlib
@@ -51,7 +51,6 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         hash_method=hashlib.md5,
         ignore_errors=False,
     ):
-
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibFileSystemCache.__init__(
             self,

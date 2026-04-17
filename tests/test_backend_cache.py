@@ -1,11 +1,11 @@
 """
-    tests.cache
-    ~~~~~~~~~~~
+tests.cache
+~~~~~~~~~~~
 
-    Tests the cache system
+Tests the cache system
 
-    :copyright: (c) 2014 by Armin Ronacher.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2014 by Armin Ronacher.
+:license: BSD, see LICENSE for more details.
 """
 
 import pickle
@@ -22,7 +22,7 @@ except ImportError:
     redis = None
 
 try:
-    import pylibmc as memcache
+    import libmc as memcache
 except ImportError:
     try:
         from google.appengine.api import memcache
@@ -228,7 +228,9 @@ class TestRedisCacheClientsOverride(CacheTestsBase):
         c._read_client = DummyReadClient()
         actual_values = c.get_many("foo")
         assert c.set("bacon", "eggs") == "spam"
-        for actual, expected in zip(actual_values, EXPECTED_GET_MANY_VALUES):
+        for actual, expected in zip(
+            actual_values, EXPECTED_GET_MANY_VALUES, strict=False
+        ):
             assert actual == expected
 
 

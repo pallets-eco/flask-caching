@@ -1,12 +1,12 @@
 """
-    flask_caching.backends.rediscache
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+flask_caching.backends.rediscache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The redis caching backend.
+The redis caching backend.
 
-    :copyright: (c) 2018 by Peter Justin.
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2018 by Peter Justin.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 import pickle
@@ -46,7 +46,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
         db=0,
         default_timeout=300,
         key_prefix=None,
-        **kwargs
+        **kwargs,
     ):
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibRedisCache.__init__(
@@ -85,7 +85,9 @@ class RedisCache(BaseCache, CachelibRedisCache):
         redis_url = config.get("CACHE_REDIS_URL")
         if redis_url:
             redis_kwargs = config.pop("CACHE_OPTIONS", None) or {}
-            kwargs["host"] = redis_from_url(redis_url, db=kwargs.pop("db", None), **redis_kwargs)
+            kwargs["host"] = redis_from_url(
+                redis_url, db=kwargs.pop("db", None), **redis_kwargs
+            )
 
         new_class = cls(*args, **kwargs)
 
@@ -96,7 +98,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
         integers as regular string and pickle dumps everything else.
         """
         t = type(value)
-        if t == int:
+        if isinstance(t, int):
             return str(value).encode("ascii")
         return b"!" + pickle.dumps(value)
 
@@ -144,7 +146,7 @@ class RedisSentinelCache(RedisCache):
         db=0,
         default_timeout=300,
         key_prefix="",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
 

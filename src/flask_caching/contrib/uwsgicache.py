@@ -1,12 +1,12 @@
 """
-    flask_caching.backends.uwsgicache
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+flask_caching.backends.uwsgicache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The uWSGI caching backend.
+The uWSGI caching backend.
 
-    :copyright: (c) 2018 by Peter Justin.
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2018 by Peter Justin.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 from cachelib import UWSGICache as CachelibUWSGICache

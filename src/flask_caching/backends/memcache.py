@@ -1,12 +1,12 @@
 """
-    flask_caching.backends.memcache
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+flask_caching.backends.memcache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The memcache caching backend.
+The memcache caching backend.
 
-    :copyright: (c) 2018 by Peter Justin.
-    :copyright: (c) 2010 by Thadeus Burgess.
-    :license: BSD, see LICENSE for more details.
+:copyright: (c) 2018 by Peter Justin.
+:copyright: (c) 2010 by Thadeus Burgess.
+:license: BSD, see LICENSE for more details.
 """
 
 import pickle
@@ -15,7 +15,6 @@ import re
 from cachelib import MemcachedCache as CachelibMemcachedCache
 
 from flask_caching.backends.base import BaseCache
-
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
 
@@ -187,7 +186,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         chks = range(0, len_ser, self.chunksize)
 
         if len(chks) > self.maxchunk:
-            raise ValueError("Cannot store value in less than %s keys" % self.maxchunk)
+            raise ValueError(f"Cannot store value in less than {self.maxchunk} keys")
 
         for i in chks:
             values[f"{key}.{i // self.chunksize}"] = serialized[i : i + self.chunksize]

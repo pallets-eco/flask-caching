@@ -25,23 +25,23 @@ def newsimple(app, config, args, kwargs):
 
 
 def test_dict_config(app):
-    cache = Cache(config={"CACHE_TYPE": "simple"})
+    cache = Cache(config={"CACHE_TYPE": "SimpleCache"})
     cache.init_app(app)
 
-    assert cache.config["CACHE_TYPE"] == "simple"
+    assert cache.config["CACHE_TYPE"] == "SimpleCache"
 
 
 def test_dict_config_initapp(app):
     cache = Cache()
-    cache.init_app(app, config={"CACHE_TYPE": "simple"})
+    cache.init_app(app, config={"CACHE_TYPE": "SimpleCache"})
     from flask_caching.backends.simplecache import SimpleCache
 
     assert isinstance(app.extensions["cache"][cache], SimpleCache)
 
 
 def test_dict_config_both(app):
-    cache = Cache(config={"CACHE_TYPE": "null"})
-    cache.init_app(app, config={"CACHE_TYPE": "simple"})
+    cache = Cache(config={"CACHE_TYPE": "NullCache"})
+    cache.init_app(app, config={"CACHE_TYPE": "SimpleCache"})
     from flask_caching.backends.simplecache import SimpleCache
 
     assert isinstance(app.extensions["cache"][cache], SimpleCache)
@@ -57,10 +57,10 @@ def test_init_app_sets_app_attribute(app):
 def test_init_app_multi_apps(app, redis_server):
     cache = Cache()
     app1 = Flask(__name__)
-    app1.config.from_mapping({"CACHE_TYPE": "redis", "CACHE_KEY_PREFIX": "foo"})
+    app1.config.from_mapping({"CACHE_TYPE": "RedisCache", "CACHE_KEY_PREFIX": "foo"})
 
     app2 = Flask(__name__)
-    app2.config.from_mapping({"CACHE_TYPE": "redis", "CACHE_KEY_PREFIX": "bar"})
+    app2.config.from_mapping({"CACHE_TYPE": "RedisCache", "CACHE_KEY_PREFIX": "bar"})
     cache.init_app(app1)
     cache.init_app(app2)
 
@@ -76,7 +76,7 @@ def test_init_app_multi_apps(app, redis_server):
 @pytest.mark.skipif(HAS_NOT_REDIS, reason="requires Redis")
 def test_app_redis_cache_backend_url_default_db(app, redis_server):
     config = {
-        "CACHE_TYPE": "redis",
+        "CACHE_TYPE": "RedisCache",
         "CACHE_REDIS_URL": "redis://localhost:6379",
     }
     cache = Cache()
@@ -93,7 +93,7 @@ def test_app_redis_cache_backend_url_default_db(app, redis_server):
 @pytest.mark.skipif(HAS_NOT_REDIS, reason="requires Redis")
 def test_app_redis_cache_backend_url_custom_db(app, redis_server):
     config = {
-        "CACHE_TYPE": "redis",
+        "CACHE_TYPE": "RedisCache",
         "CACHE_REDIS_URL": "redis://localhost:6379/2",
     }
     cache = Cache()
@@ -107,7 +107,7 @@ def test_app_redis_cache_backend_url_custom_db(app, redis_server):
 @pytest.mark.skipif(HAS_NOT_REDIS, reason="requires Redis")
 def test_app_redis_cache_backend_url_explicit_db_arg(app, redis_server):
     config = {
-        "CACHE_TYPE": "redis",
+        "CACHE_TYPE": "RedisCache",
         "CACHE_REDIS_URL": "redis://localhost:6379",
         "CACHE_REDIS_DB": 1,
     }
