@@ -468,6 +468,7 @@ dev = [
     { name = "sphinxcontrib-log-cabinet" },
     { name = "tox" },
     { name = "tox-uv" },
+    { name = "types-uwsgi" },
 ]
 docs = [
     { name = "pallets-sphinx-themes" },
@@ -500,6 +501,7 @@ typing = [
     { name = "mypy" },
     { name = "pyright" },
     { name = "pytest" },
+    { name = "types-uwsgi" },
 ]
 
 [package.metadata]
@@ -531,6 +533,7 @@ dev = [
     { name = "sphinxcontrib-log-cabinet" },
     { name = "tox", specifier = ">=4.39" },
     { name = "tox-uv" },
+    { name = "types-uwsgi", specifier = ">=2.0.0.20260408" },
 ]
 docs = [
     { name = "pallets-sphinx-themes" },
@@ -559,6 +562,7 @@ typing = [
     { name = "mypy" },
     { name = "pyright" },
     { name = "pytest" },
+    { name = "types-uwsgi", specifier = ">=2.0.0.20260408" },
 ]
 
 [[package]]
@@ -1627,6 +1631,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/52/d8/d65653a00b3e438625a25b7c931e96dc9721d8d8a8b3372ceeb1f83e60e5/tox_uv_bare-1.35.1.tar.gz", hash = "sha256:ea4c3b5a4013e04ca31d99a1d930917b7cc5378e202739e600c8f4a15562e662", size = 32003, upload-time = "2026-04-10T16:13:01.265Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7a/12/a5eca5cde48b06a9aef319bc2cd8b5629eb1bd9207b6e3449ae009ee4021/tox_uv_bare-1.35.1-py3-none-any.whl", hash = "sha256:0b8d12d45f195a521d4f6aac5e42869f0a733c80d86575da855494444f60be74", size = 22243, upload-time = "2026-04-10T16:12:59.735Z" },
+]
+
+[[package]]
+name = "types-uwsgi"
+version = "2.0.0.20260408"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/3c/77cfe4b181eb870a74cfbd81bb1d34e84980125d32bd72cea5b06e7885ef/types_uwsgi-2.0.0.20260408.tar.gz", hash = "sha256:4618c6e49aad605c559d808cdaf50e0a5085b5a65211035ed214505e76c847b3", size = 11373, upload-time = "2026-04-08T04:30:20.596Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ae/98/46690fe20570b2d8851548975c842d72f07a889db7134af148e572726b94/types_uwsgi-2.0.0.20260408-py3-none-any.whl", hash = "sha256:80decf15c5d6bc1609e151eb8d1c16629f5fcbb03826557b195456804d533ce8", size = 12150, upload-time = "2026-04-08T04:30:19.563Z" },
 ]
 
 [[package]]
