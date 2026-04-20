@@ -1,6 +1,15 @@
 import inspect
 import string
+import sys
 from collections.abc import Callable
+
+if sys.version_info >= (3, 14):
+    import annotationlib
+
+    def _signature(f: Callable) -> inspect.Signature:
+        return inspect.signature(f, annotation_format=annotationlib.Format.FORWARDREF)
+else:
+    _signature = inspect.signature
 
 TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
 # Used to remove control characters and whitespace from cache keys.
@@ -10,9 +19,10 @@ null_control = ({k: None for k in del_chars},)
 
 
 def wants_args(f: Callable) -> bool:
-    """Check if the function wants any arguments"""
-    arg_spec = inspect.getfullargspec(f)
-    return bool(arg_spec.args or arg_spec.varargs or arg_spec.varkw)
+    """Check if the function wants any positional, *args, or **kwargs arguments."""
+    return any(
+        p.kind != inspect.Parameter.KEYWORD_ONLY for p in get_function_parameters(f)
+    )
 
 
 def get_function_parameters(f: Callable) -> list:
@@ -20,7 +30,7 @@ def get_function_parameters(f: Callable) -> list:
     :param f
     :return: Parameter list of function
     """
-    return list(inspect.signature(f).parameters.values())
+    return list(_signature(f).parameters.values())
 
 
 def get_arg_names(f: Callable) -> list[str]:
