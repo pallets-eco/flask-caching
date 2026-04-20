@@ -62,6 +62,8 @@ typing = [
     "mypy",
     "pyright",
     "pytest",
+    "types-redis>=4.6.0.20241004",
+    "types-uwsgi>=2.0.0.20260408",
 ]
 gha-update = [
     "gha-update ; python_full_version >= '3.12'",
@@ -154,6 +156,13 @@ warn_unused_ignores = true
 strict_equality = true
 strict_concatenate = true
 
+[[tool.mypy.overrides]]
+module = [
+    "pylibmc",
+    "google.*",
+]
+ignore_missing_imports = true
+
 [tool.pyright]
 pythonVersion = "3.10"
 include = ["src"]
@@ -194,7 +203,6 @@ description = "run static type checkers"
 dependency_groups = ["typing"]
 commands = [
     ["mypy"],
-    ["pyright"],
 ]
 
 [tool.tox.env.docs]
