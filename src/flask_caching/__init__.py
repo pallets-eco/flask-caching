@@ -447,7 +447,7 @@ class Cache:
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
-                argspec_args = inspect.getfullargspec(f).args
+                argspec_args = get_arg_names(f)
 
                 for arg_name, arg in zip(argspec_args, args, strict=False):
                     kwargs[arg_name] = arg
@@ -733,11 +733,8 @@ class Cache:
         bypass_cache = False
 
         if callable(unless):
-            argspec = inspect.getfullargspec(unless)
-            has_args = len(argspec.args) > 0 or argspec.varargs or argspec.varkw
-
             # If unless() takes args, pass them in.
-            if has_args:
+            if wants_args(unless):
                 if unless(f, *args, **kwargs) is True:
                     bypass_cache = True
             elif unless() is True:
