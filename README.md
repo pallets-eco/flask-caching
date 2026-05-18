@@ -2,6 +2,16 @@
 
 A fork of the [Flask-cache](https://github.com/thadeusb/flask-cache) extension which adds easy cache support to Flask.
 
+## Pallets Community Ecosystem
+
+> [!IMPORTANT]\
+> This project is part of the Pallets Community Ecosystem. Pallets is the open
+> source organization that maintains Flask; Pallets-Eco enables community
+> maintenance of related projects. If you are interested in helping maintain
+> this project, please reach out on [the Pallets Discord server][discord].
+
+[discord]: https://discord.gg/pallets
+
 ## Installing
 
 Install and update using [pip](https://pip.pypa.io/en/stable/getting-started/):
@@ -10,13 +20,6 @@ Install and update using [pip](https://pip.pypa.io/en/stable/getting-started/):
 $ pip install -U flask-caching
 ```
 
-## Donate
-
-The Pallets organization develops and supports Flask and the libraries
-it uses. In order to grow the community of contributors and users, and
-allow the maintainers to devote more time to the projects, [please
-donate today](https://palletsprojects.com/donate).
-
 ## Links
 
 -   Documentation: <https://flask-caching.readthedocs.io>
@@ -24,5 +27,3 @@ donate today](https://palletsprojects.com/donate).
 -   PyPI Releases: <https://pypi.org/project/Flask-Caching/>
 -   Source Code: <https://github.com/pallets-eco/flask-caching>
 -   Issue Tracker: <https://github.com/pallets-eco/flask-caching/issues>
--   Twitter: <https://twitter.com/PalletsTeam>
--   Chat: <https://discord.gg/pallets>
