@@ -120,3 +120,75 @@ def make_template_fragment_key(
     else:
         vary_on = []
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
+
+
+def get_flask_caching_version() -> str:
+    """Get the flask-caching version string.
+
+    Returns:
+        flask-caching version in the format 'major.minor.patch'
+        or 'unknown' if not available.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("flask-caching")
+    except Exception:
+        # importlib.metadata not available or package metadata not found
+        # Fallback to __version__ from __init__.py
+        try:
+            from flask_caching import __version__
+
+            return __version__
+        except (ImportError, AttributeError):
+            return "unknown"
+
+
+def get_redis_py_version() -> str:
+    """Get the redis-py version string.
+
+    Returns:
+        redis-py version in the format 'major.minor.patch'
+        or 'unknown' if not available.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("redis")
+    except Exception:
+        return "unknown"
+
+
+def add_redis_version_info(kwargs):
+    """Add version identification for redis-py client.
+
+    This function adds library identification to Redis connection kwargs,
+    allowing Redis operators to see which library is using the connection.
+
+    On redis-py >= 7 the modern ``driver_info`` parameter is used and the
+    formatted name follows the pattern ``redis-py(flask-caching_v<version>)``.
+    On older redis-py versions the legacy ``lib_name``/``lib_version``
+    parameters are set instead.
+
+    User-provided values for ``driver_info``, ``lib_name`` or ``lib_version``
+    are never overridden.
+
+    Args:
+        kwargs: Dictionary of keyword arguments to pass to Redis client.
+                Will be modified in-place.
+    """
+    if "driver_info" in kwargs or "lib_name" in kwargs:
+        return
+
+    flask_caching_ver = get_flask_caching_version()
+
+    try:
+        from redis.client import DriverInfo
+    except ImportError:
+        kwargs["lib_name"] = f"redis-py(flask-caching_v{flask_caching_ver})"
+        kwargs["lib_version"] = get_redis_py_version()
+        return
+
+    kwargs["driver_info"] = DriverInfo().add_upstream_driver(
+        "flask-caching", flask_caching_ver
+    )

@@ -200,6 +200,70 @@ class TestRedisCache(GenericCacheTests):
             backends.RedisCache(host=None)
         assert str(exc_info.value) == "RedisCache host parameter may not be None"
 
+    def test_redis_cache_adds_version_info(self):
+        """Test that RedisCache.factory adds Flask-Caching version info."""
+        from flask import Flask
+
+        from flask_caching.utils import get_flask_caching_version
+        from flask_caching.utils import get_redis_py_version
+
+        app = Flask(__name__)
+        config = {
+            "CACHE_REDIS_HOST": "localhost",
+            "CACHE_REDIS_PORT": 6379,
+            "CACHE_DEFAULT_TIMEOUT": 300,
+        }
+
+        cache = backends.RedisCache.factory(app, config, [], {})
+
+        conn_kwargs = cache._write_client.connection_pool.connection_kwargs
+        flask_caching_ver = get_flask_caching_version()
+        expected_name = f"redis-py(flask-caching_v{flask_caching_ver})"
+
+        try:
+            from redis.client import DriverInfo
+        except ImportError:
+            DriverInfo = None
+
+        if DriverInfo is not None:
+            driver_info = conn_kwargs.get("driver_info")
+            assert driver_info is not None
+            assert driver_info.formatted_name == expected_name
+        else:
+            assert conn_kwargs.get("lib_name") == expected_name
+            assert conn_kwargs.get("lib_version") == get_redis_py_version()
+
+    def test_redis_cache_respects_custom_version_info(self):
+        """Test that user-provided version identification is not overridden."""
+        from flask import Flask
+
+        app = Flask(__name__)
+        config = {
+            "CACHE_REDIS_HOST": "localhost",
+            "CACHE_REDIS_PORT": 6379,
+            "CACHE_DEFAULT_TIMEOUT": 300,
+        }
+
+        try:
+            from redis.client import DriverInfo
+        except ImportError:
+            DriverInfo = None
+
+        if DriverInfo is not None:
+            custom = DriverInfo(name="MyCustomApp").add_upstream_driver(
+                "myapp", "1.2.3"
+            )
+            kwargs = {"driver_info": custom}
+            cache = backends.RedisCache.factory(app, config, [], kwargs)
+            conn_kwargs = cache._write_client.connection_pool.connection_kwargs
+            assert conn_kwargs.get("driver_info") is custom
+        else:
+            kwargs = {"lib_name": "MyCustomApp", "lib_version": "1.2.3"}
+            cache = backends.RedisCache.factory(app, config, [], kwargs)
+            conn_kwargs = cache._write_client.connection_pool.connection_kwargs
+            assert conn_kwargs.get("lib_name") == "MyCustomApp"
+            assert conn_kwargs.get("lib_version") == "1.2.3"
+
 
 class TestRedisCacheClientsOverride(CacheTestsBase):
     _can_use_fast_sleep = False

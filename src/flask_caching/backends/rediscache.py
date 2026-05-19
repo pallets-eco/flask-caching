@@ -14,6 +14,7 @@ import pickle
 from cachelib import RedisCache as CachelibRedisCache
 
 from flask_caching.backends.base import BaseCache
+from flask_caching.utils import add_redis_version_info
 
 
 class RedisCache(BaseCache, CachelibRedisCache):
@@ -88,6 +89,9 @@ class RedisCache(BaseCache, CachelibRedisCache):
             kwargs["host"] = redis_from_url(
                 redis_url, db=kwargs.pop("db", None), **redis_kwargs
             )
+
+        # Add version identification for redis-py client
+        add_redis_version_info(kwargs)
 
         new_class = cls(*args, **kwargs)
 
@@ -194,6 +198,9 @@ class RedisSentinelCache(RedisCache):
             )
         )
 
+        # Add version identification for redis-py client
+        add_redis_version_info(kwargs)
+
         return cls(*args, **kwargs)
 
 
@@ -273,4 +280,8 @@ class RedisClusterCache(RedisCache):
                 redis_url=config.get("CACHE_REDIS_URL", ""),
             )
         )
+
+        # Add version identification for redis-py client
+        add_redis_version_info(kwargs)
+
         return cls(*args, **kwargs)
