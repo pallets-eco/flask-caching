@@ -85,9 +85,9 @@ def test_cached_response_init_is_typed():
     for name, param in sig.parameters.items():
         if name == "self":
             continue
-        assert param.annotation is not inspect.Parameter.empty, (
-            f"CachedResponse.__init__ parameter {name!r} has no annotation"
-        )
+        assert (
+            param.annotation is not inspect.Parameter.empty
+        ), f"CachedResponse.__init__ parameter {name!r} has no annotation"
 
 
 def test_cached_response_construction_with_flask_response():
