@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- Docs: read ``version``/``release`` from installed package metadata
+  in ``docs/conf.py`` so Read the Docs no longer renders
+  "Flask-Caching 1.0.0 documentation". :issue:`510`
+
+
 Version 2.4.0
 -------------
 

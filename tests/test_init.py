@@ -1,4 +1,6 @@
 import importlib.util
+import pathlib
+from importlib.metadata import version as pkg_version
 
 import pytest
 from flask import Flask
@@ -61,3 +63,34 @@ def test_init_nullcache(cache_type, app, tmp_path):
     cache = Cache(app=app)
 
     assert isinstance(app.extensions["cache"][cache], cache_type)
+
+
+def test_docs_conf_version_matches_package():
+    """Regression test for issue #510.
+
+    ``docs/conf.py`` must derive ``version``/``release`` from the
+    installed package metadata, otherwise Read the Docs renders
+    "Flask-Caching 1.0.0 documentation" forever even after new
+    releases. See https://github.com/pallets-eco/flask-caching/issues/510.
+    """
+    repo_root = pathlib.Path(__file__).resolve().parent.parent
+    conf_path = repo_root / "docs" / "conf.py"
+    src = conf_path.read_text()
+    # No hardcoded version string assignment.
+    assert 'version = "1.0.0"' not in src, (
+        "docs/conf.py still hardcodes version = '1.0.0'"
+    )
+    assert 'release = "1.0.0"' not in src, (
+        "docs/conf.py still hardcodes release = '1.0.0'"
+    )
+
+    # Executing conf.py must produce version == installed package version.
+    ns: dict = {"__file__": str(conf_path)}
+    exec(compile(src, str(conf_path), "exec"), ns)
+    expected = pkg_version("Flask-Caching")
+    assert ns["release"] == expected, (
+        f"docs release {ns['release']!r} != installed package {expected!r}"
+    )
+    assert ns["version"] == ".".join(expected.split(".")[:2]), (
+        f"docs short version {ns['version']!r} != expected"
+    )
