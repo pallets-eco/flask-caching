@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- Docs: clarify that ``@memoize`` uses ``repr(obj)``
+  (or ``__caching_id__``) for the ``self``/``cls`` identity, not Python's
+  :func:`id`. :issue:`555`
+
+
 Version 2.4.0
 -------------
 
