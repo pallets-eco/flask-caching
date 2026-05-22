@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- Type ``CachedResponse.__init__`` so it doesn't trigger mypy ``[no-untyped-call]``
+  in strict downstream codebases. :issue:`628`
+
+
 Version 2.4.0
 -------------
 
