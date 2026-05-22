@@ -1,4 +1,6 @@
 import importlib.util
+import pathlib
+from importlib.metadata import version as pkg_version
 
 import pytest
 from flask import Flask
@@ -61,3 +63,39 @@ def test_init_nullcache(cache_type, app, tmp_path):
     cache = Cache(app=app)
 
     assert isinstance(app.extensions["cache"][cache], cache_type)
+
+
+def test_docs_conf_version_not_hardcoded():
+    """Regression test for issue #510.
+
+    ``docs/conf.py`` must not hardcode the package version, otherwise
+    Read the Docs renders "Flask-Caching 1.0.0 documentation" forever
+    even after new releases. See
+    https://github.com/pallets-eco/flask-caching/issues/510.
+
+    The docs ``version``/``release`` should be derived from the
+    installed package metadata via ``importlib.metadata.version``.
+
+    This test only inspects the source of ``conf.py``; the full sphinx
+    build (which would also exec ``conf.py`` end-to-end) lives in the
+    docs build job since it pulls docs-only dependencies like
+    ``alabaster``.
+    """
+    repo_root = pathlib.Path(__file__).resolve().parent.parent
+    conf_path = repo_root / "docs" / "conf.py"
+    src = conf_path.read_text()
+    # No hardcoded version string assignment.
+    assert (
+        'version = "1.0.0"' not in src
+    ), "docs/conf.py still hardcodes version = '1.0.0'"
+    assert (
+        'release = "1.0.0"' not in src
+    ), "docs/conf.py still hardcodes release = '1.0.0'"
+    # version/release should be derived from importlib.metadata so the
+    # docs always reflect the installed package version.
+    assert "importlib.metadata" in src, (
+        "docs/conf.py should derive version from importlib.metadata "
+        "rather than hardcoding a literal"
+    )
+    # Sanity: the package can be located.
+    assert pkg_version("Flask-Caching")
