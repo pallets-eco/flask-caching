@@ -1,9 +1,12 @@
 import importlib.util
+import inspect
 
 import pytest
 from flask import Flask
+from flask import make_response
 
 from flask_caching import Cache
+from flask_caching import CachedResponse
 from flask_caching.backends import FileSystemCache
 from flask_caching.backends import MemcachedCache
 from flask_caching.backends import NullCache
@@ -61,3 +64,37 @@ def test_init_nullcache(cache_type, app, tmp_path):
     cache = Cache(app=app)
 
     assert isinstance(app.extensions["cache"][cache], cache_type)
+
+
+def test_cached_response_init_is_typed():
+    """Regression test for issue #628.
+
+    ``CachedResponse.__init__`` must declare a return type and parameter
+    types so that mypy ``--strict`` doesn't flag construction in typed
+    code with ``[no-untyped-call]``. See
+    https://github.com/pallets-eco/flask-caching/issues/628.
+    """
+    sig = inspect.signature(CachedResponse.__init__)
+    # __init__ should declare ``-> None`` rather than be untyped.
+    # inspect.signature returns the literal ``None`` for ``-> None``.
+    assert sig.return_annotation is None, (
+        f"CachedResponse.__init__ return annotation is {sig.return_annotation!r}; "
+        "expected None"
+    )
+    # All non-self parameters should carry an annotation.
+    for name, param in sig.parameters.items():
+        if name == "self":
+            continue
+        assert (
+            param.annotation is not inspect.Parameter.empty
+        ), f"CachedResponse.__init__ parameter {name!r} has no annotation"
+
+
+def test_cached_response_construction_with_flask_response():
+    """Sanity check that CachedResponse still wraps a flask Response."""
+    app = Flask(__name__)
+    with app.test_request_context():
+        resp = make_response("hi")
+        cached = CachedResponse(resp, 10)
+    assert cached.timeout == 10
+    assert cached.get_data(as_text=True) == "hi"
