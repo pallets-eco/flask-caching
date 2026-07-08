@@ -1,8 +1,10 @@
 Changelog
 =========
 
-Unreleased
-----------
+Version 2.4.1
+-------------
+
+Released 2026-07-08
 
 - Use ``pallets_sphinx_themes`` for the documentation.
 - Type ``CachedResponse.__init__`` so it doesn't trigger mypy ``[no-untyped-call]``
