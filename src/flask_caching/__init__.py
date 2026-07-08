@@ -37,7 +37,7 @@ from flask_caching.utils import get_id
 from flask_caching.utils import make_template_fragment_key  # noqa: F401
 from flask_caching.utils import wants_args
 
-__version__ = "2.3.1"
+__version__ = "2.4.1"
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +57,13 @@ class CachedResponse(Response):
     to override the cache TTL dynamically
     """
 
-    timeout = None
+    timeout: int | None = None
 
-    def __init__(self, response, timeout):
+    def __init__(self, response: Response, timeout: int | None) -> None:
+        # ``CachedResponse`` adopts the state of an existing Response in
+        # place rather than calling ``Response.__init__``; copying
+        # ``__dict__`` preserves headers, status and body without having
+        # to round-trip the response through Werkzeug's constructor.
         self.__dict__ = response.__dict__
         self.timeout = timeout
 
