@@ -4,6 +4,9 @@ Changelog
 Unreleased
 ----------
 
+- Fix test failures with pytest >= 9.1 by declaring class-scoped
+  fixtures as ``classmethod``. :issue:`651`
+
 - Docs: clarify that ``@memoize`` uses ``repr(obj)``
   (or ``__caching_id__``) for the ``self``/``cls`` identity, not Python's
   :func:`id`. :issue:`555`

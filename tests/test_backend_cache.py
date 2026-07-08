@@ -169,7 +169,8 @@ class TestRedisCache(GenericCacheTests):
         return "werkzeug-test-case:"
 
     @pytest.fixture(scope="class", autouse=True)
-    def requirements(self, redis_server):
+    @classmethod
+    def requirements(cls, redis_server):
         pass
 
     @pytest.fixture(params=(None, False, True, gen_key_prefix))
@@ -239,7 +240,8 @@ class TestMemcachedCache(GenericCacheTests):
     _guaranteed_deletes = False
 
     @pytest.fixture(scope="class", autouse=True)
-    def requirements(self, memcache_server):
+    @classmethod
+    def requirements(cls, memcache_server):
         pass
 
     @pytest.fixture
@@ -268,7 +270,8 @@ class TestMemcachedCache(GenericCacheTests):
 
 class TestNullCache(CacheTestsBase):
     @pytest.fixture(scope="class", autouse=True)
-    def make_cache(self):
+    @classmethod
+    def make_cache(cls):
         return backends.NullCache
 
     def test_has(self, c):
