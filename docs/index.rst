@@ -174,8 +174,12 @@ In memoization, the functions arguments are also included into the cache_key.
     :meth:`~Cache.memoize` are effectively the same.
 
 Memoize is also designed for methods, since it will take into account
-the `identity <http://docs.python.org/library/functions.html#id>`_. of the
-'self' or 'cls' argument as part of the cache key.
+the identity of the ``self`` or ``cls`` argument as part of the cache
+key. By default this identity is derived from ``repr(obj)`` (or
+``obj.__caching_id__()`` if the object provides one). It is **not**
+based on Python's built-in :func:`id`, so two distinct instances that
+share the same ``repr`` (for example two ORM objects loaded for the
+same row) will share a memoize cache entry.
 
 The theory behind memoization is that if you have a function you need
 to call several times in one request, it would only be calculated the first

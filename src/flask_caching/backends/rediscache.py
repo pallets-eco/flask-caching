@@ -234,8 +234,11 @@ class RedisClusterCache(RedisCache):
         except ImportError as e:
             raise RuntimeError("no redis.cluster module found") from e
 
-        if kwargs.get("redis_url", None):
-            cluster = RedisCluster.from_url(kwargs["redis_url"])
+        redis_url = kwargs.pop("redis_url", None)
+
+        # Use URL-based connection if provided, otherwise use startup nodes.
+        if redis_url:
+            cluster = RedisCluster.from_url(redis_url, **kwargs)
         else:
             try:
                 nodes = [(node.split(":")) for node in cluster.split(",")]

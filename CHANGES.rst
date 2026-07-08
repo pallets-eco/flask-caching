@@ -6,6 +6,10 @@ Unreleased
 
 - Type ``CachedResponse.__init__`` so it doesn't trigger mypy ``[no-untyped-call]``
   in strict downstream codebases. :issue:`628`
+- Docs: clarify that ``@memoize`` uses ``repr(obj)``
+  (or ``__caching_id__``) for the ``self``/``cls`` identity, not Python's
+  :func:`id`. :issue:`555`
+- Fix test failure with pytest 9.1. :issue:`651`
 
 
 Version 2.4.0
