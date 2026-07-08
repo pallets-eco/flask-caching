@@ -4,6 +4,7 @@ Changelog
 Unreleased
 ----------
 
+- Use ``pallets_sphinx_themes`` for the documentation.
 - Type ``CachedResponse.__init__`` so it doesn't trigger mypy ``[no-untyped-call]``
   in strict downstream codebases. :issue:`628`
 - Docs: clarify that ``@memoize`` uses ``repr(obj)``
@@ -15,7 +16,7 @@ Unreleased
 Version 2.4.0
 -------------
 
-2026-04-17
+Released 2026-04-17
 
 - Modernize project setup
 - Update ``intersphinx_mapping`` for Sphinx 8 compatibility. :pr:`599`, :issue:`598`
