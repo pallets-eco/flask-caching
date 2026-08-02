@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Version 2.4.2
+-------------
+
+Unreleased
+
+- Fix a ``@memoize`` cache-key collision when a parameter has a falsy
+  default (e.g. ``0``, ``""``, ``False``): calling with the default was
+  keyed the same as passing ``None``, returning the wrong cached result.
+  :pr:`656`
+
+
 Version 2.4.1
 -------------
 
