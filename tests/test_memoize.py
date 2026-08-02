@@ -32,6 +32,24 @@ def test_memoize(app, cache):
         assert big_foo(5, 3) != result2
 
 
+def test_memoize_falsy_default_argument(app, cache):
+    with app.test_request_context():
+        runs = []
+
+        @cache.memoize()
+        def f(a, b=0):
+            runs.append((a, b))
+            return f"{a}:{b}"
+
+        # A falsy default (0) must not collide with an explicit None.
+        assert f(1, None) == "1:None"
+        assert f(1) == "1:0"
+        assert f(1, 0) == "1:0"
+        assert f(1, b=0) == "1:0"
+        # None and the default 0 are distinct; the three b=0 forms share a key.
+        assert runs == [(1, None), (1, 0)]
+
+
 def test_memoize_hashes(app, cache, hash_method):
     with app.test_request_context():
 
