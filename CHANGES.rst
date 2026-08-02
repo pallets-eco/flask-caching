@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 2.4.2
+-------------
+
+Unreleased
+
+- Call ``@memoize`` ``forced_update`` callbacks once per decorated function
+  call instead of once while making the key and again before cache lookup.
+  :issue:`387`
+
+
 Version 2.4.1
 -------------
 
