@@ -8,9 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from google.auth.credentials import AnonymousCredentials
-    from google.cloud import exceptions
-    from google.cloud import storage
+    from google.auth.credentials import (  # pyright: ignore[reportMissingImports]
+        AnonymousCredentials,
+    )
+    from google.cloud import exceptions  # pyright: ignore[reportAttributeAccessIssue]
+    from google.cloud import storage  # pyright: ignore[reportAttributeAccessIssue]
 except ImportError as e:
     raise RuntimeError("no google-cloud-storage module found") from e
 

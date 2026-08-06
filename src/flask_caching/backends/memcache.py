@@ -101,7 +101,7 @@ class SASLMemcachedCache(MemcachedCache):
         if servers is None:
             servers = ["127.0.0.1:11211"]
 
-        import pylibmc
+        import pylibmc  # pyright: ignore[reportMissingImports]
 
         self._client = pylibmc.Client(
             servers, username=username, password=password, binary=True, **kwargs
