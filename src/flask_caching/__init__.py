@@ -572,7 +572,7 @@ class Cache:
         version_data_list = list(self.cache.get_many(*fetch_keys))
         dirty = False
 
-        if (
+        if forced_update is True or (
             callable(forced_update)
             and (
                 forced_update(*(args or ()), **(kwargs or {}))
@@ -859,9 +859,7 @@ class Cache:
                     source_check = self.source_check
 
                 try:
-                    cache_key = decorated_function.make_cache_key(f, *args, **kwargs)
-
-                    if (
+                    forced_update_result = (
                         callable(forced_update)
                         and (
                             forced_update(*args, **kwargs)
@@ -869,7 +867,18 @@ class Cache:
                             else forced_update()
                         )
                         is True
-                    ):
+                    )
+
+                    cache_key = self._memoize_make_cache_key(
+                        make_name=make_name,
+                        timeout=decorated_function,
+                        forced_update=forced_update_result,
+                        hash_method=hash_method,
+                        source_check=source_check,
+                        args_to_ignore=args_to_ignore,
+                    )(f, *args, **kwargs)
+
+                    if forced_update_result:
                         rv = None
                         found = False
                     else:
@@ -919,7 +928,7 @@ class Cache:
             decorated_function.make_cache_key = self._memoize_make_cache_key(
                 make_name=make_name,
                 timeout=decorated_function,
-                forced_update=forced_update,
+                forced_update=False,
                 hash_method=hash_method,
                 source_check=source_check,
                 args_to_ignore=args_to_ignore,

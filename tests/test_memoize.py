@@ -545,21 +545,18 @@ def test_memoize_forced_update_parameters(app, cache):
 
         # Save the value for later inspection
         result = memoized_func(5, 2)
-        # forced_update_func should have been called twice; once by memoize
-        # itself, once by _memoize_version…
-        assert call_counter[1] == 2
+        # forced_update_func should have been called once by memoize itself.
+        assert call_counter[1] == 1
         # …with the values we called the function with
         assert call_params[0] == (5, 2)
-        assert call_params[1] == (5, 2)
         time.sleep(1)
 
         # Calling the function again should return the cached value
         assert memoized_func(5, 2) == result
-        # forced_update_func should have been called two more times…
-        assert call_counter[1] == 4
+        # forced_update_func should have been called one more time…
+        assert call_counter[1] == 2
         # …with the values we called the function with
-        assert call_params[2] == (5, 2)
-        assert call_params[3] == (5, 2)
+        assert call_params[1] == (5, 2)
 
         # Tell forced_update_func to return True next time
         forced_update = True
@@ -568,22 +565,20 @@ def test_memoize_forced_update_parameters(app, cache):
         # …which, due to the random number in the function, should be different
         # from the old one
         assert new_result != result
-        # forced_update_func should have been called two more times again…
-        assert call_counter[1] == 6
+        # forced_update_func should have been called one more time again…
+        assert call_counter[1] == 3
         # …with the values we called the function with
-        assert call_params[4] == (5, 2)
-        assert call_params[5] == (5, 2)
+        assert call_params[2] == (5, 2)
 
         # Now stop forced updating again
         forced_update = False
         time.sleep(1)
         # The function should return the same value as it did last time
         assert memoized_func(5, 2) == new_result
-        # forced_update_func should have been called two more times again…
-        assert call_counter[1] == 8
+        # forced_update_func should have been called one more time again…
+        assert call_counter[1] == 4
         # …with the values we called the function with
-        assert call_params[6] == (5, 2)
-        assert call_params[7] == (5, 2)
+        assert call_params[3] == (5, 2)
 
 
 def test_memoize_multiple_arg_kwarg_calls(app, cache):
