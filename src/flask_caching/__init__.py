@@ -691,7 +691,7 @@ class Cache:
             elif arg_num < len(args):
                 arg = args[arg_num]
                 arg_num += 1
-            elif arg_default:
+            elif arg_default is not None:
                 arg = arg_default
                 arg_num += 1
             else:
