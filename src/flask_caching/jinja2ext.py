@@ -78,17 +78,13 @@ class CacheExtension(Extension):
         else:
             args.append(nodes.Const([]))
 
-        body = parser.parse_statements(["name:endcache"], drop_needle=True)
+        body = parser.parse_statements(("name:endcache",), drop_needle=True)
         return nodes.CallBlock(
             self.call_method("_cache", args), [], [], body
         ).set_lineno(lineno)
 
     def _cache(self, timeout, fragment_name, vary_on, caller):
-        try:
-            cache = getattr(self.environment, JINJA_CACHE_ATTR_NAME)
-        except AttributeError as e:
-            raise e
-
+        cache = getattr(self.environment, JINJA_CACHE_ATTR_NAME)
         key = make_template_fragment_key(fragment_name, vary_on=vary_on)
 
         #: Delete key if timeout is 'del'

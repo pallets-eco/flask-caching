@@ -17,25 +17,21 @@ import uuid
 import warnings
 from collections import OrderedDict
 from collections.abc import Callable
-from typing import Any
-from typing import Union
+from typing import Any, ParamSpec, Protocol, TypeVar
 
-from flask import current_app
-from flask import Flask
-from flask import g
-from flask import request
-from flask import Response
-from flask import url_for
+from flask import Flask, Response, current_app, g, request, url_for
 from werkzeug.utils import import_string
 
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
-from flask_caching.utils import function_namespace
-from flask_caching.utils import get_arg_default
-from flask_caching.utils import get_arg_names
-from flask_caching.utils import get_id
-from flask_caching.utils import make_template_fragment_key  # noqa: F401
-from flask_caching.utils import wants_args
+from flask_caching.utils import (
+    function_namespace,
+    get_arg_default,
+    get_arg_names,
+    get_id,
+    make_template_fragment_key,  # noqa: F401
+    wants_args,
+)
 
 __version__ = "2.4.1"
 
@@ -49,6 +45,41 @@ SUPPORTED_HASH_FUNCTIONS = [
     hashlib.sha512,
     hashlib.md5,
 ]
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+class _CachedFunction(Protocol[P, R]):
+    """The type of the callable returned by :meth:`Cache.cached`.
+
+    In addition to being callable with the same signature as the wrapped
+    function, it carries the ``uncached``, ``cache_timeout`` and
+    ``make_cache_key`` attributes documented on :meth:`Cache.cached`.
+    """
+
+    uncached: Callable[P, R]
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
+
+
+class _MemoizedFunction(Protocol[P, R]):
+    """The type of the callable returned by :meth:`Cache.memoize`.
+
+    In addition to being callable with the same signature as the wrapped
+    function, it carries the ``uncached``, ``cache_timeout``,
+    ``make_cache_key`` and ``delete_memoized`` attributes documented on
+    :meth:`Cache.memoize`.
+    """
+
+    uncached: Callable[P, R]
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+    delete_memoized: Callable[[], None]
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
 
 
 class CachedResponse(Response):
@@ -138,8 +169,7 @@ class Cache:
         self.source_check = config["CACHE_SOURCE_CHECK"]
 
         if self.with_jinja2_ext:
-            from .jinja2ext import CacheExtension
-            from .jinja2ext import JINJA_CACHE_ATTR_NAME
+            from .jinja2ext import JINJA_CACHE_ATTR_NAME, CacheExtension
 
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
             app.jinja_env.add_extension(CacheExtension)
@@ -245,16 +275,16 @@ class Cache:
         self,
         timeout: int | None = None,
         key_prefix: str = "view/%s",
-        unless: Callable | None = None,
-        forced_update: Callable | None = None,
-        response_filter: Callable | None = None,
+        unless: Callable[..., Any] | None = None,
+        forced_update: Callable[..., Any] | None = None,
+        response_filter: Callable[..., Any] | None = None,
         query_string: bool = False,
-        hash_method: Callable = hashlib.md5,
+        hash_method: Callable[..., Any] = hashlib.md5,
         cache_none: bool = False,
-        make_cache_key: Callable | None = None,
+        make_cache_key: Callable[..., Any] | None = None,
         source_check: bool | None = None,
         response_hit_indication: bool | None = False,
-    ) -> Callable:
+    ) -> Callable[[Callable[P, R]], _CachedFunction[P, R]]:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
@@ -360,7 +390,7 @@ class Cache:
                              if used cache.
         """
 
-        def decorator(f):
+        def decorator(f: Callable[P, R]) -> _CachedFunction[P, R]:
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: Bypass the cache entirely.
@@ -375,7 +405,7 @@ class Cache:
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = decorated_function.make_cache_key(
+                        cache_key = decorated_function.make_cache_key(  # pyright: ignore[reportAttributeAccessIssue]
                             *args, use_request=True, **kwargs
                         )
 
@@ -432,7 +462,7 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
-                        cache_timeout = decorated_function.cache_timeout
+                        cache_timeout = decorated_function.cache_timeout  # pyright: ignore[reportAttributeAccessIssue]
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
                         try:
@@ -523,11 +553,10 @@ class Cache:
 
                 return cache_key
 
-            decorated_function.uncached = f
-            decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = default_make_cache_key
-
-            return decorated_function
+            decorated_function.uncached = f  # type: ignore[attr-defined]
+            decorated_function.cache_timeout = timeout  # type: ignore[attr-defined]
+            decorated_function.make_cache_key = default_make_cache_key  # type: ignore[attr-defined]
+            return decorated_function  # type: ignore[return-value]
 
         return decorator
 
@@ -545,9 +574,9 @@ class Cache:
         reset: bool = False,
         delete: bool = False,
         timeout: int | None = None,
-        forced_update: Union[bool, Callable] | None = False,
-        args_to_ignore: Any | None = None,
-    ) -> Union[tuple[str, str], tuple[str, None]]:
+        forced_update: bool | Callable[..., bool] | None = False,
+        args_to_ignore: list[str] | None = None,
+    ) -> tuple[str, str] | tuple[str, None]:
         """Updates the hash version associated with a memoized function or
         method.
         """
@@ -608,13 +637,13 @@ class Cache:
 
     def _memoize_make_cache_key(
         self,
-        make_name: Callable | None = None,
-        timeout: Callable | None = None,
-        forced_update: bool = False,
-        hash_method: Callable = hashlib.md5,
+        make_name: Callable[..., str] | None = None,
+        timeout: Callable[..., Any] | None = None,
+        forced_update: bool | Callable[..., bool] | None = False,
+        hash_method: Callable[..., Any] = hashlib.md5,
         source_check: bool | None = False,
-        args_to_ignore: Any | None = None,
-    ) -> Callable:
+        args_to_ignore: list[str] | None = None,
+    ) -> Callable[..., str]:
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f, *args, **kwargs):
@@ -652,7 +681,7 @@ class Cache:
 
             cache_key = base64.b64encode(cache_key.digest())[:16]
             cache_key = cache_key.decode("utf-8")
-            cache_key += version_data
+            cache_key += version_data or ""
 
             return cache_key
 
@@ -669,7 +698,7 @@ class Cache:
 
         # If the function uses VAR_KEYWORD type of parameters,
         # we need to pass these further
-        kw_keys_remaining = [key for key in kwargs.keys() if key not in args_to_ignore]
+        kw_keys_remaining = [key for key in kwargs if key not in args_to_ignore]
         arg_names = get_arg_names(f)
         args_len = len(arg_names)
 
@@ -749,15 +778,15 @@ class Cache:
     def memoize(
         self,
         timeout: int | None = None,
-        make_name: Callable | None = None,
-        unless: Callable | None = None,
-        forced_update: Callable | None = None,
-        response_filter: Callable | None = None,
-        hash_method: Callable = hashlib.md5,
+        make_name: Callable[..., str] | None = None,
+        unless: Callable[..., bool] | None = None,
+        forced_update: Callable[..., bool] | None = None,
+        response_filter: Callable[..., Any] | None = None,
+        hash_method: Callable[..., Any] = hashlib.md5,
         cache_none: bool = False,
         source_check: bool | None = None,
-        args_to_ignore: Any | None = None,
-    ) -> Callable:
+        args_to_ignore: list[str] | None = None,
+    ) -> Callable[[Callable[P, R]], _MemoizedFunction[P, R]]:
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
 
@@ -847,7 +876,7 @@ class Cache:
             params ``args_to_ignore``
         """
 
-        def memoize(f):
+        def memoize(f: Callable[P, R]) -> _MemoizedFunction[P, R]:
             @functools.wraps(f)
             def decorated_function(*args, **kwargs):
                 #: bypass cache
@@ -915,7 +944,7 @@ class Cache:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=decorated_function.cache_timeout,
+                                timeout=decorated_function.cache_timeout,  # pyright: ignore[reportAttributeAccessIssue]
                             )
                         except Exception:
                             if self.app.debug:
@@ -923,9 +952,9 @@ class Cache:
                             logger.exception("Exception possibly due to cache backend.")
                 return rv
 
-            decorated_function.uncached = f
-            decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = self._memoize_make_cache_key(
+            decorated_function.uncached = f  # type: ignore[attr-defined]
+            decorated_function.cache_timeout = timeout  # type: ignore[attr-defined]
+            decorated_function.make_cache_key = self._memoize_make_cache_key(  # type: ignore[attr-defined]
                 make_name=make_name,
                 timeout=decorated_function,
                 forced_update=False,
@@ -933,9 +962,11 @@ class Cache:
                 source_check=source_check,
                 args_to_ignore=args_to_ignore,
             )
-            decorated_function.delete_memoized = lambda: self.delete_memoized(f)
-
-            return decorated_function
+            decorated_function.delete_memoized = lambda: self.delete_memoized(f)  # type: ignore[attr-defined]
+            # not sure if cast(_MemoizedFunction[P, R], decorated_function) has a performance
+            # penalty here. if somebody with more typing experience knows, feel free to update
+            # it
+            return decorated_function  # type: ignore[return-value]
 
         return memoize
 

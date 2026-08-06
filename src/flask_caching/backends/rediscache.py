@@ -243,7 +243,7 @@ class RedisClusterCache(RedisCache):
             try:
                 nodes = [(node.split(":")) for node in cluster.split(",")]
                 startup_nodes = [
-                    ClusterNode(node[0].strip(), node[1].strip()) for node in nodes
+                    ClusterNode(node[0].strip(), int(node[1].strip())) for node in nodes
                 ]
             except IndexError as e:
                 raise ValueError(

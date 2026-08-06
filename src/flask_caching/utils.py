@@ -15,7 +15,7 @@ TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
 # Used to remove control characters and whitespace from cache keys.
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
-null_control = ({k: None for k in del_chars},)
+null_control = str.maketrans({k: None for k in del_chars})
 
 
 def wants_args(f: Callable) -> bool:
@@ -70,7 +70,7 @@ def function_namespace(f, args=None):
 
     module = f.__module__
 
-    if m_args and m_args[0] == "cls" and not inspect.isclass(args[0]):
+    if m_args and m_args[0] == "cls" and not (args and inspect.isclass(args[0])):
         raise ValueError(
             "When using `delete_memoized` on a "
             "`@classmethod` you must provide the "
@@ -100,10 +100,10 @@ def function_namespace(f, args=None):
         else:
             name = f.__name__
 
-    ns = ".".join((module, name)).translate(*null_control)
+    ns = ".".join((module, name)).translate(null_control)
 
     ins = (
-        ".".join((module, name, instance_token)).translate(*null_control)
+        ".".join((module, name, instance_token)).translate(null_control)
         if instance_token
         else None
     )

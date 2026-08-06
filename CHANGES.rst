@@ -13,6 +13,9 @@ Unreleased
   default (e.g. ``0``, ``""``, ``False``): calling with the default was
   keyed the same as passing ``None``, returning the wrong cached result.
   :pr:`656`
+- ``@cached`` and ``@memoize`` now preserve the wrapped function's
+  signature and expose ``uncached``, ``cache_timeout``, ``make_cache_key``
+  ``delete_memoized``) to type checkers.
 
 
 Version 2.4.1
