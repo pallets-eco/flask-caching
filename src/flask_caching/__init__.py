@@ -219,7 +219,7 @@ class Cache:
         )
         self.app = app
 
-    def _call_fn(self, fn, *args, **kwargs):
+    def _call_fn(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         ensure_sync = getattr(self.app, "ensure_sync", None)
         if ensure_sync is not None:
             return ensure_sync(fn)(*args, **kwargs)
@@ -252,7 +252,7 @@ class Cache:
 
     def delete_many(self, *args, **kwargs) -> list[str]:
         """Proxy function for internal cache object."""
-        return cast("list[str]", self.cache.delete_many(*args, **kwargs))
+        return self.cache.delete_many(*args, **kwargs)
 
     def clear(self) -> bool:
         """Proxy function for internal cache object."""

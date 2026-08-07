@@ -2,6 +2,8 @@ import inspect
 import string
 import sys
 from collections.abc import Callable
+from typing import Any
+from typing import cast
 
 if sys.version_info >= (3, 14):
     import annotationlib
@@ -51,11 +53,11 @@ def get_arg_default(f: Callable, position: int):
     return arg_def if arg_def != inspect.Parameter.empty else None
 
 
-def get_id(obj):
-    return getattr(obj, "__caching_id__", repr)(obj)
+def get_id(obj: Any) -> str:
+    return cast("str", getattr(obj, "__caching_id__", repr)(obj))
 
 
-def function_namespace(f, args=None):
+def function_namespace(f: Callable, args: Any = None) -> tuple[str, str | None]:
     """Attempts to returns unique namespace for function"""
     m_args = get_arg_names(f)
 
@@ -64,7 +66,7 @@ def function_namespace(f, args=None):
     instance_self = getattr(f, "__self__", None)
 
     if instance_self and not inspect.isclass(instance_self):
-        instance_token = get_id(f.__self__)
+        instance_token = get_id(instance_self)
     elif m_args and m_args[0] == "self" and args:
         instance_token = get_id(args[0])
 
