@@ -19,8 +19,11 @@ from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any
 from typing import cast
+from typing import Concatenate
+from typing import overload
 from typing import ParamSpec
 from typing import Protocol
+from typing import TypeAlias
 from typing import TypeVar
 
 from flask import current_app
@@ -54,16 +57,24 @@ SUPPORTED_HASH_FUNCTIONS = [
 ]
 
 P = ParamSpec("P")
+# The parameters left over after ``__get__`` binds the instance.
+P2 = ParamSpec("P2")
 R = TypeVar("R")
+T = TypeVar("T")
+
+
+class _BoundCachedFunction(Protocol[T, P, R]):
+    """The type of a :meth:`Cache.cached` method accessed on an instance."""
+
+    uncached: Callable[Concatenate[T, P], R]
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
 
 
 class _CachedFunction(Protocol[P, R]):
-    """The type of the callable returned by :meth:`Cache.cached`.
-
-    In addition to being callable with the same signature as the wrapped
-    function, it carries the ``uncached``, ``cache_timeout`` and
-    ``make_cache_key`` attributes documented on :meth:`Cache.cached`.
-    """
+    """The type of the callable returned by :meth:`Cache.cached`."""
 
     uncached: Callable[P, R]
     cache_timeout: int | None
@@ -71,15 +82,36 @@ class _CachedFunction(Protocol[P, R]):
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
 
+    # The decorator returns a function, so decorating a method keeps working
+    # at runtime. Without ``__get__`` type checkers see a plain attribute
+    # instead of a descriptor and never bind ``self``.
+    @overload
+    def __get__(
+        self, instance: None, owner: type | None = None, /
+    ) -> "_CachedFunction[P, R]": ...
+    @overload
+    def __get__(
+        self: "_CachedFunction[Concatenate[T, P2], R]",
+        instance: T,
+        owner: type | None = None,
+        /,
+    ) -> _BoundCachedFunction[T, P2, R]: ...
+    def __get__(self, instance: Any, owner: type | None = None, /) -> Any: ...
+
+
+class _BoundMemoizedFunction(Protocol[T, P, R]):
+    """The type of a :meth:`Cache.memoize` method accessed on an instance."""
+
+    uncached: Callable[Concatenate[T, P], R]
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+    delete_memoized: Callable[[], None]
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
+
 
 class _MemoizedFunction(Protocol[P, R]):
-    """The type of the callable returned by :meth:`Cache.memoize`.
-
-    In addition to being callable with the same signature as the wrapped
-    function, it carries the ``uncached``, ``cache_timeout``,
-    ``make_cache_key`` and ``delete_memoized`` attributes documented on
-    :meth:`Cache.memoize`.
-    """
+    """The type of the callable returned by :meth:`Cache.memoize`."""
 
     uncached: Callable[P, R]
     cache_timeout: int | None
@@ -87,6 +119,26 @@ class _MemoizedFunction(Protocol[P, R]):
     delete_memoized: Callable[[], None]
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
+
+    @overload
+    def __get__(
+        self, instance: None, owner: type | None = None, /
+    ) -> "_MemoizedFunction[P, R]": ...
+    @overload
+    def __get__(
+        self: "_MemoizedFunction[Concatenate[T, P2], R]",
+        instance: T,
+        owner: type | None = None,
+        /,
+    ) -> _BoundMemoizedFunction[T, P2, R]: ...
+    def __get__(self, instance: Any, owner: type | None = None, /) -> Any: ...
+
+
+# A memoized function, however it was reached: a plain function, a method
+# accessed on the class, or a method accessed on an instance.
+_AnyMemoizedFunction: TypeAlias = (
+    "_MemoizedFunction[..., Any] | _BoundMemoizedFunction[Any, ..., Any]"
+)
 
 
 class CachedResponse(Response):
@@ -977,12 +1029,17 @@ class Cache:
                 source_check=source_check,
                 args_to_ignore=args_to_ignore,
             )
-            memoized_fn.delete_memoized = lambda: self.delete_memoized(f)
+            # Equivalent to passing ``f``: ``function_namespace`` reads only
+            # dunders copied by ``functools.wraps`` and a signature that
+            # follows ``__wrapped__``.
+            memoized_fn.delete_memoized = lambda: self.delete_memoized(memoized_fn)
             return memoized_fn
 
         return memoize
 
-    def delete_memoized(self, f, *args, **kwargs) -> None:
+    def delete_memoized(
+        self, f: _AnyMemoizedFunction, *args: Any, **kwargs: Any
+    ) -> None:
         """Deletes the specified functions caches, based by given parameters.
         If parameters are given, only the functions that were memoized
         with them will be erased. Otherwise all versions of the caches
@@ -1100,7 +1157,7 @@ class Cache:
             cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
             self.cache.delete(cache_key)
 
-    def delete_memoized_verhash(self, f: Callable, *args) -> None:
+    def delete_memoized_verhash(self, f: _AnyMemoizedFunction, *args: Any) -> None:
         """Delete the version hash associated with the function.
 
         .. warning::
