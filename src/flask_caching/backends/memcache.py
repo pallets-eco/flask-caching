@@ -11,6 +11,8 @@ The memcache caching backend.
 
 import pickle
 import re
+from contextlib import nullcontext
+from functools import partial
 from typing import Any
 
 from cachelib import MemcachedCache as CachelibMemcachedCache
@@ -82,21 +84,21 @@ class MemcachedCache(BaseCache, CachelibMemcachedCache):
         kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
         return cls(*args, **kwargs)
 
-    def delete_many(self, *keys):
+    def delete_many(self, *keys: str) -> list[Any]:
         new_keys = []
         for key in keys:
             key = self._normalize_key(key)
             if _test_memcached_key(key):
                 new_keys.append(key)
-        return self._client.delete_multi(new_keys)
+        return self._client.delete_multi(new_keys)  # type: ignore[no-any-return]
 
-    def inc(self, key, delta=1):
+    def inc(self, key: str, delta: int = 1) -> int | None:
         key = self._normalize_key(key)
-        return self._client.incr(key, delta)
+        return self._client.incr(key, delta)  # type: ignore[no-any-return]
 
-    def dec(self, key, delta=1):
+    def dec(self, key: str, delta: int = 1) -> int | None:
         key = self._normalize_key(key)
-        return self._client.decr(key, delta)
+        return self._client.decr(key, delta)  # type: ignore[no-any-return]
 
 
 class SASLMemcachedCache(MemcachedCache):
@@ -114,7 +116,7 @@ class SASLMemcachedCache(MemcachedCache):
         if servers is None:
             servers = ["127.0.0.1:11211"]
 
-        import pylibmc  # pyright: ignore[reportMissingImports]
+        import pylibmc  # # type: ignore pyright: ignore[reportMissingImports]
 
         self._client = pylibmc.Client(
             servers, username=username, password=password, binary=True, **kwargs
@@ -179,11 +181,13 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
         return cls(*args, **kwargs)
 
-    def delete(self, key):
+    def delete(self, key: str) -> Any:
         for skey in self._genkeys(key):
             super().delete(skey)
 
-    def set(self, key, value, timeout=None, chunk=True):
+    def set(
+        self, key: str, value: Any, timeout: int | None = None, chunk: bool = True
+    ) -> bool | None:
         """Set a value in cache, potentially spreading it across multiple key.
 
         :param key: The cache key.
@@ -196,7 +200,8 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
                       spread.
         """
         if chunk:
-            return self._set(key, value, timeout=timeout)
+            self._set(key, value, timeout=timeout)
+            return None
         else:
             return super().set(key, value, timeout=timeout)
 
@@ -218,7 +223,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
         super().set_many(values, timeout)
 
-    def get(self, key, chunk=True):
+    def get(self, key: str, chunk: bool = True) -> Any:
         """Get a cached value.
 
         :param chunk: If set to ``False``, it will return a cached value

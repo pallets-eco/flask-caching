@@ -19,14 +19,14 @@ del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = str.maketrans({k: None for k in del_chars})
 
 
-def wants_args(f: Callable) -> bool:
+def wants_args(f: Callable[..., Any]) -> bool:
     """Check if the function wants any positional, *args, or **kwargs arguments."""
     return any(
         p.kind != inspect.Parameter.KEYWORD_ONLY for p in get_function_parameters(f)
     )
 
 
-def get_function_parameters(f: Callable) -> list:
+def get_function_parameters(f: Callable[..., Any]) -> list[inspect.Parameter]:
     """Get function parameters
     :param f
     :return: Parameter list of function
@@ -34,7 +34,7 @@ def get_function_parameters(f: Callable) -> list:
     return list(_signature(f).parameters.values())
 
 
-def get_arg_names(f: Callable) -> list[str]:
+def get_arg_names(f: Callable[..., Any]) -> list[str]:
     """Return arguments of function
     :param f:
     :return: String list of arguments
@@ -46,7 +46,7 @@ def get_arg_names(f: Callable) -> list[str]:
     ]
 
 
-def get_arg_default(f: Callable, position: int) -> Any:
+def get_arg_default(f: Callable[..., Any], position: int) -> Any:
     arg = get_function_parameters(f)[position]
     arg_def = arg.default
     return arg_def if arg_def != inspect.Parameter.empty else None
@@ -59,7 +59,9 @@ def get_id(obj: Any) -> str:
     return str(caching_id())
 
 
-def function_namespace(f: Callable, args: Any = None) -> tuple[str, str | None]:
+def function_namespace(
+    f: Callable[..., Any], args: Any = None
+) -> tuple[str, str | None]:
     """Attempts to returns unique namespace for function"""
     m_args = get_arg_names(f)
 
