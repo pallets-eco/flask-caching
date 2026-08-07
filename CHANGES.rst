@@ -13,6 +13,13 @@ Unreleased
   default (e.g. ``0``, ``""``, ``False``): calling with the default was
   keyed the same as passing ``None``, returning the wrong cached result.
   :pr:`656`
+- ``@cached`` and ``@memoize`` now preserve the wrapped function's
+  signature and expose ``uncached``, ``cache_timeout``, ``make_cache_key``
+  ``delete_memoized`` to type checkers.
+- Fix ``@cached(response_hit_indication=True)`` appending a new
+  ``after_request`` function to the app on every request.
+- Fix ``__caching_id__`` never being usable. ``@memoize`` silently ignored that
+  and ran the function uncached.
 
 
 Version 2.4.1

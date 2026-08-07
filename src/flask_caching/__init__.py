@@ -18,7 +18,13 @@ import warnings
 from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any
-from typing import Union
+from typing import cast
+from typing import Concatenate
+from typing import overload
+from typing import ParamSpec
+from typing import Protocol
+from typing import TypeAlias
+from typing import TypeVar
 
 from flask import current_app
 from flask import Flask
@@ -34,7 +40,7 @@ from flask_caching.utils import function_namespace
 from flask_caching.utils import get_arg_default
 from flask_caching.utils import get_arg_names
 from flask_caching.utils import get_id
-from flask_caching.utils import make_template_fragment_key  # noqa: F401
+from flask_caching.utils import make_template_fragment_key as make_template_fragment_key
 from flask_caching.utils import wants_args
 
 __version__ = "2.4.1"
@@ -49,6 +55,98 @@ SUPPORTED_HASH_FUNCTIONS = [
     hashlib.sha512,
     hashlib.md5,
 ]
+
+P = ParamSpec("P")
+# The parameters left over after ``__get__`` binds the instance.
+P2 = ParamSpec("P2")
+R = TypeVar("R")
+T = TypeVar("T")
+# ``uncached`` is read-only on the bound protocols, so their instance and
+# return types are contravariant and covariant respectively.
+T_co = TypeVar("T_co", covariant=True)
+T_contra = TypeVar("T_contra", contravariant=True)
+
+
+class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
+    """The type of a :meth:`Cache.cached` method accessed on an instance."""
+
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+
+    @property
+    def uncached(self) -> Callable[Concatenate[T_contra, P], T_co]: ...
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T_co: ...
+
+
+class _CachedFunction(Protocol[P, R]):
+    """The type of the callable returned by :meth:`Cache.cached`."""
+
+    uncached: Callable[P, R]
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
+
+    # The decorator returns a function, so decorating a method keeps working
+    # at runtime. Without ``__get__`` type checkers see a plain attribute
+    # instead of a descriptor and never bind ``self``.
+    @overload
+    def __get__(
+        self, instance: None, owner: type | None = None, /
+    ) -> "_CachedFunction[P, R]": ...
+    @overload
+    def __get__(
+        self: "_CachedFunction[Concatenate[T, P2], R]",
+        instance: T,
+        owner: type | None = None,
+        /,
+    ) -> _BoundCachedFunction[T, P2, R]: ...
+    def __get__(self, instance: Any, owner: type | None = None, /) -> Any: ...
+
+
+class _BoundMemoizedFunction(Protocol[T_contra, P, T_co]):
+    """The type of a :meth:`Cache.memoize` method accessed on an instance."""
+
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+    delete_memoized: Callable[[], None]
+
+    @property
+    def uncached(self) -> Callable[Concatenate[T_contra, P], T_co]: ...
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T_co: ...
+
+
+class _MemoizedFunction(Protocol[P, R]):
+    """The type of the callable returned by :meth:`Cache.memoize`."""
+
+    uncached: Callable[P, R]
+    cache_timeout: int | None
+    make_cache_key: Callable[..., str]
+    delete_memoized: Callable[[], None]
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
+
+    @overload
+    def __get__(
+        self, instance: None, owner: type | None = None, /
+    ) -> "_MemoizedFunction[P, R]": ...
+    @overload
+    def __get__(
+        self: "_MemoizedFunction[Concatenate[T, P2], R]",
+        instance: T,
+        owner: type | None = None,
+        /,
+    ) -> _BoundMemoizedFunction[T, P2, R]: ...
+    def __get__(self, instance: Any, owner: type | None = None, /) -> Any: ...
+
+
+# A memoized function, however it was reached: a plain function, a method
+# accessed on the class, or a method accessed on an instance.
+_AnyMemoizedFunction: TypeAlias = (
+    "_MemoizedFunction[..., Any] | _BoundMemoizedFunction[Any, ..., Any]"
+)
 
 
 class CachedResponse(Response):
@@ -75,7 +173,7 @@ class Cache:
         self,
         app: Flask | None = None,
         with_jinja2_ext: bool = True,
-        config=None,
+        config: dict[str, Any] | None = None,
     ) -> None:
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
@@ -88,7 +186,7 @@ class Cache:
         if app is not None:
             self.init_app(app, config)
 
-    def init_app(self, app: Flask, config=None) -> None:
+    def init_app(self, app: Flask, config: dict[str, Any] | None = None) -> None:
         """This is used to initialize cache with your app object"""
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
@@ -146,7 +244,7 @@ class Cache:
 
         self._set_cache(app, config)
 
-    def _set_cache(self, app: Flask, config) -> None:
+    def _set_cache(self, app: Flask, config: dict[str, Any]) -> None:
         import_me = config["CACHE_TYPE"]
         if "." not in import_me:
             plain_name_used = True
@@ -181,7 +279,7 @@ class Cache:
         )
         self.app = app
 
-    def _call_fn(self, fn, *args, **kwargs):
+    def _call_fn(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         ensure_sync = getattr(self.app, "ensure_sync", None)
         if ensure_sync is not None:
             return ensure_sync(fn)(*args, **kwargs)
@@ -190,29 +288,29 @@ class Cache:
     @property
     def cache(self) -> SimpleCache:
         app = current_app or self.app
-        return app.extensions["cache"][self]
+        return cast("SimpleCache", app.extensions["cache"][self])
 
-    def get(self, *args, **kwargs) -> Any:
+    def get(self, *args: Any, **kwargs: Any) -> Any:
         """Proxy function for internal cache object."""
         return self.cache.get(*args, **kwargs)
 
-    def has(self, *args, **kwargs) -> bool:
+    def has(self, *args: Any, **kwargs: Any) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.has(*args, **kwargs)
 
-    def set(self, *args, **kwargs) -> bool | None:
+    def set(self, *args: Any, **kwargs: Any) -> bool | None:
         """Proxy function for internal cache object."""
         return self.cache.set(*args, **kwargs)
 
-    def add(self, *args, **kwargs) -> bool:
+    def add(self, *args: Any, **kwargs: Any) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.add(*args, **kwargs)
 
-    def delete(self, *args, **kwargs) -> bool:
+    def delete(self, *args: Any, **kwargs: Any) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.delete(*args, **kwargs)
 
-    def delete_many(self, *args, **kwargs) -> list[str]:
+    def delete_many(self, *args: Any, **kwargs: Any) -> list[str]:
         """Proxy function for internal cache object."""
         return self.cache.delete_many(*args, **kwargs)
 
@@ -220,41 +318,41 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.clear()
 
-    def get_many(self, *args, **kwargs):
+    def get_many(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Proxy function for internal cache object."""
         return self.cache.get_many(*args, **kwargs)
 
-    def set_many(self, *args, **kwargs) -> list[Any]:
+    def set_many(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Proxy function for internal cache object."""
         return self.cache.set_many(*args, **kwargs)
 
-    def get_dict(self, *args, **kwargs) -> dict[str, Any]:
+    def get_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
-    def unlink(self, *args, **kwargs) -> list[str]:
+    def unlink(self, *args: Any, **kwargs: Any) -> list[str]:
         """Proxy function for internal cache object
         only support Redis
         """
         unlink = getattr(self.cache, "unlink", None)
         if unlink is not None and callable(unlink):
-            return unlink(*args, **kwargs)
+            return cast("list[str]", unlink(*args, **kwargs))
         return self.delete_many(*args, **kwargs)
 
     def cached(
         self,
         timeout: int | None = None,
-        key_prefix: str = "view/%s",
-        unless: Callable | None = None,
-        forced_update: Callable | None = None,
-        response_filter: Callable | None = None,
+        key_prefix: str | Callable[[], str] = "view/%s",
+        unless: Callable[..., Any] | None = None,
+        forced_update: Callable[..., Any] | None = None,
+        response_filter: Callable[..., Any] | None = None,
         query_string: bool = False,
-        hash_method: Callable = hashlib.md5,
+        hash_method: Callable[..., Any] = hashlib.md5,
         cache_none: bool = False,
-        make_cache_key: Callable | None = None,
+        make_cache_key: Callable[..., Any] | None = None,
         source_check: bool | None = None,
         response_hit_indication: bool | None = False,
-    ) -> Callable:
+    ) -> Callable[[Callable[P, R]], _CachedFunction[P, R]]:
         """Decorator. Use this to cache a function. By default the cache key
         is `view/request.path`. You are able to use this decorator with any
         function by changing the `key_prefix`. If the token `%s` is located
@@ -360,9 +458,9 @@ class Cache:
                              if used cache.
         """
 
-        def decorator(f):
+        def decorator(f: Callable[P, R]) -> _CachedFunction[P, R]:
             @functools.wraps(f)
-            def decorated_function(*args, **kwargs):
+            def decorated_function(*args: Any, **kwargs: Any) -> Any:
                 #: Bypass the cache entirely.
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return self._call_fn(f, *args, **kwargs)
@@ -375,7 +473,7 @@ class Cache:
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = decorated_function.make_cache_key(
+                        cache_key = cached_fn.make_cache_key(
                             *args, use_request=True, **kwargs
                         )
 
@@ -418,13 +516,17 @@ class Cache:
                 if response_hit_indication:
                     g.flask_caching_hit_cache = found
 
-                    def apply_caching(response):
+                    def apply_caching(response: Response) -> Response:
                         if g.get("flask_caching_hit_cache"):
                             response.headers["hit_cache"] = g.flask_caching_hit_cache
                         return response
 
-                    if "apply_caching" not in self.app.after_request_funcs[None]:
-                        self.app.after_request_funcs[None].append(apply_caching)
+                    after_request_funcs = self.app.after_request_funcs[None]
+                    if not any(
+                        getattr(func, "__name__", None) == "apply_caching"
+                        for func in after_request_funcs
+                    ):
+                        after_request_funcs.append(apply_caching)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
@@ -432,7 +534,7 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
-                        cache_timeout = decorated_function.cache_timeout
+                        cache_timeout = cached_fn.cache_timeout
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
                         try:
@@ -447,7 +549,7 @@ class Cache:
                             logger.exception("Exception possibly due to cache backend.")
                 return rv
 
-            def default_make_cache_key(*args, **kwargs):
+            def default_make_cache_key(*args: Any, **kwargs: Any) -> str:
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
@@ -459,7 +561,7 @@ class Cache:
                 use_request = kwargs.pop("use_request", False)
                 return _make_cache_key(args, kwargs, use_request=use_request)
 
-            def _make_cache_key_query_string():
+            def _make_cache_key_query_string() -> str:
                 """Create consistent keys for query string arguments.
 
                 Produces the same cache key regardless of argument order, e.g.,
@@ -500,10 +602,13 @@ class Cache:
 
                 return cache_key
 
-            def _make_cache_key(args, kwargs, use_request) -> str:
+            def _make_cache_key(
+                args: tuple[Any, ...], kwargs: dict[str, Any], use_request: bool
+            ) -> str:
                 if query_string:
                     return _make_cache_key_query_string()
                 else:
+                    cache_key: str
                     if callable(key_prefix):
                         cache_key = key_prefix()
                     elif "%s" in key_prefix:
@@ -523,11 +628,11 @@ class Cache:
 
                 return cache_key
 
-            decorated_function.uncached = f
-            decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = default_make_cache_key
-
-            return decorated_function
+            cached_fn = cast("_CachedFunction[P, R]", decorated_function)
+            cached_fn.uncached = f
+            cached_fn.cache_timeout = timeout
+            cached_fn.make_cache_key = default_make_cache_key
+            return cached_fn
 
         return decorator
 
@@ -539,15 +644,15 @@ class Cache:
 
     def _memoize_version(
         self,
-        f: Callable,
+        f: Callable[..., Any],
         args: Any | None = None,
-        kwargs=None,
+        kwargs: dict[str, Any] | None = None,
         reset: bool = False,
         delete: bool = False,
         timeout: int | None = None,
-        forced_update: Union[bool, Callable] | None = False,
-        args_to_ignore: Any | None = None,
-    ) -> Union[tuple[str, str], tuple[str, None]]:
+        forced_update: bool | Callable[..., bool] | None = False,
+        args_to_ignore: list[str] | None = None,
+    ) -> tuple[str, str] | tuple[str, None]:
         """Updates the hash version associated with a memoized function or
         method.
         """
@@ -608,17 +713,17 @@ class Cache:
 
     def _memoize_make_cache_key(
         self,
-        make_name: Callable | None = None,
-        timeout: Callable | None = None,
-        forced_update: bool = False,
-        hash_method: Callable = hashlib.md5,
+        make_name: Callable[..., str] | None = None,
+        timeout: "_MemoizedFunction[..., Any] | None" = None,
+        forced_update: bool | Callable[..., bool] | None = False,
+        hash_method: Callable[..., Any] = hashlib.md5,
         source_check: bool | None = False,
-        args_to_ignore: Any | None = None,
-    ) -> Callable:
+        args_to_ignore: list[str] | None = None,
+    ) -> Callable[..., str]:
         """Function used to create the cache_key for memoized functions."""
 
-        def make_cache_key(f, *args, **kwargs):
-            _timeout = getattr(timeout, "cache_timeout", timeout)
+        def make_cache_key(f: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
+            _timeout = timeout.cache_timeout if timeout is not None else None
             fname, version_data = self._memoize_version(
                 f,
                 args=args,
@@ -641,24 +746,25 @@ class Cache:
 
             updated = f"{altfname}{keyargs}{keykwargs}"
 
-            cache_key = hash_method()
-            cache_key.update(updated.encode("utf-8"))
+            cache_hash = hash_method()
+            cache_hash.update(updated.encode("utf-8"))
 
             # Use the source code if source_check is True and update the
             # cache_key with the function's source.
             if source_check and callable(f):
                 func_source_code = inspect.getsource(f)
-                cache_key.update(func_source_code.encode("utf-8"))
+                cache_hash.update(func_source_code.encode("utf-8"))
 
-            cache_key = base64.b64encode(cache_key.digest())[:16]
-            cache_key = cache_key.decode("utf-8")
-            cache_key += version_data
+            cache_key = base64.b64encode(cache_hash.digest())[:16].decode("utf-8")
+            cache_key += version_data or ""
 
             return cache_key
 
         return make_cache_key
 
-    def _memoize_kwargs_to_args(self, f: Callable, *args, **kwargs) -> Any:
+    def _memoize_kwargs_to_args(
+        self, f: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> Any:
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
@@ -669,7 +775,7 @@ class Cache:
 
         # If the function uses VAR_KEYWORD type of parameters,
         # we need to pass these further
-        kw_keys_remaining = [key for key in kwargs.keys() if key not in args_to_ignore]
+        kw_keys_remaining = [key for key in kwargs if key not in args_to_ignore]
         arg_names = get_arg_names(f)
         args_len = len(arg_names)
 
@@ -728,7 +834,11 @@ class Cache:
         )
 
     def _bypass_cache(
-        self, unless: Callable | None, f: Callable, *args, **kwargs
+        self,
+        unless: Callable[..., Any] | None,
+        f: Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """Determines whether or not to bypass the cache by calling unless().
         Supports both unless() that takes in arguments and unless()
@@ -749,15 +859,15 @@ class Cache:
     def memoize(
         self,
         timeout: int | None = None,
-        make_name: Callable | None = None,
-        unless: Callable | None = None,
-        forced_update: Callable | None = None,
-        response_filter: Callable | None = None,
-        hash_method: Callable = hashlib.md5,
+        make_name: Callable[..., str] | None = None,
+        unless: Callable[..., bool] | None = None,
+        forced_update: Callable[..., bool] | None = None,
+        response_filter: Callable[..., Any] | None = None,
+        hash_method: Callable[..., Any] = hashlib.md5,
         cache_none: bool = False,
         source_check: bool | None = None,
-        args_to_ignore: Any | None = None,
-    ) -> Callable:
+        args_to_ignore: list[str] | None = None,
+    ) -> Callable[[Callable[P, R]], _MemoizedFunction[P, R]]:
         """Use this to cache the result of a function, taking its arguments
         into account in the cache key.
 
@@ -847,9 +957,9 @@ class Cache:
             params ``args_to_ignore``
         """
 
-        def memoize(f):
+        def memoize(f: Callable[P, R]) -> _MemoizedFunction[P, R]:
             @functools.wraps(f)
-            def decorated_function(*args, **kwargs):
+            def decorated_function(*args: Any, **kwargs: Any) -> Any:
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return self._call_fn(f, *args, **kwargs)
@@ -871,7 +981,7 @@ class Cache:
 
                     cache_key = self._memoize_make_cache_key(
                         make_name=make_name,
-                        timeout=decorated_function,
+                        timeout=memoized_fn,
                         forced_update=forced_update_result,
                         hash_method=hash_method,
                         source_check=source_check,
@@ -915,7 +1025,7 @@ class Cache:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=decorated_function.cache_timeout,
+                                timeout=memoized_fn.cache_timeout,
                             )
                         except Exception:
                             if self.app.debug:
@@ -923,23 +1033,28 @@ class Cache:
                             logger.exception("Exception possibly due to cache backend.")
                 return rv
 
-            decorated_function.uncached = f
-            decorated_function.cache_timeout = timeout
-            decorated_function.make_cache_key = self._memoize_make_cache_key(
+            memoized_fn = cast("_MemoizedFunction[P, R]", decorated_function)
+            memoized_fn.uncached = f
+            memoized_fn.cache_timeout = timeout
+            memoized_fn.make_cache_key = self._memoize_make_cache_key(
                 make_name=make_name,
-                timeout=decorated_function,
+                timeout=memoized_fn,
                 forced_update=False,
                 hash_method=hash_method,
                 source_check=source_check,
                 args_to_ignore=args_to_ignore,
             )
-            decorated_function.delete_memoized = lambda: self.delete_memoized(f)
-
-            return decorated_function
+            # Equivalent to passing ``f``: ``function_namespace`` reads only
+            # dunders copied by ``functools.wraps`` and a signature that
+            # follows ``__wrapped__``.
+            memoized_fn.delete_memoized = lambda: self.delete_memoized(memoized_fn)
+            return memoized_fn
 
         return memoize
 
-    def delete_memoized(self, f, *args, **kwargs) -> None:
+    def delete_memoized(
+        self, f: _AnyMemoizedFunction, *args: Any, **kwargs: Any
+    ) -> None:
         """Deletes the specified functions caches, based by given parameters.
         If parameters are given, only the functions that were memoized
         with them will be erased. Otherwise all versions of the caches
@@ -1057,7 +1172,7 @@ class Cache:
             cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
             self.cache.delete(cache_key)
 
-    def delete_memoized_verhash(self, f: Callable, *args) -> None:
+    def delete_memoized_verhash(self, f: _AnyMemoizedFunction, *args: Any) -> None:
         """Delete the version hash associated with the function.
 
         .. warning::

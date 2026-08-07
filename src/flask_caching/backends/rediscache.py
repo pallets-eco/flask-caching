@@ -10,8 +10,10 @@ The redis caching backend.
 """
 
 import pickle
+from typing import Any
 
 from cachelib import RedisCache as CachelibRedisCache
+from flask import Flask
 
 from flask_caching.backends.base import BaseCache
 
@@ -40,14 +42,14 @@ class RedisCache(BaseCache, CachelibRedisCache):
 
     def __init__(
         self,
-        host="localhost",
-        port=6379,
-        password=None,
-        db=0,
-        default_timeout=300,
-        key_prefix=None,
-        **kwargs,
-    ):
+        host: Any = "localhost",
+        port: int = 6379,
+        password: str | None = None,
+        db: int = 0,
+        default_timeout: int = 300,
+        key_prefix: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibRedisCache.__init__(
             self,
@@ -61,7 +63,13 @@ class RedisCache(BaseCache, CachelibRedisCache):
         )
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "RedisCache":
         try:
             from redis import from_url as redis_from_url
         except ImportError as e:
@@ -93,7 +101,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
 
         return new_class
 
-    def dump_object(self, value):
+    def dump_object(self, value: Any) -> bytes:
         """Dumps an object into a string for redis.  By default it serializes
         integers as regular string and pickle dumps everything else.
         """
@@ -102,12 +110,13 @@ class RedisCache(BaseCache, CachelibRedisCache):
             return str(value).encode("ascii")
         return b"!" + pickle.dumps(value)
 
-    def unlink(self, *keys):
+    def unlink(self, *keys: str) -> Any:
         """when redis-py >= 3.0.0 and redis > 4, support this operation"""
         if not keys:
-            return
-        if self.key_prefix:
-            keys = [self.key_prefix + key for key in keys]
+            return None
+        prefix = self._get_prefix()
+        if prefix:
+            keys = tuple(prefix + key for key in keys)
 
         unlink = getattr(self._write_client, "unlink", None)
         if unlink is not None and callable(unlink):
@@ -140,14 +149,14 @@ class RedisSentinelCache(RedisCache):
 
     def __init__(
         self,
-        sentinels=None,
-        master=None,
-        password=None,
-        db=0,
-        default_timeout=300,
-        key_prefix="",
-        **kwargs,
-    ):
+        sentinels: Any = None,
+        master: str = "mymaster",
+        password: str | None = None,
+        db: int = 0,
+        default_timeout: int = 300,
+        key_prefix: str = "",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
 
         try:
@@ -182,7 +191,13 @@ class RedisSentinelCache(RedisCache):
         self._read_client = sentinel.slave_for(master)
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "RedisSentinelCache":
         kwargs.update(
             dict(
                 sentinels=config.get("CACHE_REDIS_SENTINELS", [("127.0.0.1", 26379)]),
@@ -221,8 +236,13 @@ class RedisClusterCache(RedisCache):
     """
 
     def __init__(
-        self, cluster="", password="", default_timeout=300, key_prefix="", **kwargs
-    ):
+        self,
+        cluster: Any = "",
+        password: str = "",
+        default_timeout: int = 300,
+        key_prefix: str = "",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
 
         if kwargs.get("decode_responses", None):
@@ -243,7 +263,7 @@ class RedisClusterCache(RedisCache):
             try:
                 nodes = [(node.split(":")) for node in cluster.split(",")]
                 startup_nodes = [
-                    ClusterNode(node[0].strip(), node[1].strip()) for node in nodes
+                    ClusterNode(node[0].strip(), int(node[1].strip())) for node in nodes
                 ]
             except IndexError as e:
                 raise ValueError(
@@ -266,7 +286,13 @@ class RedisClusterCache(RedisCache):
         self._read_client = cluster
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "RedisClusterCache":
         kwargs.update(
             dict(
                 cluster=config.get("CACHE_REDIS_CLUSTER", ""),

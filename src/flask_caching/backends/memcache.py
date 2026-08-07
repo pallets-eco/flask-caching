@@ -11,8 +11,10 @@ The memcache caching backend.
 
 import pickle
 import re
+from typing import Any
 
 from cachelib import MemcachedCache as CachelibMemcachedCache
+from flask import Flask
 
 from flask_caching.backends.base import BaseCache
 
@@ -54,7 +56,12 @@ class MemcachedCache(BaseCache, CachelibMemcachedCache):
                        different prefix.
     """
 
-    def __init__(self, servers=None, default_timeout=300, key_prefix=None):
+    def __init__(
+        self,
+        servers: Any = None,
+        default_timeout: int = 300,
+        key_prefix: str | None = None,
+    ) -> None:
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibMemcachedCache.__init__(
             self,
@@ -64,44 +71,50 @@ class MemcachedCache(BaseCache, CachelibMemcachedCache):
         )
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "MemcachedCache":
         args.append(config["CACHE_MEMCACHED_SERVERS"])
         kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
         return cls(*args, **kwargs)
 
-    def delete_many(self, *keys):
+    def delete_many(self, *keys: str) -> list[Any]:
         new_keys = []
         for key in keys:
             key = self._normalize_key(key)
             if _test_memcached_key(key):
                 new_keys.append(key)
-        return self._client.delete_multi(new_keys)
+        return self._client.delete_multi(new_keys)  # type: ignore[no-any-return]
 
-    def inc(self, key, delta=1):
+    def inc(self, key: str, delta: int = 1) -> int | None:
         key = self._normalize_key(key)
-        return self._client.incr(key, delta)
+        return self._client.incr(key, delta)  # type: ignore[no-any-return]
 
-    def dec(self, key, delta=1):
+    def dec(self, key: str, delta: int = 1) -> int | None:
         key = self._normalize_key(key)
-        return self._client.decr(key, delta)
+        return self._client.decr(key, delta)  # type: ignore[no-any-return]
 
 
 class SASLMemcachedCache(MemcachedCache):
     def __init__(
         self,
-        servers=None,
-        default_timeout=300,
-        key_prefix=None,
-        username=None,
-        password=None,
-        **kwargs,
-    ):
+        servers: Any = None,
+        default_timeout: int = 300,
+        key_prefix: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(default_timeout=default_timeout)
 
         if servers is None:
             servers = ["127.0.0.1:11211"]
 
-        import pylibmc
+        import pylibmc  # # type: ignore pyright: ignore[reportMissingImports]
 
         self._client = pylibmc.Client(
             servers, username=username, password=password, binary=True, **kwargs
@@ -110,7 +123,13 @@ class SASLMemcachedCache(MemcachedCache):
         self.key_prefix = key_prefix
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "SASLMemcachedCache":
         args.append(config["CACHE_MEMCACHED_SERVERS"])
         kwargs.update(
             dict(
@@ -130,7 +149,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
     impact the performance.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Kwargs:
             chunksize (int): max length of a pickled object that can fit in
@@ -142,7 +161,13 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "SpreadSASLMemcachedCache":
         args.append(config["CACHE_MEMCACHED_SERVERS"])
         kwargs.update(
             dict(
@@ -154,11 +179,13 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
         return cls(*args, **kwargs)
 
-    def delete(self, key):
+    def delete(self, key: str) -> Any:
         for skey in self._genkeys(key):
             super().delete(skey)
 
-    def set(self, key, value, timeout=None, chunk=True):
+    def set(
+        self, key: str, value: Any, timeout: int | None = None, chunk: bool = True
+    ) -> bool | None:
         """Set a value in cache, potentially spreading it across multiple key.
 
         :param key: The cache key.
@@ -171,11 +198,12 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
                       spread.
         """
         if chunk:
-            return self._set(key, value, timeout=timeout)
+            self._set(key, value, timeout=timeout)
+            return None
         else:
             return super().set(key, value, timeout=timeout)
 
-    def _set(self, key, value, timeout=None):
+    def _set(self, key: str, value: Any, timeout: int | None = None) -> None:
         # pickling/unpickling add an overhead,
         # I didn't found a good way to avoid pickling/unpickling if
         # key is smaller than chunksize, because in case or <werkzeug.requests>
@@ -193,7 +221,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
 
         super().set_many(values, timeout)
 
-    def get(self, key, chunk=True):
+    def get(self, key: str, chunk: bool = True) -> Any:
         """Get a cached value.
 
         :param chunk: If set to ``False``, it will return a cached value
@@ -204,10 +232,10 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         else:
             return super().get(key)
 
-    def _genkeys(self, key):
+    def _genkeys(self, key: str) -> list[str]:
         return [f"{key}.{i}" for i in range(self.maxchunk)]
 
-    def _get(self, key):
+    def _get(self, key: str) -> Any:
         to_get = [f"{key}.{i}" for i in range(self.maxchunk)]
         result = super().get_many(*to_get)
         serialized = b"".join(v for v in result if v is not None)

@@ -2,6 +2,7 @@ import inspect
 import string
 import sys
 from collections.abc import Callable
+from typing import Any
 
 if sys.version_info >= (3, 14):
     import annotationlib
@@ -15,17 +16,17 @@ TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
 # Used to remove control characters and whitespace from cache keys.
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
-null_control = ({k: None for k in del_chars},)
+null_control = str.maketrans({k: None for k in del_chars})
 
 
-def wants_args(f: Callable) -> bool:
+def wants_args(f: Callable[..., Any]) -> bool:
     """Check if the function wants any positional, *args, or **kwargs arguments."""
     return any(
         p.kind != inspect.Parameter.KEYWORD_ONLY for p in get_function_parameters(f)
     )
 
 
-def get_function_parameters(f: Callable) -> list:
+def get_function_parameters(f: Callable[..., Any]) -> list[inspect.Parameter]:
     """Get function parameters
     :param f
     :return: Parameter list of function
@@ -33,7 +34,7 @@ def get_function_parameters(f: Callable) -> list:
     return list(_signature(f).parameters.values())
 
 
-def get_arg_names(f: Callable) -> list[str]:
+def get_arg_names(f: Callable[..., Any]) -> list[str]:
     """Return arguments of function
     :param f:
     :return: String list of arguments
@@ -45,17 +46,22 @@ def get_arg_names(f: Callable) -> list[str]:
     ]
 
 
-def get_arg_default(f: Callable, position: int):
+def get_arg_default(f: Callable[..., Any], position: int) -> Any:
     arg = get_function_parameters(f)[position]
     arg_def = arg.default
     return arg_def if arg_def != inspect.Parameter.empty else None
 
 
-def get_id(obj):
-    return getattr(obj, "__caching_id__", repr)(obj)
+def get_id(obj: Any) -> str:
+    caching_id = getattr(obj, "__caching_id__", None)
+    if caching_id is None:
+        return repr(obj)
+    return str(caching_id())
 
 
-def function_namespace(f, args=None):
+def function_namespace(
+    f: Callable[..., Any], args: Any = None
+) -> tuple[str, str | None]:
     """Attempts to returns unique namespace for function"""
     m_args = get_arg_names(f)
 
@@ -64,13 +70,13 @@ def function_namespace(f, args=None):
     instance_self = getattr(f, "__self__", None)
 
     if instance_self and not inspect.isclass(instance_self):
-        instance_token = get_id(f.__self__)
+        instance_token = get_id(instance_self)
     elif m_args and m_args[0] == "self" and args:
         instance_token = get_id(args[0])
 
     module = f.__module__
 
-    if m_args and m_args[0] == "cls" and not inspect.isclass(args[0]):
+    if m_args and m_args[0] == "cls" and not (args and inspect.isclass(args[0])):
         raise ValueError(
             "When using `delete_memoized` on a "
             "`@classmethod` you must provide the "
@@ -100,10 +106,10 @@ def function_namespace(f, args=None):
         else:
             name = f.__name__
 
-    ns = ".".join((module, name)).translate(*null_control)
+    ns = ".".join((module, name)).translate(null_control)
 
     ins = (
-        ".".join((module, name, instance_token)).translate(*null_control)
+        ".".join((module, name, instance_token)).translate(null_control)
         if instance_token
         else None
     )

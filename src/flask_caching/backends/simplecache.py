@@ -10,8 +10,10 @@ The simple cache backend.
 """
 
 import logging
+from typing import Any
 
 from cachelib import SimpleCache as CachelibSimpleCache
+from flask import Flask
 
 from flask_caching.backends.base import BaseCache
 
@@ -36,7 +38,12 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
                           to ``False``.
     """
 
-    def __init__(self, threshold=500, default_timeout=300, ignore_errors=False):
+    def __init__(
+        self,
+        threshold: int = 500,
+        default_timeout: int = 300,
+        ignore_errors: bool = False,
+    ) -> None:
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibSimpleCache.__init__(
             self, threshold=threshold, default_timeout=default_timeout
@@ -45,7 +52,13 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
         self.ignore_errors = ignore_errors
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "SimpleCache":
         kwargs.update(
             dict(
                 threshold=config["CACHE_THRESHOLD"],

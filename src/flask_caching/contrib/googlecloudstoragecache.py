@@ -1,6 +1,10 @@
 import datetime
 import json
 import logging
+from collections.abc import Iterable
+from typing import Any
+
+from flask import Flask
 
 from flask_caching.backends.base import BaseCache
 
@@ -8,9 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from google.auth.credentials import AnonymousCredentials
-    from google.cloud import exceptions
-    from google.cloud import storage
+    from google.auth.credentials import (  # pyright: ignore[reportMissingImports]
+        AnonymousCredentials,
+    )
+    from google.cloud import exceptions  # pyright: ignore[reportAttributeAccessIssue]
+    from google.cloud import storage  # pyright: ignore[reportAttributeAccessIssue]
 except ImportError as e:
     raise RuntimeError("no google-cloud-storage module found") from e
 
@@ -43,13 +49,13 @@ class GoogleCloudStorageCache(BaseCache):
 
     def __init__(
         self,
-        bucket,
-        key_prefix=None,
-        default_timeout=300,
-        delete_expired_objects_on_read=False,
-        anonymous=False,
-        **kwargs,
-    ):
+        bucket: str,
+        key_prefix: str | None = None,
+        default_timeout: int = 300,
+        delete_expired_objects_on_read: bool = False,
+        anonymous: bool = False,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(default_timeout)
         if not isinstance(bucket, str):
             raise ValueError("GCSCache bucket parameter must be a string")
@@ -65,14 +71,20 @@ class GoogleCloudStorageCache(BaseCache):
         self.delete_expired_objects_on_read = delete_expired_objects_on_read
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "GoogleCloudStorageCache":
         args.insert(0, config["CACHE_GCS_BUCKET"])
         key_prefix = config.get("CACHE_KEY_PREFIX")
         if key_prefix:
             kwargs["key_prefix"] = key_prefix
         return cls(*args, **kwargs)
 
-    def get(self, key):
+    def get(self, key: str) -> Any:
         result = None
         expired = False
         hit_or_miss = "miss"
@@ -96,7 +108,7 @@ class GoogleCloudStorageCache(BaseCache):
         logger.debug("get key %r -> %s %s", full_key, hit_or_miss, expiredstr)
         return result
 
-    def set(self, key, value, timeout=None):
+    def set(self, key: str, value: Any, timeout: int | None = None) -> bool:
         result = False
         full_key = self.key_prefix + key
         content_type = "application/json"
@@ -119,7 +131,7 @@ class GoogleCloudStorageCache(BaseCache):
         logger.debug("set key %r -> %s", full_key, result)
         return result
 
-    def add(self, key, value, timeout=None):
+    def add(self, key: str, value: Any, timeout: int | None = None) -> bool:
         full_key = self.key_prefix + key
         if self._has(full_key):
             logger.debug("add key %r -> not added", full_key)
@@ -127,21 +139,21 @@ class GoogleCloudStorageCache(BaseCache):
         else:
             return self.set(key, value, timeout)
 
-    def delete(self, key):
+    def delete(self, key: str) -> bool:
         full_key = self.key_prefix + key
         return self._delete(full_key)
 
-    def delete_many(self, *keys):
+    def delete_many(self, *keys: str) -> Any:
         return self._delete_many(self.key_prefix + key for key in keys)
 
-    def has(self, key):
+    def has(self, key: str) -> bool:
         full_key = self.key_prefix + key
         return self._has(full_key)
 
-    def clear(self):
+    def clear(self) -> bool:
         return self._prune(clear_all=True)
 
-    def _prune(self, clear_all=False):
+    def _prune(self, clear_all: bool = False) -> bool:
         # Delete in batches of 100 which is much faster than individual deletes
         nremoved = 0
         now = self._now()
@@ -164,10 +176,10 @@ class GoogleCloudStorageCache(BaseCache):
         logger.debug("evicted %d key(s)", nremoved)
         return True
 
-    def _delete(self, key):
+    def _delete(self, key: str) -> bool:
         return self._delete_many([key])
 
-    def _delete_many(self, keys):
+    def _delete_many(self, keys: Iterable[str]) -> bool:
         try:
             with self._client.batch():
                 for key in keys:
@@ -176,7 +188,7 @@ class GoogleCloudStorageCache(BaseCache):
             pass
         return True
 
-    def _has(self, key):
+    def _has(self, key: str) -> bool:
         result = False
         expired = False
         blob = self.bucket.get_blob(key)
@@ -192,7 +204,7 @@ class GoogleCloudStorageCache(BaseCache):
         logger.debug("has key %r -> %s %s", key, result, expiredstr)
         return result
 
-    def _now(self, delta=0):
+    def _now(self, delta: int = 0) -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
             seconds=delta
         )

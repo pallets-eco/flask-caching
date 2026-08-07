@@ -9,7 +9,10 @@ The uWSGI caching backend.
 :license: BSD, see LICENSE for more details.
 """
 
+from typing import Any
+
 from cachelib import UWSGICache as CachelibUWSGICache
+from flask import Flask
 
 from flask_caching.backends.base import BaseCache
 
@@ -29,7 +32,7 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
         you only have to provide the name of the cache.
     """
 
-    def __init__(self, default_timeout=300, cache=""):
+    def __init__(self, default_timeout: int = 300, cache: str = "") -> None:
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibUWSGICache.__init__(
             self,
@@ -53,7 +56,13 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
             )
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "UWSGICache":
         # The name of the caching instance to connect to, for
         # example: mycache@localhost:3031, defaults to an empty string, which
         # means uWSGI will cache in the local instance. If the cache is in the

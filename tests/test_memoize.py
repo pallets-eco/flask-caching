@@ -154,6 +154,49 @@ def test_memoize_delete(app, cache):
         assert big_foo(5, 3) != result2
 
 
+def test_memoize_delete_via_attribute(app, cache):
+    with app.test_request_context():
+
+        @cache.memoize(5)
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+        assert big_foo(5, 2) == result
+
+        big_foo.delete_memoized()
+
+        assert big_foo(5, 2) != result
+
+
+def test_memoize_classfunc_delete_via_attribute(app, cache):
+    with app.test_request_context():
+
+        class Adder:
+            def __init__(self, initial):
+                self.initial = initial
+
+            @cache.memoize(5)
+            def add(self, b):
+                return self.initial + b + random.random()
+
+        adder1 = Adder(1)
+        adder2 = Adder(2)
+
+        a1 = adder1.add(3)
+        a2 = adder2.add(3)
+
+        assert adder1.add(3) == a1
+        assert adder2.add(3) == a2
+
+        # the attribute takes no arguments, so it resets the version for
+        # every instance, not just adder1
+        adder1.add.delete_memoized()
+
+        assert adder1.add(3) != a1
+        assert adder2.add(3) != a2
+
+
 def test_memoize_no_timeout_delete(app, cache):
     with app.test_request_context():
 
@@ -384,7 +427,7 @@ def test_memoize_classfunc_repr(app, cache):
 
         @cache.memoize()
         def add(self, b):
-            return self.initial + b
+            return self.initial + b + random.random()
 
         def __repr__(self):
             return "42"

@@ -214,6 +214,10 @@ class TestRedisCacheClientsOverride(CacheTestsBase):
         EXPECTED_GET_MANY_VALUES = ["bacon", "spam", "eggs"]
 
         class DummyWriteClient:
+            # cachelib < 0.15 uses setex(), >= 0.15 uses set(ex=...)
+            def set(self, *args, **kwargs):
+                return "spam"
+
             def setex(self, *args, **kwargs):
                 return "spam"
 

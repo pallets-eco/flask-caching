@@ -19,5 +19,5 @@ class NullCache(BaseCache):
                             for API compatibility with other caches.
     """
 
-    def has(self, key):
+    def has(self, key: str) -> bool:
         return False
