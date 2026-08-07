@@ -61,16 +61,22 @@ P = ParamSpec("P")
 P2 = ParamSpec("P2")
 R = TypeVar("R")
 T = TypeVar("T")
+# ``uncached`` is read-only on the bound protocols, so their instance and
+# return types are contravariant and covariant respectively.
+T_co = TypeVar("T_co", covariant=True)
+T_contra = TypeVar("T_contra", contravariant=True)
 
 
-class _BoundCachedFunction(Protocol[T, P, R]):
+class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.cached` method accessed on an instance."""
 
-    uncached: Callable[Concatenate[T, P], R]
     cache_timeout: int | None
     make_cache_key: Callable[..., str]
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
+    @property
+    def uncached(self) -> Callable[Concatenate[T_contra, P], T_co]: ...
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T_co: ...
 
 
 class _CachedFunction(Protocol[P, R]):
@@ -99,15 +105,17 @@ class _CachedFunction(Protocol[P, R]):
     def __get__(self, instance: Any, owner: type | None = None, /) -> Any: ...
 
 
-class _BoundMemoizedFunction(Protocol[T, P, R]):
+class _BoundMemoizedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.memoize` method accessed on an instance."""
 
-    uncached: Callable[Concatenate[T, P], R]
     cache_timeout: int | None
     make_cache_key: Callable[..., str]
     delete_memoized: Callable[[], None]
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
+    @property
+    def uncached(self) -> Callable[Concatenate[T_contra, P], T_co]: ...
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T_co: ...
 
 
 class _MemoizedFunction(Protocol[P, R]):
@@ -334,7 +342,7 @@ class Cache:
     def cached(
         self,
         timeout: int | None = None,
-        key_prefix: str = "view/%s",
+        key_prefix: str | Callable[[], str] = "view/%s",
         unless: Callable[..., Any] | None = None,
         forced_update: Callable[..., Any] | None = None,
         response_filter: Callable[..., Any] | None = None,

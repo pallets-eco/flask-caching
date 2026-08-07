@@ -11,8 +11,6 @@ The memcache caching backend.
 
 import pickle
 import re
-from contextlib import nullcontext
-from functools import partial
 from typing import Any
 
 from cachelib import MemcachedCache as CachelibMemcachedCache
