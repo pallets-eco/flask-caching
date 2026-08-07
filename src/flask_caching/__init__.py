@@ -165,7 +165,7 @@ class Cache:
         self,
         app: Flask | None = None,
         with_jinja2_ext: bool = True,
-        config=None,
+        config: dict[str, Any] | None = None,
     ) -> None:
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
@@ -178,7 +178,7 @@ class Cache:
         if app is not None:
             self.init_app(app, config)
 
-    def init_app(self, app: Flask, config=None) -> None:
+    def init_app(self, app: Flask, config: dict[str, Any] | None = None) -> None:
         """This is used to initialize cache with your app object"""
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
@@ -236,7 +236,7 @@ class Cache:
 
         self._set_cache(app, config)
 
-    def _set_cache(self, app: Flask, config) -> None:
+    def _set_cache(self, app: Flask, config: dict[str, Any]) -> None:
         import_me = config["CACHE_TYPE"]
         if "." not in import_me:
             plain_name_used = True
@@ -282,27 +282,27 @@ class Cache:
         app = current_app or self.app
         return cast("SimpleCache", app.extensions["cache"][self])
 
-    def get(self, *args, **kwargs) -> Any:
+    def get(self, *args: Any, **kwargs: Any) -> Any:
         """Proxy function for internal cache object."""
         return self.cache.get(*args, **kwargs)
 
-    def has(self, *args, **kwargs) -> bool:
+    def has(self, *args: Any, **kwargs: Any) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.has(*args, **kwargs)
 
-    def set(self, *args, **kwargs) -> bool | None:
+    def set(self, *args: Any, **kwargs: Any) -> bool | None:
         """Proxy function for internal cache object."""
         return self.cache.set(*args, **kwargs)
 
-    def add(self, *args, **kwargs) -> bool:
+    def add(self, *args: Any, **kwargs: Any) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.add(*args, **kwargs)
 
-    def delete(self, *args, **kwargs) -> bool:
+    def delete(self, *args: Any, **kwargs: Any) -> bool:
         """Proxy function for internal cache object."""
         return self.cache.delete(*args, **kwargs)
 
-    def delete_many(self, *args, **kwargs) -> list[str]:
+    def delete_many(self, *args: Any, **kwargs: Any) -> list[str]:
         """Proxy function for internal cache object."""
         return self.cache.delete_many(*args, **kwargs)
 
@@ -310,19 +310,19 @@ class Cache:
         """Proxy function for internal cache object."""
         return self.cache.clear()
 
-    def get_many(self, *args, **kwargs):
+    def get_many(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Proxy function for internal cache object."""
         return self.cache.get_many(*args, **kwargs)
 
-    def set_many(self, *args, **kwargs) -> list[Any]:
+    def set_many(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Proxy function for internal cache object."""
         return self.cache.set_many(*args, **kwargs)
 
-    def get_dict(self, *args, **kwargs) -> dict[str, Any]:
+    def get_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Proxy function for internal cache object."""
         return self.cache.get_dict(*args, **kwargs)
 
-    def unlink(self, *args, **kwargs) -> list[str]:
+    def unlink(self, *args: Any, **kwargs: Any) -> list[str]:
         """Proxy function for internal cache object
         only support Redis
         """
@@ -594,7 +594,9 @@ class Cache:
 
                 return cache_key
 
-            def _make_cache_key(args, kwargs, use_request) -> str:
+            def _make_cache_key(
+                args: tuple[Any, ...], kwargs: dict[str, Any], use_request: bool
+            ) -> str:
                 if query_string:
                     return _make_cache_key_query_string()
                 else:
@@ -636,7 +638,7 @@ class Cache:
         self,
         f: Callable,
         args: Any | None = None,
-        kwargs=None,
+        kwargs: dict[str, Any] | None = None,
         reset: bool = False,
         delete: bool = False,
         timeout: int | None = None,
@@ -753,7 +755,7 @@ class Cache:
 
         return make_cache_key
 
-    def _memoize_kwargs_to_args(self, f: Callable, *args, **kwargs) -> Any:
+    def _memoize_kwargs_to_args(self, f: Callable, *args: Any, **kwargs: Any) -> Any:
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
@@ -823,7 +825,7 @@ class Cache:
         )
 
     def _bypass_cache(
-        self, unless: Callable | None, f: Callable, *args, **kwargs
+        self, unless: Callable | None, f: Callable, *args: Any, **kwargs: Any
     ) -> bool:
         """Determines whether or not to bypass the cache by calling unless().
         Supports both unless() that takes in arguments and unless()
