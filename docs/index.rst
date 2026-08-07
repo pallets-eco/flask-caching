@@ -442,12 +442,17 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_MEMCACHED_PASSWORD``    Password for SASL authentication with memcached.
                                 Used only for SASLMemcachedCache
 ``CACHE_REDIS_HOST``            A Redis server host. Used only for RedisCache.
+                                Ignored if ``CACHE_REDIS_URL`` is set.
 ``CACHE_REDIS_PORT``            A Redis server port. Default is 6379.
                                 Used only for RedisCache.
+                                Ignored if ``CACHE_REDIS_URL`` is set.
 ``CACHE_REDIS_PASSWORD``        A Redis password for server. Used only for RedisCache and
                                 RedisSentinelCache.
+                                Ignored if ``CACHE_REDIS_URL`` is set.
 ``CACHE_REDIS_DB``              A Redis db (zero-based number index). Default is 0.
                                 Used only for RedisCache and RedisSentinelCache.
+                                Ignored if ``CACHE_REDIS_URL`` already contains a
+                                database, e.g. ``redis://localhost:6379/2``.
 ``CACHE_REDIS_SENTINELS``       A list or a tuple of Redis sentinel addresses. Used only for
                                 RedisSentinelCache.
 ``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
@@ -461,9 +466,46 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_REDIS_URL``             URL to connect to Redis server.
                                 Example ``redis://user:password@localhost:6379/2``. Supports
                                 protocols ``redis://``, ``rediss://`` (redis over TLS) and
-                                ``unix://``. See more info about URL support [here](http://redis-py.readthedocs.io/en/latest/index.html#redis.ConnectionPool.from_url).
-                                Used only for RedisCache.
+                                ``unix://``. See more info about URL support
+                                `here <http://redis-py.readthedocs.io/en/latest/index.html#redis.ConnectionPool.from_url>`_.
+                                Used only for RedisCache and RedisClusterCache. Takes
+                                precedence over the individual connection settings.
 =============================== ==================================================================
+
+
+Flask-Caching will always use the `CACHE_<BACKEND>_URL` (if available) if a complete connection
+URI is provided.
+
+For example, ``CACHE_REDIS_URL`` and the individual connection settings are two alternative
+ways of describing the same connection. They are not merged: if ``CACHE_REDIS_URL`` is set,
+the connection is built from the URL alone and ``CACHE_REDIS_HOST``, ``CACHE_REDIS_PORT`` and
+``CACHE_REDIS_PASSWORD`` are silently ignored. This is intended behaviour, not a bug.
+
+For example, this configuration connects without a password, because the URL contains
+a database (``/0``)::
+
+    config = {
+        "CACHE_TYPE": "RedisCache",
+        "CACHE_REDIS_URL": "redis://localhost:6379/0",
+        "CACHE_REDIS_PASSWORD": "hunter2",  # ignored
+    }
+
+Put the credentials in the URL instead::
+
+    config = {
+        "CACHE_TYPE": "RedisCache",
+        "CACHE_REDIS_URL": "redis://:hunter2@localhost:6379/0",
+    }
+
+Or drop the URL and use the individual settings only::
+
+    config = {
+        "CACHE_TYPE": "RedisCache",
+        "CACHE_REDIS_HOST": "localhost",
+        "CACHE_REDIS_PORT": 6379,
+        "CACHE_REDIS_DB": 0,
+        "CACHE_REDIS_PASSWORD": "hunter2",
+    }
 
 
 Built-in Cache Backends
@@ -572,6 +614,7 @@ Set ``CACHE_TYPE`` to ``RedisClusterCache`` to use this type.  The old name,
 - CACHE_KEY_PREFIX
 - CACHE_REDIS_CLUSTER
 - CACHE_REDIS_PASSWORD
+- CACHE_REDIS_URL
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
