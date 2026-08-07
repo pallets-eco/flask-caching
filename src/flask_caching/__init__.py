@@ -17,21 +17,27 @@ import uuid
 import warnings
 from collections import OrderedDict
 from collections.abc import Callable
-from typing import Any, ParamSpec, Protocol, TypeVar
+from typing import Any
+from typing import ParamSpec
+from typing import Protocol
+from typing import TypeVar
 
-from flask import Flask, Response, current_app, g, request, url_for
+from flask import current_app
+from flask import Flask
+from flask import g
+from flask import request
+from flask import Response
+from flask import url_for
 from werkzeug.utils import import_string
 
 from flask_caching.backends.base import BaseCache
 from flask_caching.backends.simplecache import SimpleCache
-from flask_caching.utils import (
-    function_namespace,
-    get_arg_default,
-    get_arg_names,
-    get_id,
-    make_template_fragment_key,  # noqa: F401
-    wants_args,
-)
+from flask_caching.utils import function_namespace
+from flask_caching.utils import get_arg_default
+from flask_caching.utils import get_arg_names
+from flask_caching.utils import get_id
+from flask_caching.utils import make_template_fragment_key as make_template_fragment_key
+from flask_caching.utils import wants_args
 
 __version__ = "2.4.1"
 
@@ -169,7 +175,8 @@ class Cache:
         self.source_check = config["CACHE_SOURCE_CHECK"]
 
         if self.with_jinja2_ext:
-            from .jinja2ext import JINJA_CACHE_ATTR_NAME, CacheExtension
+            from .jinja2ext import CacheExtension
+            from .jinja2ext import JINJA_CACHE_ATTR_NAME
 
             setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
             app.jinja_env.add_extension(CacheExtension)
