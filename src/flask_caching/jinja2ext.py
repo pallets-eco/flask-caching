@@ -42,8 +42,12 @@ Considering we have ``render_form_field`` and ``render_submit`` macros::
 :license: BSD, see LICENSE for more details.
 """
 
+from collections.abc import Callable
+from typing import Any
+
 from jinja2 import nodes
 from jinja2.ext import Extension
+from jinja2.parser import Parser
 
 from flask_caching import make_template_fragment_key
 
@@ -53,7 +57,7 @@ JINJA_CACHE_ATTR_NAME = "_template_fragment_cache"
 class CacheExtension(Extension):
     tags = {"cache"}
 
-    def parse(self, parser):
+    def parse(self, parser: Parser) -> nodes.Node:
         lineno = next(parser.stream).lineno
 
         #: Parse timeout
@@ -69,7 +73,7 @@ class CacheExtension(Extension):
             args.append(nodes.Const(f"{parser.filename}{lineno}"))
 
         #: Parse vary_on parameters
-        vary_on = []
+        vary_on: list[nodes.Expr] = []
         while parser.stream.skip_if("comma"):
             vary_on.append(parser.parse_expression())
 
@@ -83,7 +87,13 @@ class CacheExtension(Extension):
             self.call_method("_cache", args), [], [], body
         ).set_lineno(lineno)
 
-    def _cache(self, timeout, fragment_name, vary_on, caller):
+    def _cache(
+        self,
+        timeout: int | str | None,
+        fragment_name: str,
+        vary_on: list[str],
+        caller: Callable[[], str],
+    ) -> Any:
         cache = getattr(self.environment, JINJA_CACHE_ATTR_NAME)
         key = make_template_fragment_key(fragment_name, vary_on=vary_on)
 

@@ -101,7 +101,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
 
         return new_class
 
-    def dump_object(self, value):
+    def dump_object(self, value: Any) -> bytes:
         """Dumps an object into a string for redis.  By default it serializes
         integers as regular string and pickle dumps everything else.
         """
@@ -110,12 +110,13 @@ class RedisCache(BaseCache, CachelibRedisCache):
             return str(value).encode("ascii")
         return b"!" + pickle.dumps(value)
 
-    def unlink(self, *keys):
+    def unlink(self, *keys: str) -> Any:
         """when redis-py >= 3.0.0 and redis > 4, support this operation"""
         if not keys:
-            return
-        if self.key_prefix:
-            keys = tuple(self.key_prefix + key for key in keys)
+            return None
+        prefix = self._get_prefix()
+        if prefix:
+            keys = tuple(prefix + key for key in keys)
 
         unlink = getattr(self._write_client, "unlink", None)
         if unlink is not None and callable(unlink):

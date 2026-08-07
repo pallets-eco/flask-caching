@@ -452,7 +452,7 @@ class Cache:
 
         def decorator(f: Callable[P, R]) -> _CachedFunction[P, R]:
             @functools.wraps(f)
-            def decorated_function(*args, **kwargs):
+            def decorated_function(*args: Any, **kwargs: Any) -> Any:
                 #: Bypass the cache entirely.
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return self._call_fn(f, *args, **kwargs)
@@ -508,7 +508,7 @@ class Cache:
                 if response_hit_indication:
                     g.flask_caching_hit_cache = found
 
-                    def apply_caching(response):
+                    def apply_caching(response: Response) -> Response:
                         if g.get("flask_caching_hit_cache"):
                             response.headers["hit_cache"] = g.flask_caching_hit_cache
                         return response
@@ -541,7 +541,7 @@ class Cache:
                             logger.exception("Exception possibly due to cache backend.")
                 return rv
 
-            def default_make_cache_key(*args, **kwargs):
+            def default_make_cache_key(*args: Any, **kwargs: Any) -> str:
                 # Convert non-keyword arguments (which is the way
                 # `make_cache_key` expects them) to keyword arguments
                 # (the way `url_for` expects them)
@@ -636,7 +636,7 @@ class Cache:
 
     def _memoize_version(
         self,
-        f: Callable,
+        f: Callable[..., Any],
         args: Any | None = None,
         kwargs: dict[str, Any] | None = None,
         reset: bool = False,
@@ -714,7 +714,7 @@ class Cache:
     ) -> Callable[..., str]:
         """Function used to create the cache_key for memoized functions."""
 
-        def make_cache_key(f, *args, **kwargs):
+        def make_cache_key(f: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
             _timeout = timeout.cache_timeout if timeout is not None else None
             fname, version_data = self._memoize_version(
                 f,
@@ -738,24 +738,25 @@ class Cache:
 
             updated = f"{altfname}{keyargs}{keykwargs}"
 
-            cache_key = hash_method()
-            cache_key.update(updated.encode("utf-8"))
+            cache_hash = hash_method()
+            cache_hash.update(updated.encode("utf-8"))
 
             # Use the source code if source_check is True and update the
             # cache_key with the function's source.
             if source_check and callable(f):
                 func_source_code = inspect.getsource(f)
-                cache_key.update(func_source_code.encode("utf-8"))
+                cache_hash.update(func_source_code.encode("utf-8"))
 
-            cache_key = base64.b64encode(cache_key.digest())[:16]
-            cache_key = cache_key.decode("utf-8")
+            cache_key = base64.b64encode(cache_hash.digest())[:16].decode("utf-8")
             cache_key += version_data or ""
 
             return cache_key
 
         return make_cache_key
 
-    def _memoize_kwargs_to_args(self, f: Callable, *args: Any, **kwargs: Any) -> Any:
+    def _memoize_kwargs_to_args(
+        self, f: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> Any:
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
         #: whether the function was called with
@@ -825,7 +826,11 @@ class Cache:
         )
 
     def _bypass_cache(
-        self, unless: Callable | None, f: Callable, *args: Any, **kwargs: Any
+        self,
+        unless: Callable[..., Any] | None,
+        f: Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """Determines whether or not to bypass the cache by calling unless().
         Supports both unless() that takes in arguments and unless()
@@ -946,7 +951,7 @@ class Cache:
 
         def memoize(f: Callable[P, R]) -> _MemoizedFunction[P, R]:
             @functools.wraps(f)
-            def decorated_function(*args, **kwargs):
+            def decorated_function(*args: Any, **kwargs: Any) -> Any:
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return self._call_fn(f, *args, **kwargs)

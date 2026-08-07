@@ -84,7 +84,7 @@ class GoogleCloudStorageCache(BaseCache):
             kwargs["key_prefix"] = key_prefix
         return cls(*args, **kwargs)
 
-    def get(self, key):
+    def get(self, key: str) -> Any:
         result = None
         expired = False
         hit_or_miss = "miss"
@@ -131,7 +131,7 @@ class GoogleCloudStorageCache(BaseCache):
         logger.debug("set key %r -> %s", full_key, result)
         return result
 
-    def add(self, key, value, timeout=None):
+    def add(self, key: str, value: Any, timeout: int | None = None) -> bool:
         full_key = self.key_prefix + key
         if self._has(full_key):
             logger.debug("add key %r -> not added", full_key)
@@ -139,18 +139,18 @@ class GoogleCloudStorageCache(BaseCache):
         else:
             return self.set(key, value, timeout)
 
-    def delete(self, key):
+    def delete(self, key: str) -> bool:
         full_key = self.key_prefix + key
         return self._delete(full_key)
 
-    def delete_many(self, *keys):
+    def delete_many(self, *keys: str) -> Any:
         return self._delete_many(self.key_prefix + key for key in keys)
 
-    def has(self, key):
+    def has(self, key: str) -> bool:
         full_key = self.key_prefix + key
         return self._has(full_key)
 
-    def clear(self):
+    def clear(self) -> bool:
         return self._prune(clear_all=True)
 
     def _prune(self, clear_all: bool = False) -> bool:
