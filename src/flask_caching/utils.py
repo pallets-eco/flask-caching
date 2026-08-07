@@ -46,7 +46,7 @@ def get_arg_names(f: Callable) -> list[str]:
     ]
 
 
-def get_arg_default(f: Callable, position: int):
+def get_arg_default(f: Callable, position: int) -> Any:
     arg = get_function_parameters(f)[position]
     arg_def = arg.default
     return arg_def if arg_def != inspect.Parameter.empty else None
