@@ -10,7 +10,10 @@ backends have to implement.
 :license: BSD, see LICENSE for more details.
 """
 
+from typing import Any
+
 from cachelib import BaseCache as CachelibBaseCache
+from flask import Flask
 
 
 class BaseCache(CachelibBaseCache):
@@ -22,15 +25,21 @@ class BaseCache(CachelibBaseCache):
                             of 0 indicates that the cache never expires.
     """
 
-    def __init__(self, default_timeout=300):
+    def __init__(self, default_timeout: int = 300) -> None:
         CachelibBaseCache.__init__(self, default_timeout=default_timeout)
         self.ignore_errors = False
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "BaseCache":
         return cls()
 
-    def delete_many(self, *keys):
+    def delete_many(self, *keys: str) -> list[str]:
         """Deletes multiple keys at once.
 
         :param keys: The function accepts multiple keys as positional

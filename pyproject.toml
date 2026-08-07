@@ -143,7 +143,7 @@ warn_unused_configs = true
 
 # TODO if all of these can be enabled we can just set 'strict = true'
 disallow_subclassing_any = true
-# disallow_untyped_calls = true
+disallow_untyped_calls = true
 # disallow_untyped_defs = true
 # disallow_incomplete_defs = true
 check_untyped_defs = true

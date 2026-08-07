@@ -11,8 +11,10 @@ The filesystem caching backend.
 
 import hashlib
 import logging
+from typing import Any
 
 from cachelib import FileSystemCache as CachelibFileSystemCache
+from flask import Flask
 
 from flask_caching.backends.base import BaseCache
 
@@ -44,13 +46,13 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
 
     def __init__(
         self,
-        cache_dir,
-        threshold=500,
-        default_timeout=300,
-        mode=0o600,
-        hash_method=hashlib.md5,
-        ignore_errors=False,
-    ):
+        cache_dir: str,
+        threshold: int = 500,
+        default_timeout: int = 300,
+        mode: int = 0o600,
+        hash_method: Any = hashlib.md5,
+        ignore_errors: bool = False,
+    ) -> None:
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibFileSystemCache.__init__(
             self,
@@ -64,7 +66,13 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         self.ignore_errors = ignore_errors
 
     @classmethod
-    def factory(cls, app, config, args, kwargs):
+    def factory(
+        cls,
+        app: Flask,
+        config: dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
+    ) -> "FileSystemCache":
         args.insert(0, config["CACHE_DIR"])
         kwargs.update(
             dict(
