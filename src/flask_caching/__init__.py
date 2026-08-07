@@ -228,7 +228,7 @@ class Cache:
     @property
     def cache(self) -> SimpleCache:
         app = current_app or self.app
-        return app.extensions["cache"][self]
+        return cast("SimpleCache", app.extensions["cache"][self])
 
     def get(self, *args, **kwargs) -> Any:
         """Proxy function for internal cache object."""
@@ -252,7 +252,7 @@ class Cache:
 
     def delete_many(self, *args, **kwargs) -> list[str]:
         """Proxy function for internal cache object."""
-        return self.cache.delete_many(*args, **kwargs)
+        return cast("list[str]", self.cache.delete_many(*args, **kwargs))
 
     def clear(self) -> bool:
         """Proxy function for internal cache object."""
@@ -276,7 +276,7 @@ class Cache:
         """
         unlink = getattr(self.cache, "unlink", None)
         if unlink is not None and callable(unlink):
-            return unlink(*args, **kwargs)
+            return cast("list[str]", unlink(*args, **kwargs))
         return self.delete_many(*args, **kwargs)
 
     def cached(
@@ -501,7 +501,7 @@ class Cache:
                 use_request = kwargs.pop("use_request", False)
                 return _make_cache_key(args, kwargs, use_request=use_request)
 
-            def _make_cache_key_query_string():
+            def _make_cache_key_query_string() -> str:
                 """Create consistent keys for query string arguments.
 
                 Produces the same cache key regardless of argument order, e.g.,
@@ -546,6 +546,7 @@ class Cache:
                 if query_string:
                     return _make_cache_key_query_string()
                 else:
+                    cache_key: str
                     if callable(key_prefix):
                         cache_key = key_prefix()
                     elif "%s" in key_prefix:
