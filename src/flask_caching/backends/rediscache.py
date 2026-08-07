@@ -150,7 +150,7 @@ class RedisSentinelCache(RedisCache):
     def __init__(
         self,
         sentinels: Any = None,
-        master: str | None = None,
+        master: str = "mymaster",
         password: str | None = None,
         db: int = 0,
         default_timeout: int = 300,
