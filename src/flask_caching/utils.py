@@ -3,7 +3,6 @@ import string
 import sys
 from collections.abc import Callable
 from typing import Any
-from typing import cast
 
 if sys.version_info >= (3, 14):
     import annotationlib
@@ -54,7 +53,10 @@ def get_arg_default(f: Callable, position: int):
 
 
 def get_id(obj: Any) -> str:
-    return cast("str", getattr(obj, "__caching_id__", repr)(obj))
+    caching_id = getattr(obj, "__caching_id__", None)
+    if caching_id is None:
+        return repr(obj)
+    return str(caching_id())
 
 
 def function_namespace(f: Callable, args: Any = None) -> tuple[str, str | None]:
