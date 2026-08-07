@@ -16,6 +16,8 @@ Unreleased
 - ``@cached`` and ``@memoize`` now preserve the wrapped function's
   signature and expose ``uncached``, ``cache_timeout``, ``make_cache_key``
   ``delete_memoized``) to type checkers.
+- Fix ``@cached(response_hit_indication=True)`` appending a new
+  ``after_request`` function to the app on every request.
 
 
 Version 2.4.1

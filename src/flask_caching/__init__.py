@@ -18,6 +18,7 @@ import warnings
 from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any
+from typing import cast
 from typing import ParamSpec
 from typing import Protocol
 from typing import TypeVar
@@ -412,7 +413,7 @@ class Cache:
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = decorated_function.make_cache_key(  # pyright: ignore[reportAttributeAccessIssue]
+                        cache_key = cached_fn.make_cache_key(
                             *args, use_request=True, **kwargs
                         )
 
@@ -460,8 +461,12 @@ class Cache:
                             response.headers["hit_cache"] = g.flask_caching_hit_cache
                         return response
 
-                    if "apply_caching" not in self.app.after_request_funcs[None]:
-                        self.app.after_request_funcs[None].append(apply_caching)
+                    after_request_funcs = self.app.after_request_funcs[None]
+                    if not any(
+                        getattr(func, "__name__", None) == "apply_caching"
+                        for func in after_request_funcs
+                    ):
+                        after_request_funcs.append(apply_caching)
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
@@ -469,7 +474,7 @@ class Cache:
                         rv = [val for val in rv]
 
                     if response_filter is None or response_filter(rv):
-                        cache_timeout = decorated_function.cache_timeout  # pyright: ignore[reportAttributeAccessIssue]
+                        cache_timeout = cached_fn.cache_timeout
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
                         try:
@@ -560,10 +565,11 @@ class Cache:
 
                 return cache_key
 
-            decorated_function.uncached = f  # type: ignore[attr-defined]
-            decorated_function.cache_timeout = timeout  # type: ignore[attr-defined]
-            decorated_function.make_cache_key = default_make_cache_key  # type: ignore[attr-defined]
-            return decorated_function  # type: ignore[return-value]
+            cached_fn = cast("_CachedFunction[P, R]", decorated_function)
+            cached_fn.uncached = f
+            cached_fn.cache_timeout = timeout
+            cached_fn.make_cache_key = default_make_cache_key
+            return cached_fn
 
         return decorator
 
@@ -645,7 +651,7 @@ class Cache:
     def _memoize_make_cache_key(
         self,
         make_name: Callable[..., str] | None = None,
-        timeout: Callable[..., Any] | None = None,
+        timeout: "_MemoizedFunction[..., Any] | None" = None,
         forced_update: bool | Callable[..., bool] | None = False,
         hash_method: Callable[..., Any] = hashlib.md5,
         source_check: bool | None = False,
@@ -654,7 +660,7 @@ class Cache:
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f, *args, **kwargs):
-            _timeout = getattr(timeout, "cache_timeout", timeout)
+            _timeout = timeout.cache_timeout if timeout is not None else None
             fname, version_data = self._memoize_version(
                 f,
                 args=args,
@@ -907,7 +913,7 @@ class Cache:
 
                     cache_key = self._memoize_make_cache_key(
                         make_name=make_name,
-                        timeout=decorated_function,
+                        timeout=memoized_fn,
                         forced_update=forced_update_result,
                         hash_method=hash_method,
                         source_check=source_check,
@@ -951,7 +957,7 @@ class Cache:
                             self.cache.set(
                                 cache_key,
                                 rv,
-                                timeout=decorated_function.cache_timeout,  # pyright: ignore[reportAttributeAccessIssue]
+                                timeout=memoized_fn.cache_timeout,
                             )
                         except Exception:
                             if self.app.debug:
@@ -959,21 +965,19 @@ class Cache:
                             logger.exception("Exception possibly due to cache backend.")
                 return rv
 
-            decorated_function.uncached = f  # type: ignore[attr-defined]
-            decorated_function.cache_timeout = timeout  # type: ignore[attr-defined]
-            decorated_function.make_cache_key = self._memoize_make_cache_key(  # type: ignore[attr-defined]
+            memoized_fn = cast("_MemoizedFunction[P, R]", decorated_function)
+            memoized_fn.uncached = f
+            memoized_fn.cache_timeout = timeout
+            memoized_fn.make_cache_key = self._memoize_make_cache_key(
                 make_name=make_name,
-                timeout=decorated_function,
+                timeout=memoized_fn,
                 forced_update=False,
                 hash_method=hash_method,
                 source_check=source_check,
                 args_to_ignore=args_to_ignore,
             )
-            decorated_function.delete_memoized = lambda: self.delete_memoized(f)  # type: ignore[attr-defined]
-            # not sure if cast(_MemoizedFunction[P, R], decorated_function) has a performance
-            # penalty here. if somebody with more typing experience knows, feel free to update
-            # it
-            return decorated_function  # type: ignore[return-value]
+            memoized_fn.delete_memoized = lambda: self.delete_memoized(f)
+            return memoized_fn
 
         return memoize
 
