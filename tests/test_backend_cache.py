@@ -22,7 +22,7 @@ except ImportError:
     redis = None
 
 try:
-    import libmc as memcache
+    import pylibmc as memcache
 except ImportError:
     try:
         from google.appengine.api import memcache
@@ -179,14 +179,14 @@ class TestRedisCache(GenericCacheTests):
         if request.param is None:
             host = "localhost"
         elif request.param:
-            host = redis.StrictRedis()
+            host = redis.StrictRedis(port=6360)
         elif callable(request.param):
             key_prefix = gen_key_prefix  # noqa (flake8 error: undefined)
-            host = redis.Redis()
+            host = redis.Redis(port=6360)
         else:
-            host = redis.Redis()
+            host = redis.Redis(port=6360)
 
-        c = backends.RedisCache(host=host, key_prefix=key_prefix)
+        c = backends.RedisCache(host=host, key_prefix=key_prefix, port=6360)
         yield lambda: c
         c.clear()
 
@@ -250,12 +250,14 @@ class TestMemcachedCache(GenericCacheTests):
 
     @pytest.fixture
     def make_cache(self):
-        c = backends.MemcachedCache(key_prefix="werkzeug-test-case:")
+        c = backends.MemcachedCache(
+            servers=["127.0.0.1:11212"], key_prefix="werkzeug-test-case:"
+        )
         yield lambda: c
         c.clear()
 
     def test_compat(self, c):
-        assert c._client.set(c.key_prefix + "foo", "bar")
+        assert c.set("foo", "bar")
         assert c.get("foo") == "bar"
 
     def test_huge_timeouts(self, c):

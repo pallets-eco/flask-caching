@@ -1,18 +1,11 @@
-import errno
 import os
+import subprocess
 
 import flask
 import pytest
+from xprocess import ProcessStarter
 
 import flask_caching as fsc
-
-try:
-    from xprocess import ProcessStarter
-except ImportError:
-
-    @pytest.fixture(scope="session")
-    def xprocess():
-        pytest.skip("pytest-xprocess not installed.")
 
 
 @pytest.fixture
@@ -40,56 +33,49 @@ def hash_method(request):
 
 @pytest.fixture(scope="class")
 def redis_server(xprocess):
-    try:
-        import redis  # noqa
-    except ImportError:
-        pytest.skip("Python package 'redis' is not installed.")
+    package_name = "redis"
+    pytest.importorskip(
+        modname=package_name, reason=f"could not find python package {package_name}"
+    )
+
+    if os.environ.get("CI", "false") == "true":
+        yield
+        return
 
     class Starter(ProcessStarter):
         pattern = "[Rr]eady to accept connections"
-        args = ["redis-server"]
+        args = ["redis-server", "--port 6360"]
 
-    try:
-        xprocess.ensure("redis_server", Starter)
-    except OSError as e:
-        # xprocess raises FileNotFoundError
-        if e.errno == errno.ENOENT:
-            pytest.skip("Redis is not installed.")
-        else:
-            raise
+        def startup_check(self):
+            out = subprocess.run(
+                ["redis-cli", "-p", "6360", "ping"], stdout=subprocess.PIPE
+            )
+            return out.stdout == b"PONG\n"
 
+    xprocess.ensure(package_name, Starter)
     yield
-    xprocess.getinfo("redis_server").terminate()
+    xprocess.getinfo(package_name).terminate()
 
 
 @pytest.fixture(scope="class")
 def memcache_server(xprocess):
-    try:
-        import libmc as memcache
-    except ImportError:
-        try:
-            from google.appengine.api import memcache
-        except ImportError:
-            try:
-                import memcache  # noqa
-            except ImportError:
-                pytest.skip(
-                    "Python package for memcache is not installed. Need one of "
-                    "libmc', 'google.appengine', or 'memcache'."
-                )
+    package_name = "pylibmc"
+    pytest.importorskip(
+        modname=package_name, reason=f"could not find python package {package_name}"
+    )
+
+    if os.environ.get("CI", "false") == "true":
+        yield
+        return
 
     class Starter(ProcessStarter):
-        pattern = ""
-        args = ["memcached", "-vv"]
+        pattern = "server listening"
+        args = ["memcached", "-vv", "-p", "11212"]
 
-    try:
-        xprocess.ensure("memcached", Starter)
-    except OSError as e:
-        # xprocess raises FileNotFoundError
-        if e.errno == errno.ENOENT:
-            pytest.skip("Memcached is not installed.")
-        else:
-            raise
+        def startup_check(self):
+            out = subprocess.run(["memcached", "-p", "11212"], stderr=subprocess.PIPE)
+            return b"Address already" in out.stderr
 
+    xprocess.ensure(package_name, Starter)
     yield
-    xprocess.getinfo("memcached").terminate()
+    xprocess.getinfo(package_name).terminate()

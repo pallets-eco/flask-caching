@@ -46,7 +46,7 @@ def test_cache_delete_many(app, cache):
 
 @pytest.mark.skipif(HAS_NOT_REDIS, reason="requires Redis")
 def test_cache_unlink(app, redis_server):
-    cache = Cache(config={"CACHE_TYPE": "RedisCache"})
+    cache = Cache(config={"CACHE_TYPE": "RedisCache", "CACHE_REDIS_PORT": 6360})
     cache.init_app(app)
     cache.set("biggerkey", "test" * 100)
     cache.unlink("biggerkey")
