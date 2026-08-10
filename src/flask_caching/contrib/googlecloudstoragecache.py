@@ -205,6 +205,4 @@ class GoogleCloudStorageCache(BaseCache):
         return result
 
     def _now(self, delta: int = 0) -> datetime.datetime:
-        return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            seconds=delta
-        )
+        return datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=delta)
