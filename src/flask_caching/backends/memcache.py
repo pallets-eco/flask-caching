@@ -82,22 +82,6 @@ class MemcachedCache(BaseCache, CachelibMemcachedCache):
         kwargs.update(dict(key_prefix=config["CACHE_KEY_PREFIX"]))
         return cls(*args, **kwargs)
 
-    def delete_many(self, *keys: str) -> list[Any]:
-        new_keys = []
-        for key in keys:
-            key = self._normalize_key(key)
-            if _test_memcached_key(key):
-                new_keys.append(key)
-        return self._client.delete_multi(new_keys)  # type: ignore[no-any-return]
-
-    def inc(self, key: str, delta: int = 1) -> int | None:
-        key = self._normalize_key(key)
-        return self._client.incr(key, delta)  # type: ignore[no-any-return]
-
-    def dec(self, key: str, delta: int = 1) -> int | None:
-        key = self._normalize_key(key)
-        return self._client.decr(key, delta)  # type: ignore[no-any-return]
-
 
 class SASLMemcachedCache(MemcachedCache):
     def __init__(

@@ -54,7 +54,7 @@ tests = [
     "pytest-cov",
     "pytest-asyncio",
     "pytest-xprocess",
-    "libmc",
+    "pylibmc",
     "redis",
     "asgiref",
 ]
@@ -172,6 +172,7 @@ wheel_build_env = ".pkg"
 constrain_package_deps = true
 use_frozen_constraints = true
 dependency_groups = ["tests"]
+pass_env = ["CI"]
 env_tmp_dir = "{toxworkdir}/tmp/{envname}"
 commands = [[
     "pytest", "-v", "--capture=tee-sys", "--tb=short", "--basetemp={env_tmp_dir}",
