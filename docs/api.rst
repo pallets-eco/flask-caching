@@ -3,7 +3,7 @@ API
 
 This section contains the API documentation of the Flask-Caching extension and
 lists the backends which are supported out of the box via cachelib.
-The `Configuration <index.html#configuring-flask-caching>`_ section explains
+The :ref:`Configuration <configuring-flask-caching>` section explains
 how the backends can be used.
 
 
@@ -14,8 +14,15 @@ Cache API
 ---------
 
 .. autoclass:: Cache
-   :members: init_app, get, set, add, delete, get_many, set_many, delete_many,
-             has, clear, cached, memoize, delete_memoized, delete_memoized_verhash
+   :members: cache, init_app, get, set, add, delete, get_many, set_many,
+             delete_many, get_dict, unlink, has, clear, cached, memoize,
+             delete_memoized, delete_memoized_verhash
+
+
+.. autoclass:: CachedResponse
+
+
+.. autofunction:: make_template_fragment_key
 
 
 Backends

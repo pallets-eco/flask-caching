@@ -1,11 +1,16 @@
 Changelog
 =========
 
-Version 2.4.2
+Version 2.5.0
 -------------
 
 Unreleased
 
+- Drop support for Python 3.10 and require cachelib 0.15.4+
+- Remove the deprecated lowercase ``CACHE_TYPE`` names (``null``, ``simple``,
+  ``filesystem``, ``redis``, ``redissentinel``, ``rediscluster``, ``uwsgi``,
+  ``memcached``, ``gaememcached``, ``saslmemcached`` and
+  ``spreadsaslmemcached``)
 - Call ``@memoize`` ``forced_update`` callbacks once per decorated function
   call instead of once while making the key and again before cache lookup.
   :issue:`387`
