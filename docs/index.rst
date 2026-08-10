@@ -456,6 +456,8 @@ The following configuration values exist for Flask-Caching:
                                 e.g. host1:port1,host2:port2,host3:port3 . Used only for RedisClusterCache.
 ``CACHE_DIR``                   Directory to store cache. Used only for
                                 FileSystemCache.
+``CACHE_FILE_HASH_METHOD``      hash_method used for hashing cache keys. Used only for
+                                FileSystemCache.
 ``CACHE_REDIS_URL``             URL to connect to Redis server.
                                 Example ``redis://user:password@localhost:6379/2``. Supports
                                 protocols ``redis://``, ``rediss://`` (redis over TLS) and
