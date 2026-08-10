@@ -210,6 +210,7 @@ class Cache:
         config.setdefault("CACHE_KEY_PREFIX", "flask_cache_")
         config.setdefault("CACHE_MEMCACHED_SERVERS", None)
         config.setdefault("CACHE_DIR", None)
+        config.setdefault("CACHE_FILE_HASH_METHOD", hashlib.sha256)
         config.setdefault("CACHE_OPTIONS", None)
         config.setdefault("CACHE_ARGS", [])
         config.setdefault("CACHE_TYPE", "null")

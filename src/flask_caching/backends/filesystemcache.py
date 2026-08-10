@@ -35,7 +35,7 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
     :param mode: the file mode wanted for the cache files, default 0600
-    :param hash_method: Default hashlib.md5. The hash method used to
+    :param hash_method: Default hashlib.sha256. The hash method used to
                         generate the filename for cached results.
     :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
                           method will ignore any errors that occurred during the
@@ -50,7 +50,7 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         threshold: int = 500,
         default_timeout: int = 300,
         mode: int = 0o600,
-        hash_method: Any = hashlib.md5,
+        hash_method: Any = hashlib.sha256,
         ignore_errors: bool = False,
     ) -> None:
         BaseCache.__init__(self, default_timeout=default_timeout)
@@ -78,6 +78,7 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
             dict(
                 threshold=config["CACHE_THRESHOLD"],
                 ignore_errors=config["CACHE_IGNORE_ERRORS"],
+                hash_method=config["CACHE_FILE_HASH_METHOD"],
             )
         )
         return cls(*args, **kwargs)

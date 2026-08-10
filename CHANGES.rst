@@ -20,6 +20,8 @@ Unreleased
   ``after_request`` function to the app on every request.
 - Fix ``__caching_id__`` never being usable. ``@memoize`` silently ignored that
   and ran the function uncached.
+- Add ``CACHE_FILE_HASH_METHOD`` config option to ``FileSystemCache`` to allow
+  using a different hash function for cache keys. :pr:`660`
 
 
 Version 2.4.1
