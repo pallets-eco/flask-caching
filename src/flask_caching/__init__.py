@@ -213,21 +213,18 @@ class Cache:
         config.setdefault("CACHE_FILE_HASH_METHOD", hashlib.sha256)
         config.setdefault("CACHE_OPTIONS", None)
         config.setdefault("CACHE_ARGS", [])
-        config.setdefault("CACHE_TYPE", "null")
+        config.setdefault("CACHE_TYPE", "NullCache")
         config.setdefault("CACHE_NO_NULL_WARNING", False)
         config.setdefault("CACHE_SOURCE_CHECK", False)
 
-        if config["CACHE_TYPE"] == "null" and not config["CACHE_NO_NULL_WARNING"]:
+        if config["CACHE_TYPE"] == "NullCache" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
-                "Flask-Caching: CACHE_TYPE is set to null, "
+                "Flask-Caching: CACHE_TYPE is set to NullCache, "
                 "caching is effectively disabled.",
                 stacklevel=2,
             )
 
-        if (
-            config["CACHE_TYPE"] in ["filesystem", "FileSystemCache"]
-            and config["CACHE_DIR"] is None
-        ):
+        if config["CACHE_TYPE"] == "FileSystemCache" and config["CACHE_DIR"] is None:
             warnings.warn(
                 f"Flask-Caching: CACHE_TYPE is set to {config['CACHE_TYPE']} but no "
                 "CACHE_DIR is set.",
@@ -248,10 +245,7 @@ class Cache:
     def _set_cache(self, app: Flask, config: dict[str, Any]) -> None:
         import_me = config["CACHE_TYPE"]
         if "." not in import_me:
-            plain_name_used = True
             import_me = "flask_caching.backends." + import_me
-        else:
-            plain_name_used = False
 
         cache_factory = import_string(import_me)
         cache_args = config["CACHE_ARGS"][:]
@@ -259,14 +253,6 @@ class Cache:
 
         if isinstance(cache_factory, type) and issubclass(cache_factory, BaseCache):
             cache_factory = cache_factory.factory
-        elif plain_name_used:
-            warnings.warn(
-                "Using the initialization functions in flask_caching.backend "
-                "is deprecated.  Use the a full path to backend classes "
-                "directly.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
 
         if config["CACHE_OPTIONS"]:
             cache_options.update(config["CACHE_OPTIONS"])
@@ -288,6 +274,10 @@ class Cache:
 
     @property
     def cache(self) -> SimpleCache:
+        """The backend instance the proxy methods delegate to. Use this to
+        reach backend specific functionality that ``Cache`` does not proxy.
+        Requires an application context.
+        """
         app = current_app or self.app
         return cast("SimpleCache", app.extensions["cache"][self])
 
