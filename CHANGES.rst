@@ -7,6 +7,8 @@ Version 2.5.0
 Unreleased
 
 - Drop support for Python 3.10 and require cachelib 0.15.4+
+- Clarify docs about decorator order regarding ``@staticmethod`` and ``@classmethod``
+  when memoizing. :issue:`440`
 - Remove the deprecated lowercase ``CACHE_TYPE`` names (``null``, ``simple``,
   ``filesystem``, ``redis``, ``redissentinel``, ``rediscluster``, ``uwsgi``,
   ``memcached``, ``gaememcached``, ``saslmemcached`` and

@@ -39,7 +39,7 @@ a subclass of `flask.Response`::
         def index():
             return 'Cached for 50s'
 
-    If you reverse both decorator, what will be cached is the result of
+    If you reverse both decorators, what will be cached is the result of
     ``@route`` decorator, and not the result of your view function.
 
 
@@ -134,6 +134,20 @@ every time this information is needed you might do something like the following:
         @cache.memoize(50)
         def has_membership(self, role_id):
             return Group.query.filter_by(user=self, role_id=role_id).count() >= 1
+
+
+.. warning::
+
+    On a ``staticmethod`` or a ``classmethod``, ``@staticmethod`` or
+    ``@classmethod`` the route decorator must be applied at the top of the decorator stack
+    (visually first, logically last) following the same logic as ``@route`` and ``@cached``
+    above::
+
+        class Person(db.Model):
+            @staticmethod
+            @cache.memoize(50)
+            def calc_budget():
+                return do_serious_dbio()
 
 
 .. warning::

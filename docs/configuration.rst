@@ -113,6 +113,12 @@ The following configuration values exist for Flask-Caching:
                                 RedisSentinelCache.
 ``CACHE_REDIS_SENTINEL_MASTER`` The name of the master server in a sentinel configuration. Used
                                 only for RedisSentinelCache.
+``CACHE_REDIS_SENTINEL_PASSWORD``
+                                A password for authenticating with the sentinel
+                                servers themselves, as opposed to
+                                ``CACHE_REDIS_PASSWORD`` which authenticates
+                                with the master. Used only for
+                                RedisSentinelCache.
 ``CACHE_REDIS_CLUSTER``         A string of comma-separated Redis cluster node addresses.
                                 e.g. host1:port1,host2:port2,host3:port3 . Used only for RedisClusterCache.
 ``CACHE_FILE_HASH_METHOD``      hash_method used for hashing cache keys. Used only for
