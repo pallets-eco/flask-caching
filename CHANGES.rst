@@ -6,6 +6,7 @@ Version 2.5.0
 
 Unreleased
 
+- Use ``hashlib.sha256`` instead of ``hashlib.md5`` for hashing the cache keys. :pr:`563`
 - Drop support for Python 3.10 and require cachelib 0.15.4+
 - Clarify docs about decorator order regarding ``@staticmethod`` and ``@classmethod``
   when memoizing. :issue:`440`
