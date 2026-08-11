@@ -82,7 +82,7 @@ The following configuration values exist for Flask-Caching:
                                    same. Defaults to ``False``. See
                                    :ref:`source_check <source-check>`.
 ``CACHE_HASH_METHOD``              hash_method used for hashing cache keys. Defaults to
-                                  ``hashlib.sha256``. Changing it invalidates all
+                                   ``hashlib.sha256``. Changing it invalidates all
                                    existing cache entries.
 ``CACHE_UWSGI_NAME``               The name of the uwsgi caching instance to
                                    connect to, for example: mycache@localhost:3031,
