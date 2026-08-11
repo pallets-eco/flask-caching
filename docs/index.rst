@@ -49,6 +49,7 @@ Content
    configuration
    backends
    contrib-backends
+   serializers
    custom-backends
 
 
