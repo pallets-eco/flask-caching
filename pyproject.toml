@@ -48,6 +48,9 @@ docs = [
     "sphinx-intl>=2.3.1",
     "sphinxcontrib-log-cabinet",
 ]
+docs-auto = [
+    "sphinx-autobuild",
+]
 tests = [
     "flask[async]",
     "pytest",
@@ -161,6 +164,7 @@ env_list = [
     "style",
     "typing",
     "docs",
+    "docs-auto",
 ]
 
 [tool.tox.env_run_base]
@@ -191,10 +195,33 @@ commands = [
     ["mypy"],
 ]
 
+[tool.tox.docs]
+docs_dir = "{tox_root}{/}docs"
+build_dir = "{[tool.tox.docs]docs_dir}{/}_build"
+sphinx_args = ["--show-traceback", "--fail-on-warning", "--keep-going", "--fresh-env"]
+
 [tool.tox.env.docs]
 description = "build docs"
 dependency_groups = ["docs"]
-commands = [["sphinx-build", "-E", "-W", "-b", "html", "docs", "docs/_build/"]]
+commands = [[
+    "sphinx-build",
+    { replace = "ref", of = ["tool", "tox", "docs", "sphinx_args"], extend = true },
+    { replace = "posargs", default = [], extend = true },
+    "--builder", "dirhtml",
+    "{[tool.tox.docs]docs_dir}", "{[tool.tox.docs]build_dir}{/}dirhtml",
+]]
+
+[tool.tox.env.docs-auto]
+description = "continuously rebuild docs and start a local server"
+dependency_groups = ["docs", "docs-auto"]
+package = "editable"
+commands = [[
+    "sphinx-autobuild",
+    { replace = "ref", of = ["tool", "tox", "docs", "sphinx_args"], extend = true },
+    { replace = "posargs", default = [], extend = true },
+    "--builder", "dirhtml", "--watch", "src",
+    "{[tool.tox.docs]docs_dir}", "{[tool.tox.docs]build_dir}{/}live",
+]]
 
 [tool.tox.env.update-actions]
 description = "update GitHub Actions pins"
