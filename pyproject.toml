@@ -54,9 +54,11 @@ tests = [
     "pytest-cov",
     "pytest-asyncio",
     "pytest-xprocess",
-    "pylibmc",
     "redis",
     "asgiref",
+]
+tests-backends = [
+    "pylibmc"
 ]
 typing = [
     "mypy",
