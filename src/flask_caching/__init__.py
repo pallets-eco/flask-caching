@@ -182,6 +182,7 @@ class Cache:
         self.config = config
 
         self.source_check = None
+        self.hash_method: Callable[..., Any] | None = None
 
         if app is not None:
             self.init_app(app, config)
@@ -211,6 +212,7 @@ class Cache:
         config.setdefault("CACHE_MEMCACHED_SERVERS", None)
         config.setdefault("CACHE_DIR", None)
         config.setdefault("CACHE_FILE_HASH_METHOD", hashlib.sha256)
+        config.setdefault("CACHE_HASH_METHOD", hashlib.sha256)
         config.setdefault("CACHE_OPTIONS", None)
         config.setdefault("CACHE_ARGS", [])
         config.setdefault("CACHE_TYPE", "NullCache")
@@ -232,6 +234,14 @@ class Cache:
             )
 
         self.source_check = config["CACHE_SOURCE_CHECK"]
+        # Validated here rather than lazily so that a bad hash method is
+        # reported at startup instead of on the first cached call.
+        if not callable(config["CACHE_HASH_METHOD"]):
+            raise ValueError(
+                "`CACHE_HASH_METHOD` must be a hash constructor, for example "
+                f"`hashlib.sha256`, not {config['CACHE_HASH_METHOD']!r}"
+            )
+        self.hash_method = config["CACHE_HASH_METHOD"]
 
         if self.with_jinja2_ext:
             from .jinja2ext import CacheExtension
@@ -265,6 +275,20 @@ class Cache:
             app, config, cache_args, cache_options
         )
         self.app = app
+
+    def _get_hash_method(
+        self, hash_method: Callable[..., Any] | None
+    ) -> Callable[..., Any]:
+        """Returns the hash method for the cache keys. Defaults to hashlib.sha256"""
+        if hash_method is not None:
+            return hash_method
+        return self.hash_method or hashlib.sha256
+
+    def _get_source_check(self, source_check: bool | None) -> bool | None:
+        """Resolve whether the function's source belongs in the cache key."""
+        if source_check is not None:
+            return source_check
+        return self.source_check
 
     def _call_fn(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         ensure_sync = getattr(self.app, "ensure_sync", None)
@@ -338,7 +362,7 @@ class Cache:
         forced_update: Callable[..., Any] | None = None,
         response_filter: Callable[..., Any] | None = None,
         query_string: bool = False,
-        hash_method: Callable[..., Any] = hashlib.sha256,
+        hash_method: Callable[..., Any] | None = None,
         cache_none: bool = False,
         make_cache_key: Callable[..., Any] | None = None,
         source_check: bool | None = None,
@@ -425,7 +449,9 @@ class Cache:
                              _make_cache_key_query_string() for more
                              details.
 
-        :param hash_method: Default hashlib.md5. The hash method used to
+        :param hash_method: Default None. If None will use the value set by
+                            ``CACHE_HASH_METHOD``, which defaults to
+                            ``hashlib.sha256``. The hash method used to
                             generate the keys for cached results.
         :param cache_none: Default False. If set to True, add a key exists
                            check when cache.get returns None. This will likely
@@ -455,10 +481,6 @@ class Cache:
                 #: Bypass the cache entirely.
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return self._call_fn(f, *args, **kwargs)
-
-                nonlocal source_check
-                if source_check is None:
-                    source_check = self.source_check
 
                 try:
                     if make_cache_key is not None and callable(make_cache_key):
@@ -578,12 +600,12 @@ class Cache:
                 # used as a key for cache. Turn them into bytes so that the
                 # hash function will accept them
                 args_as_bytes = str(args_as_sorted_tuple).encode()
-                cache_hash = hash_method(args_as_bytes)
+                cache_hash = self._get_hash_method(hash_method)(args_as_bytes)
 
                 # Use the source code if source_check is True and update the
                 # cache_hash before generating the hashing and using it in
                 # cache_key
-                if source_check and callable(f):
+                if self._get_source_check(source_check) and callable(f):
                     func_source_code = inspect.getsource(f)
                     cache_hash.update(func_source_code.encode("utf-8"))
 
@@ -610,9 +632,11 @@ class Cache:
                     else:
                         cache_key = key_prefix
 
-                if source_check and callable(f):
+                if self._get_source_check(source_check) and callable(f):
                     func_source_code = inspect.getsource(f)
-                    func_source_hash = hash_method(func_source_code.encode("utf-8"))
+                    func_source_hash = self._get_hash_method(hash_method)(
+                        func_source_code.encode("utf-8")
+                    )
                     func_source_hash = str(func_source_hash.hexdigest())
 
                     cache_key += func_source_hash
@@ -707,8 +731,8 @@ class Cache:
         make_name: Callable[..., str] | None = None,
         timeout: "_MemoizedFunction[..., Any] | None" = None,
         forced_update: bool | Callable[..., bool] | None = False,
-        hash_method: Callable[..., Any] = hashlib.sha256,
-        source_check: bool | None = False,
+        hash_method: Callable[..., Any] | None = None,
+        source_check: bool | None = None,
         args_to_ignore: list[str] | None = None,
     ) -> Callable[..., str]:
         """Function used to create the cache_key for memoized functions."""
@@ -737,12 +761,12 @@ class Cache:
 
             updated = f"{altfname}{keyargs}{keykwargs}"
 
-            cache_hash = hash_method()
+            cache_hash = self._get_hash_method(hash_method)()
             cache_hash.update(updated.encode("utf-8"))
 
             # Use the source code if source_check is True and update the
             # cache_key with the function's source.
-            if source_check and callable(f):
+            if self._get_source_check(source_check) and callable(f):
                 func_source_code = inspect.getsource(f)
                 cache_hash.update(func_source_code.encode("utf-8"))
 
@@ -854,7 +878,7 @@ class Cache:
         unless: Callable[..., bool] | None = None,
         forced_update: Callable[..., bool] | None = None,
         response_filter: Callable[..., Any] | None = None,
-        hash_method: Callable[..., Any] = hashlib.sha256,
+        hash_method: Callable[..., Any] | None = None,
         cache_none: bool = False,
         source_check: bool | None = None,
         args_to_ignore: list[str] | None = None,
@@ -919,7 +943,9 @@ class Cache:
                                 content. If the callable returns False, the
                                 content will not be cached. Useful to prevent
                                 caching of code 500 responses.
-        :param hash_method: Default hashlib.md5. The hash method used to
+        :param hash_method: Default None. If ``None``, the value is set by
+                            ``CACHE_HASH_METHOD``, which itself defaults to
+                            ``hashlib.sha256``. The hash method used to
                             generate the keys for cached results.
         :param cache_none: Default False. If set to True, add a key exists
                            check when cache.get returns None. This will likely
@@ -954,10 +980,6 @@ class Cache:
                 #: bypass cache
                 if self._bypass_cache(unless, f, *args, **kwargs):
                     return self._call_fn(f, *args, **kwargs)
-
-                nonlocal source_check
-                if source_check is None:
-                    source_check = self.source_check
 
                 try:
                     forced_update_result = (
