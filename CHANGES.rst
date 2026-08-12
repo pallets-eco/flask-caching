@@ -6,6 +6,12 @@ Version 2.5.0
 
 Unreleased
 
+- Use ``hashlib.sha256`` instead of ``hashlib.md5`` for hashing the cache keys.
+  This changes the generated keys, so entries cached by an earlier version become
+  obsolete. If you wish to still use hashlib.md5 set the config
+  ``CACHE_HASH_METHOD = hashlib.md5``. :pr:`563`
+- Add ``CACHE_HASH_METHOD`` to set the hash method used for the cache keys of
+  ``@cached`` and ``@memoize``.
 - Drop support for Python 3.10 and require cachelib 0.15.4+
 - Clarify docs about decorator order regarding ``@staticmethod`` and ``@classmethod``
   when memoizing. :issue:`440`

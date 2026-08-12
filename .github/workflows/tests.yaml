@@ -60,5 +60,5 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libmemcached-dev
-      - run: uv sync --group dev
+      - run: uv sync --group dev --group tests-backends
       - run: uv run tox run -e ${{ matrix.tox || format('py{0}', matrix.python) }}

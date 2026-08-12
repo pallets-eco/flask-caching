@@ -599,7 +599,6 @@ dev = [
     { name = "pallets-sphinx-themes" },
     { name = "pre-commit" },
     { name = "pre-commit-uv" },
-    { name = "pylibmc" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -640,12 +639,14 @@ pre-commit = [
 tests = [
     { name = "asgiref" },
     { name = "flask", extra = ["async"] },
-    { name = "pylibmc" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-xprocess" },
     { name = "redis" },
+]
+tests-backends = [
+    { name = "pylibmc" },
 ]
 typing = [
     { name = "mypy" },
@@ -669,7 +670,6 @@ dev = [
     { name = "pallets-sphinx-themes" },
     { name = "pre-commit" },
     { name = "pre-commit-uv" },
-    { name = "pylibmc" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -704,13 +704,13 @@ pre-commit = [
 tests = [
     { name = "asgiref" },
     { name = "flask", extras = ["async"] },
-    { name = "pylibmc" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-xprocess" },
     { name = "redis" },
 ]
+tests-backends = [{ name = "pylibmc" }]
 typing = [
     { name = "mypy" },
     { name = "pyright" },

@@ -866,6 +866,68 @@ def test_memoize_with_source_check_disabled(app, cache):
         assert third_try == first_try
 
 
+def test_memoize_source_check_from_config(app):
+    """``CACHE_SOURCE_CHECK`` applies when the decorator doesn't override it."""
+    app.config["CACHE_SOURCE_CHECK"] = True
+    cache = Cache(app)
+
+    with app.test_request_context():
+
+        @cache.memoize()
+        def big_foo(a, b):
+            return str(time.time())
+
+        first_try = big_foo(5, 2)
+        assert big_foo(5, 2) == first_try
+
+        @cache.memoize()
+        def big_foo(a, b):
+            return str(time.time())  # noqa: F811
+
+        assert big_foo(5, 2) != first_try
+
+
+def test_memoize_delete_with_source_check_from_config(app):
+    """``CACHE_SOURCE_CHECK`` must reach the ``make_cache_key`` attribute.
+
+    ``delete_memoized`` builds the key through ``make_cache_key``, which is
+    created when the decorator is applied. Resolving the config value later
+    than that made the two keys disagree, so nothing was deleted.
+    """
+    app.config["CACHE_SOURCE_CHECK"] = True
+    cache = Cache(app)
+
+    with app.test_request_context():
+
+        @cache.memoize(50)
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        first_try = big_foo(5, 2)
+        assert big_foo(5, 2) == first_try
+
+        cache.delete_memoized(big_foo, 5, 2)
+
+        assert big_foo(5, 2) != first_try
+
+
+def test_cached_source_check_from_config_applies_to_first_call(app):
+    """The source hash must be part of the key from the very first call."""
+    app.config["CACHE_SOURCE_CHECK"] = True
+    cache = Cache(app)
+
+    @cache.cached(key_prefix="MyBits")
+    def get_random_bits():
+        return [random.randrange(0, 2) for i in range(50)]
+
+    with app.test_request_context():
+        key_before_call = get_random_bits.make_cache_key()
+        get_random_bits()
+
+        assert key_before_call != "MyBits"
+        assert get_random_bits.make_cache_key() == key_before_call
+
+
 def test_memoize_ignore_args(app, cache):
     with app.test_request_context():
 
