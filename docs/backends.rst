@@ -173,7 +173,13 @@ Relevant configuration values
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_KEY_PREFIX
 - CACHE_MEMCACHED_SERVERS
+- CACHE_OPTIONS
 
+``MemcachedCache`` only accepts ``pool_size`` and ``pool_blocking`` in the
+``CACHE_OPTIONS``.
+
+.. versionadded:: 2.5.0
+   ``pool_size`` and ``pool_blocking`` options.
 
 .. note:: Flask-Caching does not pass additional configuration options
    to memcached backends. To add additional configuration to these caches,
@@ -218,8 +224,10 @@ Relevant configuration values
 - CACHE_MEMCACHED_USERNAME
 - CACHE_MEMCACHED_PASSWORD
 
-.. note:: Unlike MemcachedCache, SASLMemcachedCache can be configured with
-          CACHE_OPTIONS.
+.. note:: Like ``MemcachedCache``, ``pool_size``/``pool_blocking`` in
+          ``CACHE_OPTIONS`` configure the connection pool. Unlike
+          ``MemcachedCache``, any other ``CACHE_OPTIONS`` entry is also
+          accepted and forwarded as ``**kwargs`` to ``pylibmc.Client``.
 
 .. versionadded:: 0.10
 
