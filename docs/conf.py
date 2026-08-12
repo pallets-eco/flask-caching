@@ -16,6 +16,8 @@ extensions = [
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
 autodoc_preserve_defaults = True
+# Show just the class name in signatures instead of the full dotted path.
+add_module_names = False
 extlinks = {
     "issue": ("https://github.com/pallets-eco/flask-caching/issues/%s", "#%s"),
     "pr": ("https://github.com/pallets-eco/flask-caching/pull/%s", "#%s"),

@@ -28,9 +28,9 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
     :param threshold: the maximum number of items the cache stores before
                       it starts deleting some.
     :param default_timeout: the default timeout that is used if no timeout is
-                            specified on :meth:`~BaseCache.set`. A timeout of
+                            specified on ``set``. A timeout of
                             0 indicates that the cache never expires.
-    :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
+    :param ignore_errors: If set to ``True`` the ``delete_many``
                           method will ignore any errors that occurred during
                           the deletion process. However, if it is set to
                           ``False`` it will stop on the first error. Defaults

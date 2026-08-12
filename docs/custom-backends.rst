@@ -6,7 +6,7 @@ Custom Cache Backends
 You are able to easily add your own custom cache backends by exposing a
 function that can instantiate and return a cache object. ``CACHE_TYPE`` will be
 the import string to your custom cache type. If not a subclass of
-:class:`flask_caching.backends.cache.BaseCache`, Flask-Caching will call it
+:class:`.BaseCache`, Flask-Caching will call it
 with three arguments:
 
 * ``app``, the Flask application object the cache is being initialized for
@@ -19,17 +19,17 @@ with three arguments:
    options (CACHE_ARGS, however, is converted to a list).
 
 Your custom cache should, however, subclass the
-:class:`flask_caching.backends.cache.BaseCache` class so it provides all the
+:class:`.BaseCache` class so it provides all the
 necessary methods to be usable.
 
 .. versionchanged:: 1.9.1 If your custom cache type *is* a subclass of
-   :class:`flask_caching.backends.cache.BaseCache`, Flask-Caching will, instead
+   :class:`.BaseCache`, Flask-Caching will, instead
    of directly instantiating the class, call its ``factory`` class method with
    the same args as listed above.  Unless overridden, ``BaseCache.factory``
    simply instantiates the object without passing any arguments to it.
    Built-in cache classes have overridden this to mimic the old, function based
    cache isntantiation, so if you subclassed something that is not
-   :class:`flask_caching.backends.cache.BaseCache`, you may want to consult the
+   :class:`.BaseCache`, you may want to consult the
    source code to see if your class is still compatible.
 
 An example implementation::
