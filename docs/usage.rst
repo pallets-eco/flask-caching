@@ -299,15 +299,31 @@ function is confusing. It calls :func:`inspect.getsource` on every call, so
 leave it off in production.
 
 
+.. _hash-method:
+
 hash_method
 ```````````
 
-The hash constructor used when building cache keys, :func:`hashlib.md5` by
-default. Any :mod:`hashlib` constructor works::
+The hash constructor used when building cache keys. Defaults to the
+``CACHE_HASH_METHOD`` configuration value, which is :func:`hashlib.sha256`.
+Set it application wide::
 
-    @cache.memoize(timeout=50, hash_method=hashlib.sha256)
+    app.config["CACHE_HASH_METHOD"] = hashlib.sha512
+
+or override it for a single decorator::
+
+    @cache.memoize(timeout=50, hash_method=hashlib.sha512)
     def add(a, b):
         return a + b
+
+.. warning::
+
+    The cache key is derived from this hash, so changing it makes every
+    existing cached entry unreachable. The stale entries are not deleted; they
+    remain in the backend until they expire.
+
+Do not confuse this with ``CACHE_FILE_HASH_METHOD``, which the FileSystemCache
+backend uses to name the files it writes. The two are independent.
 
 
 query_string

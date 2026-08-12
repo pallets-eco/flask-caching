@@ -6,6 +6,12 @@ Version 2.5.0
 
 Unreleased
 
+- Use ``hashlib.sha256`` instead of ``hashlib.md5`` for hashing the cache keys.
+  This changes the generated keys, so entries cached by an earlier version become
+  obsolete. If you wish to still use hashlib.md5 set the config
+  ``CACHE_HASH_METHOD = hashlib.md5``. :pr:`563`
+- Add ``CACHE_HASH_METHOD`` to set the hash method used for the cache keys of
+  ``@cached`` and ``@memoize``.
 - Drop support for Python 3.10 and require cachelib 0.15.4+
 - Clarify docs about decorator order regarding ``@staticmethod`` and ``@classmethod``
   when memoizing. :issue:`440`
@@ -29,6 +35,10 @@ Unreleased
   and ran the function uncached.
 - Add ``CACHE_FILE_HASH_METHOD`` config option to ``FileSystemCache`` to allow
   using a different hash function for cache keys. :pr:`660`
+- Add ``pool_size`` and ``pool_blocking`` to make ``MemcachedCache`` backends
+  thread-safe. :pr:`663`
+- Modify ``SimpleCache`` docs as it's now thread-safe using an ``RLock`` for all
+  operations. :pr:`663`
 
 
 Version 2.4.1

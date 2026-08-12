@@ -27,7 +27,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
     the fly.
 
     :param host: address of the Redis server or an object which API is
-                 compatible with the official Python Redis client (redis-py).
+        compatible with the official Python Redis client (``redis-py``).
     :param port: port number on which Redis server listens for connections.
     :param password: password authentication for the Redis server.
     :param db: db (zero-based numeric index) on Redis Server to connect.
