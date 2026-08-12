@@ -35,6 +35,10 @@ Unreleased
   and ran the function uncached.
 - Add ``CACHE_FILE_HASH_METHOD`` config option to ``FileSystemCache`` to allow
   using a different hash function for cache keys. :pr:`660`
+- Add ``pool_size`` and ``pool_blocking`` to make ``MemcachedCache`` backends
+  thread-safe. :pr:`663`
+- Modify ``SimpleCache`` docs as it's now thread-safe using an ``RLock`` for all
+  operations. :pr:`663`
 
 
 Version 2.4.1

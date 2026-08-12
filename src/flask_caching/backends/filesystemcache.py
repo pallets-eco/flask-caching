@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class FileSystemCache(BaseCache, CachelibFileSystemCache):
     """A cache that stores the items on the file system.  This cache depends
-    on being the only user of the `cache_dir`.  Make absolutely sure that
+    on being the only user of the ``cache_dir``.  Make absolutely sure that
     nobody but this cache stores files there or otherwise the cache will
     randomly delete files therein.
 
@@ -35,7 +35,7 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
     :param mode: the file mode wanted for the cache files, default 0600
-    :param hash_method: Default hashlib.sha256. The hash method used to
+    :param hash_method: Default :func:`~hashlib.sha256`. The hash method used to
                         generate the filename for cached results.
     :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
                           method will ignore any errors that occurred during the

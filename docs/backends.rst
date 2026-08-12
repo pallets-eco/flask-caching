@@ -1,11 +1,28 @@
 Built-in Cache Backends
 -----------------------
 
+.. _basecache:
+
+BaseCache
+`````````
+
+.. currentmodule:: flask_caching.backends.base
+.. py:class:: BaseCache
+   :no-index-entry:
+
+Baseclass for all the cache backends listed below. It isn't meant to be
+used directly, but you can subclass it to implement your own
+:ref:`custom cache backend <custom-cache-backends>`.
+
 
 .. _nullcache:
 
 NullCache
 `````````
+
+.. currentmodule:: flask_caching.backends.nullcache
+.. py:class:: NullCache
+   :no-index-entry:
 
 Set ``CACHE_TYPE`` to ``NullCache`` to use this type.
 
@@ -22,9 +39,14 @@ Cache that doesn't cache
 SimpleCache
 ```````````
 
+.. currentmodule:: flask_caching.backends.simplecache
+.. py:class:: SimpleCache
+   :no-index-entry:
+
 Set ``CACHE_TYPE`` to ``SimpleCache`` to use this type.
 
-Uses a local python dictionary for caching. This is not really thread safe.
+Uses a local python dictionary for caching. All operations are protected by
+a lock, making it thread-safe.
 
 Relevant configuration values
 
@@ -40,6 +62,10 @@ Relevant configuration values
 
 FileSystemCache
 ```````````````
+
+.. currentmodule:: flask_caching.backends.filesystemcache
+.. py:class:: FileSystemCache
+   :no-index-entry:
 
 Set ``CACHE_TYPE`` to ``FileSystemCache`` to use this type.
 
@@ -63,6 +89,10 @@ linux-style permissions octal mode.
 RedisCache
 ``````````
 
+.. currentmodule:: flask_caching.backends.rediscache
+.. py:class:: RedisCache
+   :no-index-entry:
+
 Set ``CACHE_TYPE`` to ``RedisCache`` to use this type.
 
 - CACHE_DEFAULT_TIMEOUT
@@ -85,6 +115,9 @@ Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 RedisSentinelCache
 ``````````````````
 
+.. py:class:: RedisSentinelCache
+   :no-index-entry:
+
 Set ``CACHE_TYPE`` to ``RedisSentinel`` to use this type.
 
 - CACHE_KEY_PREFIX
@@ -105,6 +138,9 @@ Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 RedisClusterCache
 ``````````````````
 
+.. py:class:: RedisClusterCache
+   :no-index-entry:
+
 Set ``CACHE_TYPE`` to ``RedisClusterCache`` to use this type.
 
 - CACHE_KEY_PREFIX
@@ -123,6 +159,10 @@ Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 MemcachedCache
 ``````````````
 
+.. currentmodule:: flask_caching.backends.memcache
+.. py:class:: MemcachedCache
+   :no-index-entry:
+
 Set ``CACHE_TYPE`` to ``MemcachedCache`` to use this type.
 
 Uses a memcached server as a backend. Supports either pylibmc or memcache or
@@ -133,7 +173,13 @@ Relevant configuration values
 - CACHE_DEFAULT_TIMEOUT
 - CACHE_KEY_PREFIX
 - CACHE_MEMCACHED_SERVERS
+- CACHE_OPTIONS
 
+``MemcachedCache`` only accepts ``pool_size`` and ``pool_blocking`` in the
+``CACHE_OPTIONS``.
+
+.. versionadded:: 2.5.0
+   ``pool_size`` and ``pool_blocking`` options.
 
 .. note:: Flask-Caching does not pass additional configuration options
    to memcached backends. To add additional configuration to these caches,
@@ -160,6 +206,9 @@ Relevant configuration values
 SASLMemcachedCache
 ``````````````````
 
+.. py:class:: SASLMemcachedCache
+   :no-index-entry:
+
 Set ``CACHE_TYPE`` to ``SASLMemcachedCache`` to use this type.
 
 Uses a memcached server as a backend. Intended to be used with a SASL enabled
@@ -175,8 +224,10 @@ Relevant configuration values
 - CACHE_MEMCACHED_USERNAME
 - CACHE_MEMCACHED_PASSWORD
 
-.. note:: Unlike MemcachedCache, SASLMemcachedCache can be configured with
-          CACHE_OPTIONS.
+.. note:: Like ``MemcachedCache``, ``pool_size``/``pool_blocking`` in
+          ``CACHE_OPTIONS`` configure the connection pool. Unlike
+          ``MemcachedCache``, any other ``CACHE_OPTIONS`` entry is also
+          accepted and forwarded as ``**kwargs`` to ``pylibmc.Client``.
 
 .. versionadded:: 0.10
 
@@ -188,6 +239,9 @@ Relevant configuration values
 
 SpreadSASLMemcachedCache
 ````````````````````````
+
+.. py:class:: SpreadSASLMemcachedCache
+   :no-index-entry:
 
 Set ``CACHE_TYPE`` to ``SpreadSASLMemcachedCache`` to use this type.
 

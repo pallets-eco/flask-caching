@@ -21,17 +21,16 @@ logger = logging.getLogger(__name__)
 
 
 class SimpleCache(BaseCache, CachelibSimpleCache):
-    """Simple memory cache for single process environments. This class exists
-    mainly for the development server and is not 100% thread safe.  It tries
-    to use as many atomic operations as possible and no locks for simplicity
-    but it could happen under heavy load that keys are added multiple times.
+    """Simple memory cache for single process environments. All operations
+    are protected by a :class:`threading.RLock`, making a cache instance safe
+    to use from multiple threads within the same process.
 
     :param threshold: the maximum number of items the cache stores before
                       it starts deleting some.
     :param default_timeout: the default timeout that is used if no timeout is
-                            specified on :meth:`~BaseCache.set`. A timeout of
+                            specified on ``set``. A timeout of
                             0 indicates that the cache never expires.
-    :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
+    :param ignore_errors: If set to ``True`` the ``delete_many``
                           method will ignore any errors that occurred during
                           the deletion process. However, if it is set to
                           ``False`` it will stop on the first error. Defaults
