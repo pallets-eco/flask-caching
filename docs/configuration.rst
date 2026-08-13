@@ -173,3 +173,27 @@ Or drop the URL and use the individual settings only::
         "CACHE_REDIS_DB": 0,
         "CACHE_REDIS_PASSWORD": "hunter2",
     }
+
+
+Using a cachelib backend directly
+`````````````````````````````````
+
+The built-in backends subclass their `cachelib`_ counterparts, so ``CACHE_TYPE``
+can also be an import string pointing straight at a cachelib class. This is the
+way to use a backend that cachelib ships but Flask-Caching does not wrap, such
+as ``MongoDbCache``, ``DynamoDbCache`` or ``ValkeyCache``::
+
+    config = {
+        "CACHE_TYPE": "cachelib.ValkeyCache",
+        "CACHE_ARGS": ["mongodb://localhost:27017"],
+        "CACHE_OPTIONS": {"db": "myapp", "collection": "cache"},
+    }
+
+The class is then instantiated directly: ``CACHE_ARGS`` is passed as positional
+arguments and ``CACHE_OPTIONS`` as keyword arguments, together with
+``CACHE_DEFAULT_TIMEOUT``. The other ``CACHE_*`` options (``CACHE_DIR``,
+``CACHE_THRESHOLD``, ``CACHE_KEY_PREFIX``, the ``CACHE_REDIS_*`` settings, ...)
+are only read by the built-in backends and are ignored here. Pass the
+equivalent cachelib arguments through ``CACHE_OPTIONS`` instead.
+
+.. _cachelib: https://github.com/pallets/cachelib
