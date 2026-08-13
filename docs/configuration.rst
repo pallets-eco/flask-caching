@@ -1,7 +1,7 @@
 .. _configuring-flask-caching:
 
-Configuring Flask-Caching
--------------------------
+Configuration
+-------------
 
 The following configuration values exist for Flask-Caching:
 
@@ -173,17 +173,3 @@ Or drop the URL and use the individual settings only::
         "CACHE_REDIS_DB": 0,
         "CACHE_REDIS_PASSWORD": "hunter2",
     }
-
-
-Signals
--------
-
-The following signals are supported::
-
-* ``flask_caching.cache_view_hit``
-* ``flask_caching.cache_view_miss``
-* ``flask_caching.cache_memoize_hit``
-* ``flask_caching.cache_memoize_miss``
-
-By default, signals are disabled. To enable sending signals set
-``CACHE_ENABLE_SIGNALS`` to ``True``.

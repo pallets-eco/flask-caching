@@ -26,13 +26,13 @@ from typing import Protocol
 from typing import TypeAlias
 from typing import TypeVar
 
+from blinker import Namespace
 from flask import current_app
 from flask import Flask
 from flask import g
 from flask import request
 from flask import Response
 from flask import url_for
-from flask.signals import Namespace
 from werkzeug.utils import import_string
 
 from flask_caching.backends.base import BaseCache
@@ -69,10 +69,10 @@ T = TypeVar("T")
 T_co = TypeVar("T_co", covariant=True)
 T_contra = TypeVar("T_contra", contravariant=True)
 
-cache_view_hit = _signals.signal('cache-view-hit')
-cache_view_miss = _signals.signal('cache-view-miss')
-cache_memoize_hit = _signals.signal('cache-memoize-hit')
-cache_memoize_miss = _signals.signal('cache-memoize-miss')
+cache_view_hit = _signals.signal("cache-view-hit")
+cache_view_miss = _signals.signal("cache-view-miss")
+cache_memoize_hit = _signals.signal("cache-memoize-hit")
+cache_memoize_miss = _signals.signal("cache-memoize-miss")
 
 
 class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
@@ -191,6 +191,7 @@ class Cache:
 
         self.source_check = None
         self.hash_method: Callable[..., Any] | None = None
+        self.enable_signals = False
 
         if app is not None:
             self.init_app(app, config)
@@ -243,6 +244,7 @@ class Cache:
             )
 
         self.source_check = config["CACHE_SOURCE_CHECK"]
+        self.enable_signals = config["CACHE_ENABLE_SIGNALS"]
         # Validated here rather than lazily so that a bad hash method is
         # reported at startup instead of on the first cached call.
         if not callable(config["CACHE_HASH_METHOD"]):
@@ -553,13 +555,11 @@ class Cache:
                     ):
                         after_request_funcs.append(apply_caching)
 
-                if self.config["CACHE_ENABLE_SIGNALS"]:
-                    if found:
-                        cache_view_hit.send(cache=self, cache_key=cache_key,
-                                            args=args, kwargs=kwargs)
-                    else:
-                        cache_view_miss.send(cache=self, cache_key=cache_key,
-                                             args=args, kwargs=kwargs)
+                if self.enable_signals:
+                    signal = cache_view_hit if found else cache_view_miss
+                    signal.send(
+                        cache=self, cache_key=cache_key, args=args, kwargs=kwargs
+                    )
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
@@ -1060,13 +1060,11 @@ class Cache:
                     logger.exception("Exception possibly due to cache backend.")
                     return self._call_fn(f, *args, **kwargs)
 
-                if self.config["CACHE_ENABLE_SIGNALS"]:
-                    if found:
-                        cache_memoize_hit.send(cache=self, cache_key=cache_key,
-                                               f=f, args=args, kwargs=kwargs)
-                    else:
-                        cache_memoize_miss.send(cache=self, cache_key=cache_key,
-                                                f=f, args=args, kwargs=kwargs)
+                if self.enable_signals:
+                    signal = cache_memoize_hit if found else cache_memoize_miss
+                    signal.send(
+                        cache=self, cache_key=cache_key, f=f, args=args, kwargs=kwargs
+                    )
 
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
