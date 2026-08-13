@@ -282,12 +282,10 @@ class Cache:
             app.extensions = {}
 
         app.extensions.setdefault("cache", {})
-        if import_me.find('cachelib') > -1:
+        if import_me.find("cachelib") > -1:
             cache = cache_factory(*cache_args, **cache_options)
         else:
-            cache = cache_factory(
-                app, config, cache_args, cache_options
-            )
+            cache = cache_factory(app, config, cache_args, cache_options)
         app.extensions["cache"][self] = cache
         self.app = app
 
