@@ -6,6 +6,8 @@ Version 2.5.0
 
 Unreleased
 
+- cachelib backends can now be configured directly via ``CACHE_TYPE="cachelib.ValkeyCache``.
+  :pr:`668`
 - Send Signals for cache hits and misses. :pr:`#237` and :pr:`667`
 - Include ``key_prefix`` when building ``@cached(query_string=True)`` cache
   keys. :issue:`302`
