@@ -6,6 +6,7 @@ Version 2.5.0
 
 Unreleased
 
+- Send Signals for cache hits and misses. :pr:`#237` and :pr:`667`
 - Include ``key_prefix`` when building ``@cached(query_string=True)`` cache
   keys. :issue:`302`
 - Use ``hashlib.sha256`` instead of ``hashlib.md5`` for hashing the cache keys.
