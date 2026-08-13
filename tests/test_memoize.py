@@ -491,6 +491,106 @@ def test_memoize_classfunc_delete(app, cache):
         # self.assertNotEqual(a4, a6)
 
 
+def test_memoize_classfunc_delete_with_args(app, cache):
+    """A bound method carries its own instance, so ``delete_memoized`` only
+    needs the arguments that follow it."""
+    with app.test_request_context():
+
+        class Adder:
+            @cache.memoize(5)
+            def add(self, b):
+                return b + random.random()
+
+        adder1 = Adder()
+        adder2 = Adder()
+
+        a1 = adder1.add(3)
+        a2 = adder1.add(4)
+        a3 = adder2.add(3)
+
+        cache.delete_memoized(adder1.add, 3)
+
+        # only ``adder1.add(3)`` is gone
+        assert adder1.add(3) != a1
+        assert adder1.add(4) == a2
+        assert adder2.add(3) == a3
+
+
+def test_memoize_classfunc_delete_with_explicit_instance(app, cache):
+    """Passing the instance explicitly keeps working, so that code written
+    against the previous behaviour is not broken."""
+    with app.test_request_context():
+
+        class Adder:
+            @cache.memoize(5)
+            def add(self, b):
+                return b + random.random()
+
+        adder1 = Adder()
+        adder2 = Adder()
+
+        a1 = adder1.add(3)
+        a2 = adder1.add(4)
+        a3 = adder2.add(3)
+
+        cache.delete_memoized(adder1.add, adder1, 3)
+
+        assert adder1.add(3) != a1
+        assert adder1.add(4) == a2
+        assert adder2.add(3) == a3
+
+        # ... and so does reaching the method through the class
+        a1 = adder1.add(3)
+        cache.delete_memoized(Adder.add, adder1, 3)
+
+        assert adder1.add(3) != a1
+        assert adder2.add(3) == a3
+
+
+def test_memoize_classfunc_delete_with_args_to_ignore_self(app, cache):
+    with app.test_request_context():
+
+        class Adder:
+            @cache.memoize(5, args_to_ignore=["self"])
+            def add(self, b):
+                return b + random.random()
+
+        adder1 = Adder()
+        adder2 = Adder()
+
+        a1 = adder1.add(3)
+        a2 = adder1.add(4)
+
+        # ``self`` is not part of the key, so both instances share it
+        assert adder2.add(3) == a1
+
+        cache.delete_memoized(adder1.add, 3)
+
+        assert adder1.add(3) != a1
+        assert adder1.add(4) == a2
+
+
+def test_memoize_classfunc_delete_with_kwargs_only(app, cache):
+    with app.test_request_context():
+
+        class Adder:
+            @cache.memoize(5)
+            def add(self, b):
+                return b + random.random()
+
+        adder1 = Adder()
+
+        a1 = adder1.add(3)
+
+        cache.delete_memoized(adder1.add, b=3)
+
+        assert adder1.add(3) != a1
+
+        # reached through the class there is no instance to fall back on
+        with pytest.raises(ValueError):
+            cache.delete_memoized(Adder.add, b=3)
+
+
 def test_memoize_classmethod_delete(app, cache):
     with app.test_request_context():
 

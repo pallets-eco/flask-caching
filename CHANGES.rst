@@ -39,6 +39,11 @@ Unreleased
   thread-safe. :pr:`663`
 - Modify ``SimpleCache`` docs as it's now thread-safe using an ``RLock`` for all
   operations. :pr:`663`
+- ``delete_memoized`` now takes the instance from a bound method, so
+  ``cache.delete_memoized(obj.method, 1)`` deletes the cache for
+  ``obj.method(1)`` instead of silently deleting nothing.
+  The current behaviour by passing the instance keeps working as well.
+  :issue:`554`
 
 
 Version 2.4.1

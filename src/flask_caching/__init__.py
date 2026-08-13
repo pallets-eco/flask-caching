@@ -804,6 +804,13 @@ class Cache:
                 #: this supports instance methods for
                 #: the memoized functions, giving more
                 #: flexibility to developers
+                if not args:
+                    raise ValueError(
+                        "When using `delete_memoized` on a "
+                        f"`{'classmethod' if arg_names[i] == 'cls' else 'method'}` "
+                        f"you must provide the `{arg_names[i]}` argument "
+                        "as the first positional argument."
+                    )
                 arg = get_id(args[0])
                 arg_num += 1
             elif arg_names[i] in kwargs:
@@ -1139,6 +1146,26 @@ class Cache:
             >>> adder2.add(3)
             3.72341788
 
+        Arguments narrow the deletion down to a single call. A bound method
+        supplies its own instance, so only the remaining arguments are given:
+
+        .. code-block:: pycon
+
+            >>> cache.delete_memoized(adder1.add, 3)
+
+        When the function is reached through the class instead, the instance
+        has to be passed explicitly, the same way a class is passed for a
+        ``@classmethod``:
+
+        .. code-block:: pycon
+
+            >>> cache.delete_memoized(Adder.add, adder1, 3)
+
+        .. versionchanged:: 2.5.0
+
+            A bound method no longer needs to be given its own instance as the
+            first argument. Passing it explicitly keeps working.
+
         :param fname: The memoized function.
         :param \\*args: A list of positional parameters used with
                        memoized function.
@@ -1182,8 +1209,37 @@ class Cache:
         if not (args or kwargs):
             self._memoize_version(f, reset=True)
         else:
+            args = self._ensure_self_arg(f, args)
             cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
             self.cache.delete(cache_key)
+
+    @staticmethod
+    def _ensure_self_arg(
+        f: _AnyMemoizedFunction, args: tuple[Any, ...]
+    ) -> tuple[Any, ...]:
+        """Supply the ``self`` argument when a bound method is passed.
+
+        ``make_cache_key`` works on the undecorated function, so the instance
+        has to be part of ``args`` to compute the same key that was used when
+        the value was cached. A bound method already carries it, so passing it
+        again is redundant::
+
+            cache.delete_memoized(adder.add, 3)
+
+        Passing it explicitly keeps working, so that the form previously
+        required for instance methods is not broken.
+        """
+        instance = getattr(f, "__self__", None)
+
+        if instance is None or inspect.isclass(instance):
+            return args
+
+        arg_names = get_arg_names(f.uncached)
+
+        if not arg_names or arg_names[0] != "self" or (args and args[0] is instance):
+            return args
+
+        return (instance, *args)
 
     def delete_memoized_verhash(self, f: _AnyMemoizedFunction, *args: Any) -> None:
         """Delete the version hash associated with the function.

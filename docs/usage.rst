@@ -208,6 +208,51 @@ You can do this with the :meth:`~Cache.delete_memoized` function::
 
     cache.delete_memoized(Foobar.big_foo, Foobar, 5, 2)
 
+Memoized methods are stored per instance, so how much is deleted depends on
+whether the method is reached through an instance or through the class:
+
+.. code-block:: python
+
+    class Adder(object):
+        @cache.memoize(5)
+        def add(self, b):
+            return b + random.random()
+
+    adder1 = Adder()
+    adder2 = Adder()
+
+    # only the calls made on adder1, adder2 keeps its cache
+    cache.delete_memoized(adder1.add)
+
+    # every instance
+    cache.delete_memoized(Adder.add)
+
+    # only ``adder1.add(3)``
+    cache.delete_memoized(adder1.add, 3)
+
+Instances are told apart by their ``repr()``, which can be overridden by
+defining a ``__caching_id__`` method, for example to key on a user id.
+
+.. warning::
+
+  A method reached through the class does not know which instance to delete
+  the cache for, so the instance has to be passed as the first ``*args``
+  argument, the same way a ``class`` is passed for a ``classmethod``:
+
+  .. code-block:: python
+
+    cache.delete_memoized(Adder.add, adder1, 3)
+
+.. note::
+
+  The :meth:`~Cache.delete_memoized` attribute that
+  :meth:`~Cache.memoize` puts on the decorated function takes no arguments
+  and always clears every instance, even when it is called through one:
+
+  .. code-block:: python
+
+    adder1.add.delete_memoized()  # same as cache.delete_memoized(Adder.add)
+
 
 Decorator Options
 -----------------
