@@ -2,15 +2,36 @@ import hashlib
 import random
 
 import pytest
+from flask import request
 
 from flask_caching import Cache
 
 
 def _query_string_key(path, args_as_sorted_tuple, hash_method, key_prefix="view/%s"):
     """Rebuild the key that ``cached(query_string=True)`` produces."""
-    return (key_prefix % path) + hash_method(
-        str(args_as_sorted_tuple).encode()
-    ).hexdigest()
+    return (
+        "GET:"
+        + (key_prefix % path)
+        + hash_method(str(args_as_sorted_tuple).encode()).hexdigest()
+    )
+
+
+@pytest.mark.parametrize("query_string", [False, True])
+def test_cached_separates_http_methods(app, query_string):
+    cache = Cache(app)
+    calls = []
+
+    @app.route("/method", methods=["GET", "HEAD"])
+    @cache.cached(query_string=query_string)
+    def view():
+        calls.append(request.method)
+        return request.method
+
+    client = app.test_client()
+    client.head("/method?item=1")
+    assert client.get("/method?item=1").get_data(as_text=True) == "GET"
+    assert client.get("/method?item=1").get_data(as_text=True) == "GET"
+    assert calls == ["HEAD", "GET"]
 
 
 def test_default_hash_method_is_sha256(app):

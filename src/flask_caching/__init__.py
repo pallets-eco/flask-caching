@@ -489,6 +489,9 @@ class Cache:
         :param response_hit_indication: Default False.
                              If True, it will add to response header field 'hit_cache'
                              if used cache.
+
+        .. versionchanged:: 2.5
+            Default request-derived cache keys include the HTTP method.
         """
 
         def decorator(f: Callable[P, R]) -> _CachedFunction[P, R]:
@@ -636,7 +639,7 @@ class Cache:
                 if callable(key_prefix):
                     cache_key = key_prefix()
                 elif "%s" in key_prefix:
-                    cache_key = key_prefix % request.path
+                    cache_key = f"{request.method}:{key_prefix % request.path}"
                 else:
                     cache_key = key_prefix
 
@@ -656,6 +659,7 @@ class Cache:
                             cache_key = key_prefix % request.path
                         else:
                             cache_key = key_prefix % url_for(f.__name__, **kwargs)
+                        cache_key = f"{request.method}:{cache_key}"
                     else:
                         cache_key = key_prefix
 
