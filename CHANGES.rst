@@ -6,6 +6,8 @@ Version 2.5.0
 
 Unreleased
 
+- Include ``key_prefix`` when building ``@cached(query_string=True)`` cache
+  keys. :issue:`302`
 - Use ``hashlib.sha256`` instead of ``hashlib.md5`` for hashing the cache keys.
   This changes the generated keys, so entries cached by an earlier version become
   obsolete. If you wish to still use hashlib.md5 set the config

@@ -6,9 +6,11 @@ import pytest
 from flask_caching import Cache
 
 
-def _query_string_key(path, args_as_sorted_tuple, hash_method):
+def _query_string_key(path, args_as_sorted_tuple, hash_method, key_prefix="view/%s"):
     """Rebuild the key that ``cached(query_string=True)`` produces."""
-    return path + hash_method(str(args_as_sorted_tuple).encode()).hexdigest()
+    return (key_prefix % path) + hash_method(
+        str(args_as_sorted_tuple).encode()
+    ).hexdigest()
 
 
 def test_default_hash_method_is_sha256(app):
@@ -22,6 +24,18 @@ def test_default_hash_method_is_sha256(app):
     with app.test_request_context("/works?a=1&b=2"):
         assert view.make_cache_key() == _query_string_key(
             "/works", (("a", "1"), ("b", "2")), hashlib.sha256
+        )
+
+
+def test_query_string_key_includes_key_prefix(app, cache):
+    @app.route("/works")
+    @cache.cached(query_string=True, key_prefix="custom/%s")
+    def view():
+        return "value"
+
+    with app.test_request_context("/works?a=1"):
+        assert view.make_cache_key() == _query_string_key(
+            "/works", (("a", "1"),), hashlib.sha256, key_prefix="custom/%s"
         )
 
 

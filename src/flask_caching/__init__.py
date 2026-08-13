@@ -449,6 +449,9 @@ class Cache:
                              _make_cache_key_query_string() for more
                              details.
 
+        .. versionchanged:: 2.5.0
+            Include ``key_prefix`` when building query string cache keys.
+
         :param hash_method: Default None. If None will use the value set by
                             ``CACHE_HASH_METHOD``, which defaults to
                             ``hashlib.sha256``. The hash method used to
@@ -611,9 +614,14 @@ class Cache:
 
                 cache_hash = str(cache_hash.hexdigest())
 
-                cache_key = request.path + cache_hash
+                if callable(key_prefix):
+                    cache_key = key_prefix()
+                elif "%s" in key_prefix:
+                    cache_key = key_prefix % request.path
+                else:
+                    cache_key = key_prefix
 
-                return cache_key
+                return cache_key + cache_hash
 
             def _make_cache_key(
                 args: tuple[Any, ...], kwargs: dict[str, Any], use_request: bool
