@@ -29,6 +29,11 @@ Unreleased
 - Add ``CACHE_HASH_METHOD`` to set the hash method used for the cache keys of
   ``@cached`` and ``@memoize``.
 - Drop support for Python 3.10 and require cachelib 0.15.4+
+- ``CACHE_IGNORE_ERRORS`` is now used by every backend instead of only
+  ``SimpleCache`` and ``FileSystemCache``.
+- The ``delete_many`` method is now used from cachelib. A key
+  that does not exist counts as deleted, and with ``CACHE_IGNORE_ERRORS`` set to
+  ``False`` a ``RuntimeError`` is raised if the key could not be deleted.
 - Clarify docs about decorator order regarding ``@staticmethod`` and ``@classmethod``
   when memoizing. :issue:`440`
 - Remove the deprecated lowercase ``CACHE_TYPE`` names (``null``, ``simple``,

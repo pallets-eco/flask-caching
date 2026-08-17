@@ -282,7 +282,10 @@ class Cache:
 
         cache_factory = import_string(import_me)
         cache_args = config["CACHE_ARGS"][:]
-        cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
+        cache_options = {
+            "default_timeout": config["CACHE_DEFAULT_TIMEOUT"],
+            "ignore_delete_many_errors": config["CACHE_IGNORE_ERRORS"],
+        }
 
         if isinstance(cache_factory, type) and issubclass(cache_factory, BaseCache):
             cache_factory = cache_factory.factory

@@ -11,6 +11,7 @@ The filesystem caching backend.
 
 import hashlib
 import logging
+import warnings
 from typing import Any
 
 from cachelib import FileSystemCache as CachelibFileSystemCache
@@ -37,11 +38,14 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
     :param mode: the file mode wanted for the cache files, default 0600
     :param hash_method: Default :func:`~hashlib.sha256`. The hash method used to
                         generate the filename for cached results.
-    :param ignore_errors: If set to ``True`` the :meth:`~BaseCache.delete_many`
-                          method will ignore any errors that occurred during the
-                          deletion process. However, if it is set to ``False``
-                          it will stop on the first error. Defaults to
-                          ``False``.
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
+    :param ignore_errors: Deprecated alias for ``ignore_delete_many_errors``.
+
+        .. deprecated:: 2.5.0
+           Will be removed in the next version.
     """
 
     def __init__(
@@ -51,9 +55,18 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         default_timeout: int = 300,
         mode: int = 0o600,
         hash_method: Any = hashlib.sha256,
-        ignore_errors: bool = False,
+        ignore_delete_many_errors: bool = False,
+        ignore_errors: bool | None = None,
     ) -> None:
-        BaseCache.__init__(self, default_timeout=default_timeout)
+        if ignore_errors is not None:
+            warnings.warn(
+                "'ignore_errors' is deprecated and will be removed in the next "
+                "version. Use 'ignore_delete_many_errors' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            ignore_delete_many_errors = ignore_errors
+
         CachelibFileSystemCache.__init__(
             self,
             cache_dir=cache_dir,
@@ -61,9 +74,8 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
             default_timeout=default_timeout,
             mode=mode,
             hash_method=hash_method,
+            ignore_delete_many_errors=ignore_delete_many_errors,
         )
-
-        self.ignore_errors = ignore_errors
 
     @classmethod
     def factory(
@@ -77,7 +89,6 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         kwargs.update(
             dict(
                 threshold=config["CACHE_THRESHOLD"],
-                ignore_errors=config["CACHE_IGNORE_ERRORS"],
                 hash_method=config["CACHE_FILE_HASH_METHOD"],
             )
         )

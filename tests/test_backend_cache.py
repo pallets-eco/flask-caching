@@ -157,11 +157,31 @@ class TestSimpleCache(GenericCacheTests):
         # Cache purges old items *before* it sets new ones.
         assert len(c._cache) == 3
 
+    def test_deprecated_ignore_errors(self):
+        with pytest.warns(DeprecationWarning, match="ignore_errors"):
+            c = backends.SimpleCache(ignore_errors=True)
+        assert c.ignore_delete_many_errors is True
+
+    def test_ignore_delete_many_errors(self):
+        c = backends.SimpleCache(ignore_delete_many_errors=True)
+        assert c.ignore_delete_many_errors is True
+
 
 class TestFileSystemCache(GenericCacheTests):
     @pytest.fixture
     def make_cache(self, tmpdir):
         return lambda **kw: backends.FileSystemCache(cache_dir=str(tmpdir), **kw)
+
+    def test_deprecated_ignore_errors(self, tmpdir):
+        with pytest.warns(DeprecationWarning, match="ignore_errors"):
+            c = backends.FileSystemCache(cache_dir=str(tmpdir), ignore_errors=True)
+        assert c.ignore_delete_many_errors is True
+
+    def test_ignore_delete_many_errors(self, tmpdir):
+        c = backends.FileSystemCache(
+            cache_dir=str(tmpdir), ignore_delete_many_errors=True
+        )
+        assert c.ignore_delete_many_errors is True
 
 
 # don't use pytest.mark.skipif on subclasses

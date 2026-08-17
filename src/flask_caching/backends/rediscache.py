@@ -35,6 +35,10 @@ class RedisCache(BaseCache, CachelibRedisCache):
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
     :param key_prefix: A prefix that should be added to all keys.
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
 
     Any additional keyword arguments will be passed to ``redis.Redis``.
     """
@@ -47,9 +51,9 @@ class RedisCache(BaseCache, CachelibRedisCache):
         db: int = 0,
         default_timeout: int = 300,
         key_prefix: str | None = None,
+        ignore_delete_many_errors: bool = False,
         **kwargs: Any,
     ) -> None:
-        BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibRedisCache.__init__(
             self,
             host=host,
@@ -58,6 +62,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
             db=db,
             default_timeout=default_timeout,
             key_prefix=key_prefix,
+            ignore_delete_many_errors=ignore_delete_many_errors,
             **kwargs,
         )
 
@@ -132,6 +137,10 @@ class RedisSentinelCache(RedisCache):
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
     :param key_prefix: A prefix that should be added to all keys.
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
 
     Any additional keyword arguments will be passed to
     ``redis.sentinel.Sentinel``.
@@ -145,9 +154,14 @@ class RedisSentinelCache(RedisCache):
         db: int = 0,
         default_timeout: int = 300,
         key_prefix: str = "",
+        ignore_delete_many_errors: bool = False,
         **kwargs: Any,
     ) -> None:
-        super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
+        super().__init__(
+            key_prefix=key_prefix,
+            default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
+        )
 
         try:
             import redis.sentinel
@@ -220,6 +234,10 @@ class RedisClusterCache(RedisCache):
                             specified on :meth:`~BaseCache.set`. A timeout of
                             0 indicates that the cache never expires.
     :param key_prefix: A prefix that should be added to all keys.
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
 
     Any additional keyword arguments will be passed to
     ``rediscluster.RedisCluster``.
@@ -231,9 +249,14 @@ class RedisClusterCache(RedisCache):
         password: str = "",
         default_timeout: int = 300,
         key_prefix: str = "",
+        ignore_delete_many_errors: bool = False,
         **kwargs: Any,
     ) -> None:
-        super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
+        super().__init__(
+            key_prefix=key_prefix,
+            default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
+        )
 
         if kwargs.get("decode_responses", None):
             raise ValueError("decode_responses is not supported by RedisCache.")
