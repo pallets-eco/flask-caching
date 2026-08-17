@@ -68,6 +68,12 @@ class MemcachedCache(BaseCache, CachelibMemcachedCache):
         client library supports connection pooling.
 
         .. versionadded:: 2.5.0
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
+
+        .. versionadded:: 2.5.0
     """
 
     def __init__(
@@ -77,8 +83,8 @@ class MemcachedCache(BaseCache, CachelibMemcachedCache):
         key_prefix: str | None = None,
         pool_size: int = 1,
         pool_blocking: bool = True,
+        ignore_delete_many_errors: bool = False,
     ) -> None:
-        BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibMemcachedCache.__init__(
             self,
             servers=servers,
@@ -86,6 +92,7 @@ class MemcachedCache(BaseCache, CachelibMemcachedCache):
             key_prefix=key_prefix,
             pool_size=pool_size,
             pool_blocking=pool_blocking,
+            ignore_delete_many_errors=ignore_delete_many_errors,
         )
 
     @classmethod
@@ -111,9 +118,13 @@ class SASLMemcachedCache(MemcachedCache):
         password: str | None = None,
         pool_size: int = 1,
         pool_blocking: bool = True,
+        ignore_delete_many_errors: bool = False,
         **kwargs: Any,
     ) -> None:
-        super().__init__(default_timeout=default_timeout)
+        super().__init__(
+            default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
+        )
 
         if servers is None:
             servers = ["127.0.0.1:11211"]

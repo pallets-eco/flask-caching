@@ -41,8 +41,9 @@ def test_cache_delete(app, cache):
 
 def test_cache_delete_many(app, cache):
     cache.set("hi", "hello")
+    # "ho" was never set, so it counts as deleted and "hi" is still removed.
     cache.delete_many("ho", "hi")
-    assert cache.get("hi") is not None
+    assert cache.get("hi") is None
 
 
 @pytest.mark.skipif(HAS_NOT_REDIS, reason="requires Redis")

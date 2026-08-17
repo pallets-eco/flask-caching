@@ -96,6 +96,7 @@ RedisCache
 Set ``CACHE_TYPE`` to ``RedisCache`` to use this type.
 
 - CACHE_DEFAULT_TIMEOUT
+- CACHE_IGNORE_ERRORS
 - CACHE_KEY_PREFIX
 - CACHE_OPTIONS
 - CACHE_REDIS_HOST
@@ -113,6 +114,9 @@ application, see :ref:`sharing-a-redis-client`.
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
 
+.. versionchanged::  2.5.0
+   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
+
 
 .. _redissentinelcache:
 
@@ -124,6 +128,7 @@ RedisSentinelCache
 
 Set ``CACHE_TYPE`` to ``RedisSentinel`` to use this type.
 
+- CACHE_IGNORE_ERRORS
 - CACHE_KEY_PREFIX
 - CACHE_REDIS_SENTINELS
 - CACHE_REDIS_SENTINEL_MASTER
@@ -136,6 +141,9 @@ Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
 
+.. versionchanged::  2.5.0
+   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
+
 
 .. _redisclustercache:
 
@@ -147,6 +155,7 @@ RedisClusterCache
 
 Set ``CACHE_TYPE`` to ``RedisClusterCache`` to use this type.
 
+- CACHE_IGNORE_ERRORS
 - CACHE_KEY_PREFIX
 - CACHE_REDIS_CLUSTER
 - CACHE_REDIS_PASSWORD
@@ -156,6 +165,9 @@ Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
+
+.. versionchanged::  2.5.0
+   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
 
 
 .. _memcachedcache:
@@ -175,6 +187,7 @@ google app engine memcache library.
 Relevant configuration values
 
 - CACHE_DEFAULT_TIMEOUT
+- CACHE_IGNORE_ERRORS
 - CACHE_KEY_PREFIX
 - CACHE_MEMCACHED_SERVERS
 - CACHE_OPTIONS
@@ -204,6 +217,9 @@ Relevant configuration values
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
 
+.. versionchanged::  2.5.0
+   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
+
 
 .. _saslmemcachedcache:
 
@@ -222,6 +238,7 @@ by libmemcached.
 Relevant configuration values
 
 - CACHE_DEFAULT_TIMEOUT
+- CACHE_IGNORE_ERRORS
 - CACHE_KEY_PREFIX
 - CACHE_OPTIONS
 - CACHE_MEMCACHED_SERVERS
@@ -237,6 +254,9 @@ Relevant configuration values
 
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
+
+.. versionchanged::  2.5.0
+   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
 
 
 .. _spreadsaslmemcachedcache:

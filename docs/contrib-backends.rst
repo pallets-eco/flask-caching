@@ -72,6 +72,7 @@ set in your uWSGI configuration.
 Relevant configuration values
 
 - CACHE_DEFAULT_TIMEOUT
+- CACHE_IGNORE_ERRORS
 - CACHE_UWSGI_NAME
 
 .. note::

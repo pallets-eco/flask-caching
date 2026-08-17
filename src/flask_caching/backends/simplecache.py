@@ -10,6 +10,7 @@ The simple cache backend.
 """
 
 import logging
+import warnings
 from typing import Any
 
 from cachelib import SimpleCache as CachelibSimpleCache
@@ -30,25 +31,38 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
     :param default_timeout: the default timeout that is used if no timeout is
                             specified on ``set``. A timeout of
                             0 indicates that the cache never expires.
-    :param ignore_errors: If set to ``True`` the ``delete_many``
-                          method will ignore any errors that occurred during
-                          the deletion process. However, if it is set to
-                          ``False`` it will stop on the first error. Defaults
-                          to ``False``.
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
+    :param ignore_errors: Deprecated alias for ``ignore_delete_many_errors``.
+
+        .. deprecated:: 2.5.0
+           Will be removed in the next version.
     """
 
     def __init__(
         self,
         threshold: int = 500,
         default_timeout: int = 300,
-        ignore_errors: bool = False,
+        ignore_delete_many_errors: bool = False,
+        ignore_errors: bool | None = None,
     ) -> None:
-        BaseCache.__init__(self, default_timeout=default_timeout)
-        CachelibSimpleCache.__init__(
-            self, threshold=threshold, default_timeout=default_timeout
-        )
+        if ignore_errors is not None:
+            warnings.warn(
+                "'ignore_errors' is deprecated and will be removed in the next "
+                "version. Use 'ignore_delete_many_errors' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            ignore_delete_many_errors = ignore_errors
 
-        self.ignore_errors = ignore_errors
+        CachelibSimpleCache.__init__(
+            self,
+            threshold=threshold,
+            default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
+        )
 
     @classmethod
     def factory(
@@ -58,10 +72,5 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
         args: list[Any],
         kwargs: dict[str, Any],
     ) -> "SimpleCache":
-        kwargs.update(
-            dict(
-                threshold=config["CACHE_THRESHOLD"],
-                ignore_errors=config["CACHE_IGNORE_ERRORS"],
-            )
-        )
+        kwargs.update(dict(threshold=config["CACHE_THRESHOLD"]))
         return cls(*args, **kwargs)

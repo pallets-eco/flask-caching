@@ -57,12 +57,11 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_DEFAULT_TIMEOUT``          The timeout that is used if no other
                                    timeout is specified. Unit of time is
                                    seconds. Defaults to ``300``.
-``CACHE_IGNORE_ERRORS``            If set to any errors that occurred during the
-                                   deletion process will be ignored. However, if
-                                   it is set to ``False`` it will stop on the
-                                   first error. This option is only relevant for
-                                   the backends **FileSystemCache** and
-                                   **SimpleCache**. Defaults to ``False``.
+``CACHE_IGNORE_ERRORS``            If set to ``True`` any errors that occurred
+                                   during the deletion process will be ignored.
+                                   However, if it is set to ``False`` a
+                                   ``RuntimeError`` is raised if the key couldn't
+                                   deleted. Applies to every backend. Defaults to ``False``.
 ``CACHE_THRESHOLD``                The maximum number of items the cache
                                    will store before it starts deleting
                                    some. Used only for SimpleCache and

@@ -19,7 +19,6 @@ from flask_caching.backends.rediscache import RedisCache
 from flask_caching.backends.rediscache import RedisClusterCache
 from flask_caching.backends.rediscache import RedisSentinelCache
 from flask_caching.backends.simplecache import SimpleCache
-from flask_caching.backends.uwsgicache import UWSGICache
 
 __all__ = (
     "BaseCache",
@@ -29,7 +28,6 @@ __all__ = (
     "RedisCache",
     "RedisSentinelCache",
     "RedisClusterCache",
-    "UWSGICache",
     "MemcachedCache",
     "SASLMemcachedCache",
     "SpreadSASLMemcachedCache",

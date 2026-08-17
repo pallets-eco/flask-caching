@@ -30,14 +30,23 @@ class UWSGICache(BaseCache, CachelibUWSGICache):
         means uWSGI will use the first cache instance initialized.
         If the cache is in the same instance as the werkzeug app,
         you only have to provide the name of the cache.
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
     """
 
-    def __init__(self, default_timeout: int = 300, cache: str = "") -> None:
-        BaseCache.__init__(self, default_timeout=default_timeout)
+    def __init__(
+        self,
+        default_timeout: int = 300,
+        cache: str = "",
+        ignore_delete_many_errors: bool = False,
+    ) -> None:
         CachelibUWSGICache.__init__(
             self,
             cache=cache,
             default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
         )
 
         try:

@@ -23,11 +23,20 @@ class BaseCache(CachelibBaseCache):
     :param default_timeout: The default timeout (in seconds) that is used if
                             no timeout is specified on ``set``. A timeout
                             of 0 indicates that the cache never expires.
+    :param ignore_delete_many_errors: If set to ``False`` the ``delete_many``
+                                      method raises a ``RuntimeError`` in case
+                                      a key couldn't be deleted.
+                                      Defaults to ``False``.
     """
 
-    def __init__(self, default_timeout: int = 300) -> None:
-        CachelibBaseCache.__init__(self, default_timeout=default_timeout)
-        self.ignore_errors = False
+    def __init__(
+        self, default_timeout: int = 300, ignore_delete_many_errors: bool = False
+    ) -> None:
+        CachelibBaseCache.__init__(
+            self,
+            default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
+        )
 
     @classmethod
     def factory(
@@ -38,20 +47,3 @@ class BaseCache(CachelibBaseCache):
         kwargs: dict[str, Any],
     ) -> "BaseCache":
         return cls()
-
-    def delete_many(self, *keys: str) -> list[str]:
-        """Deletes multiple keys at once.
-
-        :param keys: The function accepts multiple keys as positional
-                        arguments.
-        :returns: A list containing all sucessfuly deleted keys
-        :rtype: boolean
-        """
-        deleted_keys = []
-        for key in keys:
-            if self.delete(key):
-                deleted_keys.append(key)
-            else:
-                if not self.ignore_errors:
-                    break
-        return deleted_keys
