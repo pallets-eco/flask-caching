@@ -49,6 +49,9 @@ Unreleased
   ``obj.method(1)`` instead of silently deleting nothing.
   The current behaviour by passing the instance keeps working as well.
   :issue:`554`
+-   The ``{% cache %}`` Jinja tag no longer propagates backend errors. If the
+    cache is unavailable, the block is rendered normally instead of raising,
+    matching the existing behavior of ``@memoize``. :issue:`564` :pr:`565`
 
 
 Version 2.4.1

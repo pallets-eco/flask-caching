@@ -181,13 +181,27 @@ Using a cachelib backend directly
 The built-in backends subclass their `cachelib`_ counterparts, so ``CACHE_TYPE``
 can also be an import string pointing straight at a cachelib class. This is the
 way to use a backend that cachelib ships but Flask-Caching does not wrap, such
-as ``MongoDbCache``, ``DynamoDbCache`` or ``ValkeyCache``::
+as ``MongoDbCache``, ``DynamoDbCache`` or ``ValkeyCache``.
+
+For example, a MongoDbCache can look like this::
 
     config = {
-        "CACHE_TYPE": "cachelib.ValkeyCache",
+        "CACHE_TYPE": "cachelib.MongoDbCache",
         "CACHE_ARGS": ["mongodb://localhost:27017"],
         "CACHE_OPTIONS": {"db": "myapp", "collection": "cache"},
     }
+
+and a ValkeyCache config like this::
+
+  config = {
+      "CACHE_TYPE": "cachelib.valkey.ValkeyCache",
+      "CACHE_OPTIONS": {
+          "host": "localhost",
+          "port": 6379,
+          "db": 0,
+          "key_prefix": "myapp",
+      },
+  }
 
 The class is then instantiated directly: ``CACHE_ARGS`` is passed as positional
 arguments and ``CACHE_OPTIONS`` as keyword arguments, together with
