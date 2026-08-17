@@ -106,6 +106,10 @@ Set ``CACHE_TYPE`` to ``RedisCache`` to use this type.
 
 Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
+``CACHE_REDIS_HOST`` also accepts an already created Redis client instead of a
+host name. Use it to share one connection pool with the rest of the
+application, see :ref:`sharing-a-redis-client`.
+
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
 

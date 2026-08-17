@@ -103,6 +103,8 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_MEMCACHED_PASSWORD``       Password for SASL authentication with memcached.
                                    Used only for SASLMemcachedCache
 ``CACHE_REDIS_HOST``               A Redis server host. Used only for RedisCache.
+                                   May also be an already created Redis client, see
+                                   :ref:`sharing-a-redis-client`.
                                    Ignored if ``CACHE_REDIS_URL`` is set.
 ``CACHE_REDIS_PORT``               A Redis server port. Default is 6379.
                                    Used only for RedisCache.
@@ -175,6 +177,63 @@ Or drop the URL and use the individual settings only::
     }
 
 
+.. _sharing-a-redis-client:
+
+Sharing a Redis client or connection pool
+`````````````````````````````````````````
+
+``CACHE_REDIS_HOST`` does not have to be a host name. If it is set to anything
+other than a string, that object is used as the Redis client as-is. That makes
+it possible to hand ``RedisCache`` a client that was created elsewhere, so a
+single connection pool is shared with the rest of the application instead of
+every extension opening a pool of its own::
+
+    import redis
+    from flask import Flask
+    from flask_caching import Cache
+
+    pool = redis.ConnectionPool(
+        host="localhost", port=6379, db=0, max_connections=20
+    )
+    redis_client = redis.Redis(connection_pool=pool)
+
+    app = Flask(__name__)
+    app.config.from_mapping(
+        {
+            "CACHE_TYPE": "RedisCache",
+            "CACHE_REDIS_HOST": redis_client,
+            "CACHE_KEY_PREFIX": "myapp_",
+        }
+    )
+    cache = Cache(app)
+
+The same client, or the pool it was built from, can then be passed to other
+extensions such as Flask-Limiter or Flask-Session and be used by the
+application directly, instead of each of them connecting on its own.
+
+Any object with a `redis-py`_ compatible API is accepted, not only
+``redis.Redis`` instances. A client returned by
+``redis.sentinel.Sentinel.master_for()`` works as well.
+
+A few things to keep in mind when passing in a client:
+
+- Do not set ``CACHE_REDIS_URL``. It takes precedence and builds a new client
+  from the URL, which silently discards the one that was passed in.
+- ``CACHE_REDIS_PORT``, ``CACHE_REDIS_DB``, ``CACHE_REDIS_PASSWORD`` and
+  ``CACHE_OPTIONS`` are only used to build a client from a host name. They are
+  ignored here; configure them on the client instead. ``CACHE_KEY_PREFIX`` and
+  ``CACHE_DEFAULT_TIMEOUT`` still apply, they are handled by the cache itself.
+- The client must not be created with ``decode_responses=True``. Cached values
+  are pickled bytes and reading them back through a decoding client raises a
+  ``TypeError``. That option is only rejected with an explicit error when
+  Flask-Caching creates the client itself.
+- Flask-Caching does not take ownership of the client. It never closes it or
+  its connection pool, so its lifetime is up to the application.
+- This applies to ``RedisCache`` only. ``RedisSentinelCache`` and
+  ``RedisClusterCache`` always create their own clients from the configuration
+  values.
+
+
 Using a cachelib backend directly
 `````````````````````````````````
 
@@ -211,3 +270,4 @@ are only read by the built-in backends and are ignored here. Pass the
 equivalent cachelib arguments through ``CACHE_OPTIONS`` instead.
 
 .. _cachelib: https://github.com/pallets/cachelib
+.. _redis-py: https://redis.readthedocs.io/
