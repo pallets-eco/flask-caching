@@ -8,6 +8,12 @@ Unreleased
 
 - cachelib backends can now be configured directly via ``CACHE_TYPE="cachelib.ValkeyCache``.
   :pr:`668`
+- ``@cached`` and ``@memoize`` now go through the public ``Cache`` proxy methods
+  (``get``, ``set``, ``has``, ``delete``, ``delete_many``, ``get_many`` and
+  ``set_many``) instead of calling the backend directly. :issue:`417`
+- Document that ``CACHE_REDIS_HOST`` accepts an already created ``redis.Redis``
+  client instead of a host name, which allows sharing a connection pool with
+  other extensions and the application. :issue:`629`
 - Send Signals for cache hits and misses. :pr:`#237` and :pr:`667`
 - Include ``key_prefix`` when building ``@cached(query_string=True)`` cache
   keys. :issue:`302`

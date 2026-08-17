@@ -518,7 +518,7 @@ class Cache:
                         rv = None
                         found = False
                     else:
-                        rv = self.cache.get(cache_key)
+                        rv = self.get(cache_key)
                         found = True
 
                         # If the value returned by cache.get() is None, it
@@ -534,7 +534,7 @@ class Cache:
                             if not cache_none:
                                 found = False
                             else:
-                                found = self.cache.has(cache_key)
+                                found = self.has(cache_key)
                 except Exception:
                     if self.app.debug:
                         raise
@@ -573,7 +573,7 @@ class Cache:
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
                         try:
-                            self.cache.set(
+                            self.set(
                                 cache_key,
                                 rv,
                                 timeout=cache_timeout,
@@ -713,10 +713,10 @@ class Cache:
         # Only delete the per-instance version key or per-function version
         # key but not both.
         if delete:
-            self.cache.delete_many(fetch_keys[-1])
+            self.delete_many(fetch_keys[-1])
             return fname, None
 
-        version_data_list = list(self.cache.get_many(*fetch_keys))
+        version_data_list = list(self.get_many(*fetch_keys))
         dirty = False
 
         if forced_update is True or (
@@ -747,7 +747,7 @@ class Cache:
             dirty = True
 
         if dirty:
-            self.cache.set_many(
+            self.set_many(
                 dict(zip(fetch_keys, version_data_list, strict=False)), timeout=timeout
             )
 
@@ -1039,7 +1039,7 @@ class Cache:
                         rv = None
                         found = False
                     else:
-                        rv = self.cache.get(cache_key)
+                        rv = self.get(cache_key)
                         found = True
 
                         # If the value returned by cache.get() is None, it
@@ -1055,7 +1055,7 @@ class Cache:
                             if not cache_none:
                                 found = False
                             else:
-                                found = self.cache.has(cache_key)
+                                found = self.has(cache_key)
                 except Exception:
                     if self.app.debug:
                         raise
@@ -1075,7 +1075,7 @@ class Cache:
 
                     if response_filter is None or response_filter(rv):
                         try:
-                            self.cache.set(
+                            self.set(
                                 cache_key,
                                 rv,
                                 timeout=memoized_fn.cache_timeout,
@@ -1244,7 +1244,7 @@ class Cache:
         else:
             args = self._ensure_self_arg(f, args)
             cache_key = f.make_cache_key(f.uncached, *args, **kwargs)
-            self.cache.delete(cache_key)
+            self.delete(cache_key)
 
     @staticmethod
     def _ensure_self_arg(

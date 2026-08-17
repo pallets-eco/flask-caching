@@ -519,3 +519,34 @@ For example:
             "<html><body>foo cache: {{bar}}</body></html>", bar=bar
         )
 
+
+Subclassing ``Cache``
+---------------------
+
+The proxy methods are the extension's own entry point to the backend, so
+overriding them in a :class:`Cache` subclass also affects the caching done by
+:meth:`~Cache.cached` and :meth:`~Cache.memoize`. This makes it possible to add
+tracing, metrics or logging in one place and have it cover both explicit calls
+and the decorators:
+
+.. code-block:: python
+
+    class InstrumentedCache(Cache):
+        def get(self, *args, **kwargs):
+            with tracer.trace("cache.get"):
+                return super().get(*args, **kwargs)
+
+        def set(self, *args, **kwargs):
+            with tracer.trace("cache.set"):
+                return super().set(*args, **kwargs)
+
+
+    cache = InstrumentedCache(app, config={"CACHE_TYPE": "SimpleCache"})
+
+Note that :meth:`~Cache.memoize` also uses :meth:`~Cache.get_many` and
+:meth:`~Cache.set_many` for its internal version keys, so an override will see
+that bookkeeping traffic as well.
+
+To reach backend specific functionality that :class:`Cache` does not proxy, use
+the :attr:`Cache.cache` property instead of subclassing.
+
