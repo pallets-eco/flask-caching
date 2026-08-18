@@ -1,6 +1,10 @@
 import os
+import shutil
+import socket
 import subprocess
 
+import cachelib.file
+import cachelib.simple
 import flask
 import pytest
 from xprocess import ProcessStarter
@@ -21,6 +25,27 @@ def app(request):
 @pytest.fixture
 def cache(app):
     return fsc.Cache(app)
+
+
+class _Clock:
+    def __init__(self, now):
+        self.now = now
+
+    def __call__(self):
+        return self.now
+
+    def advance(self, seconds):
+        self.now += seconds
+
+
+@pytest.fixture
+def clock(monkeypatch):
+    # cachelib does ``from time import time``, so the module attribute has to
+    # be replaced
+    fake = _Clock(1_700_000_000.0)
+    monkeypatch.setattr(cachelib.simple, "time", fake)
+    monkeypatch.setattr(cachelib.file, "time", fake)
+    return fake
 
 
 @pytest.fixture(

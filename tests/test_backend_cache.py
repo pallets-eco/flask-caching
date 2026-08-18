@@ -47,6 +47,11 @@ class CacheTestsBase:
         """Return a cache instance."""
         return make_cache()
 
+    @pytest.fixture
+    def sleep(self, clock):
+        """Stay a while and listen..."""
+        return clock.advance if self._can_use_fast_sleep else time.sleep
+
 
 class GenericCacheTests(CacheTestsBase):
     def test_generic_get_dict(self, c):
@@ -112,12 +117,12 @@ class GenericCacheTests(CacheTestsBase):
         assert c.set("bar", False)
         assert c.get("bar") in (False, 0)
 
-    def test_generic_timeout(self, c):
+    def test_generic_timeout(self, c, sleep):
         c.set("foo", "bar", 0)
         assert c.get("foo") == "bar"
         c.set("baz", "qux", 1)
         assert c.get("baz") == "qux"
-        time.sleep(3)
+        sleep(3)
         # timeout of zero means no timeout
         assert c.get("foo") == "bar"
         if self._guaranteed_deletes:

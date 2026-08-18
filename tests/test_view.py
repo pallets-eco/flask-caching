@@ -1,4 +1,5 @@
 import hashlib
+import itertools
 import time
 
 from flask import make_response
@@ -9,52 +10,56 @@ from flask.views import View
 from flask_caching import CachedResponse
 
 
-def test_cached_view(app, cache):
+def test_cached_view(app, cache, clock):
+    counter = itertools.count()
+
     @app.route("/")
     @cache.cached(2)
     def cached_view():
-        return str(time.time())
+        return str(next(counter))
 
     tc = app.test_client()
 
     rv = tc.get("/")
-    the_time = rv.data.decode("utf-8")
+    first = rv.data.decode("utf-8")
 
-    time.sleep(1)
-
-    rv = tc.get("/")
-
-    assert the_time == rv.data.decode("utf-8")
-
-    time.sleep(1)
+    clock.advance(1)
 
     rv = tc.get("/")
-    assert the_time != rv.data.decode("utf-8")
+
+    assert first == rv.data.decode("utf-8")
+
+    clock.advance(1)
+
+    rv = tc.get("/")
+    assert first != rv.data.decode("utf-8")
 
 
-def test_cached_view_class(app, cache):
+def test_cached_view_class(app, cache, clock):
+    counter = itertools.count()
+
     class CachedView(View):
         @cache.cached(2)
         def dispatch_request(self):
-            return str(time.time())
+            return str(next(counter))
 
     app.add_url_rule("/", view_func=CachedView.as_view("name"))
 
     tc = app.test_client()
 
     rv = tc.get("/")
-    the_time = rv.data.decode("utf-8")
+    first = rv.data.decode("utf-8")
 
-    time.sleep(1)
-
-    rv = tc.get("/")
-
-    assert the_time == rv.data.decode("utf-8")
-
-    time.sleep(1)
+    clock.advance(1)
 
     rv = tc.get("/")
-    assert the_time != rv.data.decode("utf-8")
+
+    assert first == rv.data.decode("utf-8")
+
+    clock.advance(1)
+
+    rv = tc.get("/")
+    assert first != rv.data.decode("utf-8")
 
 
 def test_async_cached_view(app, cache):
@@ -63,103 +68,97 @@ def test_async_cached_view(app, cache):
     @app.route("/test-async")
     @cache.cached(2)
     async def cached_async_view():
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         return str(time.time())
 
     tc = app.test_client()
     rv = tc.get("/test-async")
     the_time = rv.data.decode("utf-8")
-
-    time.sleep(1)
 
     rv = tc.get("/test-async")
     assert the_time == rv.data.decode("utf-8")
 
 
 def test_cached_view_unless(app, cache):
+    counter = itertools.count()
+
     @app.route("/a")
     @cache.cached(5, unless=lambda: True)
     def non_cached_view():
-        return str(time.time())
+        return str(next(counter))
 
     @app.route("/b")
     @cache.cached(5, unless=lambda: False)
     def cached_view():
-        return str(time.time())
+        return str(next(counter))
 
     tc = app.test_client()
 
     rv = tc.get("/a")
-    the_time = rv.data.decode("utf-8")
-
-    time.sleep(1)
+    first = rv.data.decode("utf-8")
 
     rv = tc.get("/a")
-    assert the_time != rv.data.decode("utf-8")
+    assert first != rv.data.decode("utf-8")
 
     rv = tc.get("/b")
-    the_time = rv.data.decode("utf-8")
+    first = rv.data.decode("utf-8")
 
-    time.sleep(1)
     rv = tc.get("/b")
 
-    assert the_time == rv.data.decode("utf-8")
+    assert first == rv.data.decode("utf-8")
 
 
 def test_cached_view_response_filter(app, cache):
+    counter = itertools.count()
+
     @app.route("/a")
     @cache.cached(5, response_filter=lambda x: x[1] < 400)
     def cached_view():
-        return (str(time.time()), app.return_code)
+        return (str(next(counter)), app.return_code)
 
     tc = app.test_client()
 
     # 500 response does not cache
     app.return_code = 500
     rv = tc.get("/a")
-    the_time = rv.data.decode("utf-8")
-
-    time.sleep(1)
+    first = rv.data.decode("utf-8")
 
     rv = tc.get("/a")
-    assert the_time != rv.data.decode("utf-8")
+    assert first != rv.data.decode("utf-8")
 
     # 200 response caches
     app.return_code = 200
     rv = tc.get("/a")
-    the_time = rv.data.decode("utf-8")
-
-    time.sleep(1)
+    first = rv.data.decode("utf-8")
 
     rv = tc.get("/a")
-    assert the_time == rv.data.decode("utf-8")
+    assert first == rv.data.decode("utf-8")
 
 
 def test_cached_view_forced_update(app, cache):
     forced_update = False
+    counter = itertools.count()
 
     @app.route("/a")
     @cache.cached(5, forced_update=lambda: forced_update)
     def view():
-        return str(time.time())
+        return str(next(counter))
 
     tc = app.test_client()
 
     rv = tc.get("/a")
-    the_time = rv.data.decode("utf-8")
-    time.sleep(1)
+    first = rv.data.decode("utf-8")
     rv = tc.get("/a")
-    assert the_time == rv.data.decode("utf-8")
+    assert first == rv.data.decode("utf-8")
 
     forced_update = True
     rv = tc.get("/a")
-    new_time = rv.data.decode("utf-8")
-    assert new_time != the_time
+    second = rv.data.decode("utf-8")
+    assert second != first
 
     forced_update = False
-    time.sleep(1)
     rv = tc.get("/a")
-    assert new_time == rv.data.decode("utf-8")
+    assert second == rv.data.decode("utf-8")
 
 
 def test_generate_cache_key_from_different_view(app, cache):
@@ -258,16 +257,18 @@ def test_make_cache_key_function_property(app, cache):
     assert the_time != different_data
 
 
-def test_cache_timeout_property(app, cache):
+def test_cache_timeout_property(app, cache, clock):
+    counter = itertools.count()
+
     @app.route("/")
     @cache.memoize(2)
     def cached_view1():
-        return str(time.time())
+        return str(next(counter))
 
     @app.route("/<foo>/<bar>")
     @cache.memoize(4)
     def cached_view2(foo, bar):
-        return str(time.time())
+        return str(next(counter))
 
     assert hasattr(cached_view1, "cache_timeout")
     assert hasattr(cached_view2, "cache_timeout")
@@ -283,83 +284,88 @@ def test_cache_timeout_property(app, cache):
     tc = app.test_client()
 
     rv1 = tc.get("/")
-    time1 = rv1.data.decode("utf-8")
-    time.sleep(1)
+    body1 = rv1.data.decode("utf-8")
+    clock.advance(1)
     rv2 = tc.get("/a/b")
-    time2 = rv2.data.decode("utf-8")
+    body2 = rv2.data.decode("utf-8")
 
     # VIEW1
     # it's been 1 second, cache is still active
-    assert time1 == tc.get("/").data.decode("utf-8")
-    time.sleep(5)
+    assert body1 == tc.get("/").data.decode("utf-8")
+    clock.advance(5)
     # it's been >5 seconds, cache is not still active
-    assert time1 != tc.get("/").data.decode("utf-8")
+    assert body1 != tc.get("/").data.decode("utf-8")
 
     # VIEW2
-    # it's been >17 seconds, cache is still active
-    # self.assertEqual(time2, tc.get('/a/b').data.decode('utf-8'))
-    assert time2 == tc.get("/a/b").data.decode("utf-8")
-    time.sleep(3)
+    # it's been 6 seconds, cache is still active
+    assert body2 == tc.get("/a/b").data.decode("utf-8")
+    clock.advance(3)
     # it's been >7 seconds, cache is not still active
-    assert time2 != tc.get("/a/b").data.decode("utf-8")
+    assert body2 != tc.get("/a/b").data.decode("utf-8")
 
 
-def test_cache_timeout_dynamic_via_cached_reponse(app, cache):
+def test_cache_timeout_dynamic_via_cached_reponse(app, cache, clock):
+    counter = itertools.count()
+
     @app.route("/")
     @cache.cached(timeout=1)
     def cached_view():
         # This should override the timeout to be 2 seconds
-        return CachedResponse(response=make_response(str(time.time())), timeout=2)
+        return CachedResponse(response=make_response(str(next(counter))), timeout=2)
 
     tc = app.test_client()
 
     rv1 = tc.get("/")
-    time1 = rv1.data.decode("utf-8")
-    time.sleep(1)
+    body = rv1.data.decode("utf-8")
+    clock.advance(1)
 
     # it's been 1 second, cache is still active
-    assert time1 == tc.get("/").data.decode("utf-8")
-    time.sleep(1)
+    assert body == tc.get("/").data.decode("utf-8")
+    clock.advance(1)
     # it's been >2 seconds, cache is not still active
-    assert time1 != tc.get("/").data.decode("utf-8")
+    assert body != tc.get("/").data.decode("utf-8")
 
 
-def test_cache_memoize_timeout_dynamic_via_callable_timeout(app, cache):
+def test_cache_memoize_timeout_dynamic_via_callable_timeout(app, cache, clock):
+    counter = itertools.count()
+
     @app.route("/")
     @cache.memoize(
         # This should override the timeout to be 2 seconds
         timeout=lambda rv: 2 if isinstance(rv, Response) else 1
     )
     def cached_view():
-        return make_response(str(time.time()))
+        return make_response(str(next(counter)))
 
     tc = app.test_client()
     rv1 = tc.get("/")
-    time1 = rv1.data.decode("utf-8")
+    body = rv1.data.decode("utf-8")
 
-    time.sleep(1)  # after 1 second, cache is still active
-    assert time1 == tc.get("/").data.decode("utf-8")
+    clock.advance(1)  # after 1 second, cache is still active
+    assert body == tc.get("/").data.decode("utf-8")
 
-    time.sleep(1)  # after 2 seconds, cache is not still active
-    assert time1 != tc.get("/").data.decode("utf-8")
+    clock.advance(1)  # after 2 seconds, cache is not still active
+    assert body != tc.get("/").data.decode("utf-8")
 
 
-def test_cache_cached_reponse_overrides_callable_timeout(app, cache):
+def test_cache_cached_reponse_overrides_callable_timeout(app, cache, clock):
+    counter = itertools.count()
+
     @app.route("/")
     @cache.cached(timeout=lambda rv: 1)  # timeout to be be overridden by CachedResponse
     def cached_view():
         # This should override the timeout to be 2 seconds
-        return CachedResponse(response=make_response(str(time.time())), timeout=2)
+        return CachedResponse(response=make_response(str(next(counter))), timeout=2)
 
     tc = app.test_client()
     rv1 = tc.get("/")
-    time1 = rv1.data.decode("utf-8")
+    body = rv1.data.decode("utf-8")
 
-    time.sleep(1)  # after 1 second, cache is still active
-    assert time1 == tc.get("/").data.decode("utf-8")
+    clock.advance(1)  # after 1 second, cache is still active
+    assert body == tc.get("/").data.decode("utf-8")
 
-    time.sleep(1)  # after 2 seconds, cache is not still active
-    assert time1 != tc.get("/").data.decode("utf-8")
+    clock.advance(1)  # after 2 seconds, cache is not still active
+    assert body != tc.get("/").data.decode("utf-8")
 
 
 def test_generate_cache_key_from_query_string(app, cache):
@@ -610,7 +616,7 @@ def test_cache_with_query_string_and_source_check_disabled(app, cache):
     assert third_time == first_time
 
 
-def test_hit_cache(app, cache):
+def test_hit_cache(app, cache, clock):
     @app.route("/")
     @cache.cached(2, response_hit_indication=True)
     def cached_view():
@@ -629,12 +635,12 @@ def test_hit_cache(app, cache):
     assert tc.get("/").headers.get("hit_cache") == "True"
     assert tc.get("/").headers.get("hit_cache") == "True"
 
-    time.sleep(2)
+    clock.advance(2)
     assert tc.get("/").headers.get("hit_cache") is None
 
     # indication-false
     assert tc.get("/indication-false").headers.get("hit_cache") is None
     assert tc.get("/indication-false").headers.get("hit_cache") is None
     assert tc.get("/indication-false").headers.get("hit_cache") is None
-    time.sleep(2)
+    clock.advance(2)
     assert tc.get("/indication-false").headers.get("hit_cache") is None

@@ -7,7 +7,7 @@ from flask_caching import Cache
 from flask_caching import function_namespace
 
 
-def test_memoize(app, cache):
+def test_memoize(app, cache, clock):
     with app.test_request_context():
 
         @cache.memoize(3)
@@ -16,18 +16,18 @@ def test_memoize(app, cache):
 
         result = big_foo(5, 2)
 
-        time.sleep(1)
+        clock.advance(1)
 
         assert big_foo(5, 2) == result
 
         result2 = big_foo(5, 3)
         assert result2 != result
 
-        time.sleep(3)
+        clock.advance(3)
 
         assert big_foo(5, 2) != result
 
-        time.sleep(1)
+        clock.advance(1)
 
         assert big_foo(5, 3) != result2
 
@@ -50,7 +50,7 @@ def test_memoize_falsy_default_argument(app, cache):
         assert runs == [(1, None), (1, 0)]
 
 
-def test_memoize_hashes(app, cache, hash_method):
+def test_memoize_hashes(app, cache, hash_method, clock):
     with app.test_request_context():
 
         @cache.memoize(3, hash_method=hash_method)
@@ -59,23 +59,23 @@ def test_memoize_hashes(app, cache, hash_method):
 
         result = big_foo(5, 2)
 
-        time.sleep(1)
+        clock.advance(1)
 
         assert big_foo(5, 2) == result
 
         result2 = big_foo(5, 3)
         assert result2 != result
 
-        time.sleep(3)
+        clock.advance(3)
 
         assert big_foo(5, 2) != result
 
-        time.sleep(1)
+        clock.advance(1)
 
         assert big_foo(5, 3) != result2
 
 
-def test_memoize_timeout(app):
+def test_memoize_timeout(app, clock):
     app.config["CACHE_DEFAULT_TIMEOUT"] = 1
     cache = Cache(app)
 
@@ -87,11 +87,11 @@ def test_memoize_timeout(app):
 
         result = big_foo(5, 2)
         assert big_foo(5, 2) == result
-        time.sleep(2)
+        clock.advance(2)
         assert big_foo(5, 2) != result
 
 
-def test_memoize_dynamic_timeout_via_callable_timeout(app):
+def test_memoize_dynamic_timeout_via_callable_timeout(app, clock):
     app.config["CACHE_DEFAULT_TIMEOUT"] = 1
     cache = Cache(app)
 
@@ -107,10 +107,10 @@ def test_memoize_dynamic_timeout_via_callable_timeout(app):
         result = big_foo(5, 2)
         assert big_foo(5, 2) == result
 
-        time.sleep(1)  # after 1 second, cache is still active
+        clock.advance(1)  # after 1 second, cache is still active
         assert big_foo(5, 2) == result
 
-        time.sleep(1)  # after 2 seconds, cache is not still active
+        clock.advance(1)  # after 2 seconds, cache is not still active
         assert big_foo(5, 2) != result
 
 
@@ -128,8 +128,6 @@ def test_memoize_annotated(app, cache):
         }
 
         result = big_foo_annotated(5, 2)
-
-        time.sleep(1)
 
         assert big_foo_annotated(5, 2) == result
 
@@ -163,8 +161,6 @@ def test_memoize_delete(app, cache):
 
         result = big_foo(5, 2)
         result2 = big_foo(5, 3)
-
-        time.sleep(1)
 
         assert big_foo(5, 2) == result
         assert big_foo(5, 2) == result
@@ -253,8 +249,6 @@ def test_memoize_verhash_delete(app, cache):
         result = big_foo(5, 2)
         result2 = big_foo(5, 3)
 
-        time.sleep(1)
-
         assert big_foo(5, 2) == result
         assert big_foo(5, 2) == result
         assert big_foo(5, 3) != result
@@ -283,8 +277,6 @@ def test_memoize_annotated_delete(app, cache):
 
         result = big_foo_annotated(5, 2)
         result2 = big_foo_annotated(5, 3)
-
-        time.sleep(1)
 
         assert big_foo_annotated(5, 2) == result
         assert big_foo_annotated(5, 2) == result
@@ -626,8 +618,6 @@ def test_memoize_classmethod_delete(app, cache):
         result = Mock.big_foo(5, 2)
         result2 = Mock.big_foo(5, 3)
 
-        time.sleep(1)
-
         assert Mock.big_foo(5, 2) == result
         assert Mock.big_foo(5, 2) == result
         assert Mock.big_foo(5, 3) != result
@@ -650,8 +640,6 @@ def test_memoize_classmethod_delete_with_args(app, cache):
 
         result = Mock.big_foo(5, 2)
         result2 = Mock.big_foo(5, 3)
-
-        time.sleep(1)
 
         assert Mock.big_foo(5, 2) == result
         assert Mock.big_foo(5, 2) == result
@@ -679,7 +667,6 @@ def test_memoize_forced_update(app, cache):
             return a + b + random.randrange(0, 100000)
 
         result = big_foo(5, 2)
-        time.sleep(1)
         assert big_foo(5, 2) == result
 
         forced_update = True
@@ -687,7 +674,6 @@ def test_memoize_forced_update(app, cache):
         assert new_result != result
 
         forced_update = False
-        time.sleep(1)
         assert big_foo(5, 2) == new_result
 
 
@@ -715,7 +701,6 @@ def test_memoize_forced_update_parameters(app, cache):
         assert call_counter[1] == 1
         # …with the values we called the function with
         assert call_params[0] == (5, 2)
-        time.sleep(1)
 
         # Calling the function again should return the cached value
         assert memoized_func(5, 2) == result
@@ -738,7 +723,6 @@ def test_memoize_forced_update_parameters(app, cache):
 
         # Now stop forced updating again
         forced_update = False
-        time.sleep(1)
         # The function should return the same value as it did last time
         assert memoized_func(5, 2) == new_result
         # forced_update_func should have been called one more time again…

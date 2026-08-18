@@ -83,7 +83,7 @@ def test_cache_delete_many_ignored(app):
     assert cache.get("hi") is None
 
 
-def test_cache_cached_function(app, cache):
+def test_cache_cached_function(app, cache, clock):
     with app.test_request_context():
 
         @cache.cached(1, key_prefix="MyBits")
@@ -95,7 +95,7 @@ def test_cache_cached_function(app, cache):
 
         assert my_list == his_list
 
-        time.sleep(2)
+        clock.advance(2)
 
         his_list = get_random_bits()
 
@@ -158,7 +158,7 @@ def test_cache_cached_function_with_source_check_disabled(app, cache):
         assert third_attempt == first_attempt
 
 
-def test_cache_accepts_multiple_ciphers(app, cache, hash_method):
+def test_cache_accepts_multiple_ciphers(app, cache, hash_method, clock):
     with app.test_request_context():
 
         @cache.cached(1, key_prefix="MyBits", hash_method=hash_method)
@@ -170,7 +170,7 @@ def test_cache_accepts_multiple_ciphers(app, cache, hash_method):
 
         assert my_list == his_list
 
-        time.sleep(2)
+        clock.advance(2)
 
         his_list = get_random_bits()
 
@@ -324,7 +324,6 @@ def test_generator(app, cache):
             return (str(time.time()) for i in range(2))
 
         time_str = gen()
-        time.sleep(1)
         assert gen() == time_str
 
         @cache.cached()
@@ -333,5 +332,4 @@ def test_generator(app, cache):
             yield str(time.time())
 
         time_str = gen_yield()
-        time.sleep(1)
         assert gen_yield() == time_str
