@@ -56,6 +56,32 @@ def hash_method(request):
     return request.param
 
 
+def _server_is_running(port):
+    with socket.socket() as sock:
+        sock.settimeout(1)
+        return sock.connect_ex(("127.0.0.1", port)) == 0
+
+
+def _ensure_server(xprocess, name, executable, port, starter):
+    if _server_is_running(port):
+        yield
+        return
+
+    if os.environ.get("CI", "false") == "true":
+        pytest.fail(f"no {executable} server listening on port {port}")
+
+    if shutil.which(executable) is None:
+        pytest.skip(f"could not find {executable} executable")
+
+    try:
+        xprocess.ensure(name, starter)
+    except (OSError, RuntimeError) as exc:
+        pytest.skip(f"could not start {executable}: {exc}")
+
+    yield
+    xprocess.getinfo(name).terminate()
+
+
 @pytest.fixture(scope="class")
 def redis_server(xprocess):
     package_name = "redis"
@@ -63,11 +89,8 @@ def redis_server(xprocess):
         modname=package_name, reason=f"could not find python package {package_name}"
     )
 
-    if os.environ.get("CI", "false") == "true":
-        yield
-        return
-
     class Starter(ProcessStarter):
+        timeout = 20
         pattern = "[Rr]eady to accept connections"
         args = ["redis-server", "--port 6360"]
 
@@ -77,9 +100,7 @@ def redis_server(xprocess):
             )
             return out.stdout == b"PONG\n"
 
-    xprocess.ensure(package_name, Starter)
-    yield
-    xprocess.getinfo(package_name).terminate()
+    yield from _ensure_server(xprocess, package_name, "redis-server", 6360, Starter)
 
 
 @pytest.fixture(scope="class")
@@ -89,11 +110,8 @@ def memcache_server(xprocess):
         modname=package_name, reason=f"could not find python package {package_name}"
     )
 
-    if os.environ.get("CI", "false") == "true":
-        yield
-        return
-
     class Starter(ProcessStarter):
+        timeout = 20
         pattern = "server listening"
         args = ["memcached", "-vv", "-p", "11212"]
 
@@ -101,6 +119,4 @@ def memcache_server(xprocess):
             out = subprocess.run(["memcached", "-p", "11212"], stderr=subprocess.PIPE)
             return b"Address already" in out.stderr
 
-    xprocess.ensure(package_name, Starter)
-    yield
-    xprocess.getinfo(package_name).terminate()
+    yield from _ensure_server(xprocess, package_name, "memcached", 11212, Starter)
