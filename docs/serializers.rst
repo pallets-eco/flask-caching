@@ -1,3 +1,5 @@
+.. _serializers:
+
 .. currentmodule:: flask_caching
 
 Overriding the Default Serializer
@@ -13,12 +15,24 @@ backend holds a cachelib ``serializer`` instance. By default they all use ``pick
 
 :ref:`NullCache <nullcache>` and the memcached backends do not use one.
 
-The attribute is defined on the backend class, so assigning to
-:attr:`Cache.cache` replaces it for that cache instance only::
+Set ``CACHE_SERIALIZER`` to replace it::
 
     from cachelib.serializers import JSONSerializer
 
-    cache = Cache(app, config={"CACHE_TYPE": "SimpleCache"})
+    cache = Cache(app, config={
+        "CACHE_TYPE": "SimpleCache",
+        "CACHE_SERIALIZER": JSONSerializer,
+    })
+
+The serializer must subclass ``cachelib.serializers.BaseSerializer``. It can also
+be an already created instance of one. Anything else raises a ``ValueError`` when
+the extension is initialized. If a backend does not use a serializer, Flask-Caching
+will print a warning.
+
+The custom serializer must implement ``dump``, ``dumps``, ``load`` and ``loads``.
+
+The serializer is assigend to :attr:`Cache.cache.serializer`, for example::
+
     cache.cache.serializer = JSONSerializer()
 
 
@@ -57,7 +71,6 @@ instead. Wrap the stream in a picklable object and fall back to it when
     from cachelib.serializers import SimpleSerializer
 
     app = Flask(__name__)
-    serializer_cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
     class _PicklableStream:
         """
@@ -112,7 +125,10 @@ instead. Wrap the stream in a picklable object and fall back to it when
                 return None
             return serialized
 
-    serializer_cache.cache.serializer = CustomSerializer()
+    serializer_cache = Cache(app, config={
+        "CACHE_TYPE": "SimpleCache",
+        "CACHE_SERIALIZER": CustomSerializer,
+    })
 
     @app.route("/serializer-override")
     @serializer_cache.cached()

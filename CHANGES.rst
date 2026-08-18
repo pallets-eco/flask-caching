@@ -6,6 +6,8 @@ Version 2.5.0
 
 Unreleased
 
+- Add config option ``CACHE_SERIALIZER`` to set the cachelib serializer the backend uses.
+  :issue:`209`
 - cachelib backends can now be configured directly via ``CACHE_TYPE="cachelib.ValkeyCache``.
   :pr:`668`
 - ``@cached`` and ``@memoize`` now go through the public ``Cache`` proxy methods

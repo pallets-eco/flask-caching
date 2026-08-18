@@ -84,6 +84,9 @@ The following configuration values exist for Flask-Caching:
 ``CACHE_HASH_METHOD``              hash_method used for hashing cache keys. Defaults to
                                    ``hashlib.sha256``. Changing it invalidates all
                                    existing cache entries.
+``CACHE_SERIALIZER``               The serializer the backend uses to serializer the values.
+                                   If ``None`` or not set, it uses the default serializer from
+                                   the backend. See :ref:`serializers` for more information.
 ``CACHE_ENABLE_SIGNALS``           Send Flask Signals for :meth:`~Cache.cached` and
                                    :meth:`~Cache.memoize` cache hits and misses.
 ``CACHE_UWSGI_NAME``               The name of the uwsgi caching instance to

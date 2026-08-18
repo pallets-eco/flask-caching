@@ -27,6 +27,7 @@ from typing import TypeAlias
 from typing import TypeVar
 
 from blinker import Namespace
+from cachelib.serializers import BaseSerializer
 from flask import current_app
 from flask import Flask
 from flask import g
@@ -43,8 +44,6 @@ from flask_caching.utils import get_arg_names
 from flask_caching.utils import get_id
 from flask_caching.utils import make_template_fragment_key as make_template_fragment_key
 from flask_caching.utils import wants_args
-
-__version__ = "2.4.1"
 
 logger = logging.getLogger(__name__)
 
@@ -191,6 +190,7 @@ class Cache:
 
         self.source_check = None
         self.hash_method: Callable[..., Any] | None = None
+        self.serializer: BaseSerializer | None = None
         self.enable_signals = False
 
         if app is not None:
@@ -228,6 +228,7 @@ class Cache:
         config.setdefault("CACHE_NO_NULL_WARNING", False)
         config.setdefault("CACHE_SOURCE_CHECK", False)
         config.setdefault("CACHE_ENABLE_SIGNALS", False)
+        config.setdefault("CACHE_SERIALIZER", None)
 
         if config["CACHE_TYPE"] == "NullCache" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
@@ -253,6 +254,7 @@ class Cache:
                 f"`hashlib.sha256`, not {config['CACHE_HASH_METHOD']!r}"
             )
         self.hash_method = config["CACHE_HASH_METHOD"]
+        self.serializer = self._get_serializer(config["CACHE_SERIALIZER"])
 
         if self.with_jinja2_ext:
             from .jinja2ext import CacheExtension
@@ -286,8 +288,42 @@ class Cache:
             cache = cache_factory(*cache_args, **cache_options)
         else:
             cache = cache_factory(app, config, cache_args, cache_options)
+
+        if self.serializer is not None:
+            if hasattr(cache, "serializer"):
+                cache.serializer = self.serializer  # type: ignore
+            else:
+                warnings.warn(
+                    f"CACHE_SERIALIZER is set but {type(cache).__name__} does not use"
+                    "a serializer.",
+                    stacklevel=2,
+                )
+
         app.extensions["cache"][self] = cache
         self.app = app
+
+    def _get_serializer(self, serializer: Any) -> BaseSerializer | None:
+        """Returns the serializer instance for the caching backend.
+        If None, it will use the default one.
+        """
+        if serializer is None:
+            return None
+
+        if isinstance(serializer, type) and issubclass(serializer, BaseSerializer):
+            try:
+                return serializer()
+            except TypeError as e:
+                raise ValueError(
+                    f"Couldn't instantiate serializer: {serializer!r}!"
+                ) from e
+
+        if not isinstance(serializer, BaseSerializer):
+            raise ValueError(
+                "`CACHE_SERIALIZER` must be a `cachelib.serializers.BaseSerializer` "
+                "subclass or instance!"
+            )
+
+        return serializer
 
     def _get_hash_method(
         self, hash_method: Callable[..., Any] | None
@@ -1292,3 +1328,19 @@ class Cache:
             )
 
         self._memoize_version(f, delete=True)
+
+
+def __getattr__(name: str) -> Any:
+    if name == "__version__":
+        import importlib.metadata
+
+        warnings.warn(
+            "The '__version__' attribute is deprecated and will be removed in"
+            " Flask-Caching 3.0. Use feature detection or"
+            " 'importlib.metadata.version(\"flask-caching\")' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return importlib.metadata.version("flask-caching")
+
+    raise AttributeError(name)
