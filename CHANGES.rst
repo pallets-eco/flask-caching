@@ -57,10 +57,10 @@ Unreleased
   ``obj.method(1)`` instead of silently deleting nothing.
   The current behaviour by passing the instance keeps working as well.
   :issue:`554`
--   The ``{% cache %}`` Jinja tag no longer propagates backend errors. If the
-    cache is unavailable, the block is rendered normally instead of raising,
-    matching the existing behavior of ``@memoize``. :issue:`564` :pr:`565`
-- added support for callable `timeout` in `@cached` and `@memoized`
+- The ``{% cache %}`` Jinja tag no longer propagates backend errors. If the
+  cache is unavailable, the block is rendered normally instead of raising,
+  matching the existing behavior of ``@memoize``. :issue:`564` :pr:`565`
+- Added support for callable ``timeout`` in ``@cached`` and ``@memoize``. :pr:`401`
 
 
 Version 2.4.1

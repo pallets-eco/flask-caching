@@ -77,7 +77,7 @@ cache_memoize_miss = _signals.signal("cache-memoize-miss")
 class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.cached` method accessed on an instance."""
 
-    cache_timeout: int | None
+    cache_timeout: int | Callable[..., Any] | None
     make_cache_key: Callable[..., str]
 
     @property
@@ -90,7 +90,7 @@ class _CachedFunction(Protocol[P, R]):
     """The type of the callable returned by :meth:`Cache.cached`."""
 
     uncached: Callable[P, R]
-    cache_timeout: int | None
+    cache_timeout: int | Callable[..., Any] | None
     make_cache_key: Callable[..., str]
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
@@ -115,7 +115,7 @@ class _CachedFunction(Protocol[P, R]):
 class _BoundMemoizedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.memoize` method accessed on an instance."""
 
-    cache_timeout: int | None
+    cache_timeout: int | Callable[..., Any] | None
     make_cache_key: Callable[..., str]
     delete_memoized: Callable[[], None]
 
@@ -129,7 +129,7 @@ class _MemoizedFunction(Protocol[P, R]):
     """The type of the callable returned by :meth:`Cache.memoize`."""
 
     uncached: Callable[P, R]
-    cache_timeout: int | None
+    cache_timeout: int | Callable[..., Any] | None
     make_cache_key: Callable[..., str]
     delete_memoized: Callable[[], None]
 
@@ -291,7 +291,7 @@ class Cache:
 
         if self.serializer is not None:
             if hasattr(cache, "serializer"):
-                cache.serializer = self.serializer  # type: ignore
+                cache.serializer = self.serializer  # pyright: ignore[reportAttributeAccessIssue]
             else:
                 warnings.warn(
                     f"CACHE_SERIALIZER is set but {type(cache).__name__} does not use"
