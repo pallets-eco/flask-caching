@@ -138,7 +138,7 @@ def test_non_cachelib_serializer_class_raises(app):
 def test_serializer_class_needing_arguments_raises(app):
     app.config["CACHE_SERIALIZER"] = NeedsArguments
 
-    with pytest.raises(ValueError, match="already created instance"):
+    with pytest.raises(ValueError, match="Couldn't instantiate serializer"):
         Cache(app)
 
 
