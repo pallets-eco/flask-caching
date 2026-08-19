@@ -44,6 +44,9 @@ Unreleased
   ``delete_memoized`` to type checkers.
 - Fix ``@cached(response_hit_indication=True)`` appending a new
   ``after_request`` function to the app on every request.
+- Fix a view returning an iterator of strings, for example when using
+  ``flask.stream_template`` it previously returned a list of JSON strings instead
+  of the rendered template. :issue:`511`
 - Fix ``__caching_id__`` never being usable. ``@memoize`` silently ignored that
   and ran the function uncached.
 - Add ``CACHE_FILE_HASH_METHOD`` config option to ``FileSystemCache`` to allow

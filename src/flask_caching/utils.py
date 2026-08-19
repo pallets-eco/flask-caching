@@ -126,3 +126,14 @@ def make_template_fragment_key(
     else:
         vary_on = []
     return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
+
+
+def join_generator(rv: Any) -> Any:
+    """Used to join strings and bytes together when inspect.isgenerator(rv) = True"""
+    chunks = list(rv)
+
+    if all(isinstance(chunk, str) for chunk in chunks):
+        return "".join(chunks)
+    if all(isinstance(chunk, bytes) for chunk in chunks):
+        return b"".join(chunks)
+    return chunks
