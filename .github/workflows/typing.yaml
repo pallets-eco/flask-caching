@@ -25,5 +25,4 @@ jobs:
         with:
           python-version: "3.14"
           allow-prereleases: true
-      - run: uv sync --no-default-groups --group tox
-      - run: uv run tox run -e typing
+      - run: uv run --no-default-groups --group tox tox run -e typing
