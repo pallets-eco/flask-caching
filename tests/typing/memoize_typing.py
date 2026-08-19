@@ -6,7 +6,6 @@ preserving signatures or stop binding ``self`` on methods.
 """
 
 from collections.abc import Callable
-from typing import Any
 
 from flask_caching import Cache
 
@@ -48,7 +47,7 @@ adder = Adder(1)
 
 plain_result: bytes = memoized_plain(1, "y")
 plain_uncached: Callable[[int, str], bytes] = memoized_plain.uncached
-plain_timeout: int | Callable[..., Any] | None = memoized_plain.cache_timeout
+plain_timeout: int | None = memoized_plain.cache_timeout
 plain_key: str = cached_plain.make_cache_key()
 memoized_plain.delete_memoized()
 

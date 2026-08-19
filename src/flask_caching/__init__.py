@@ -49,6 +49,10 @@ logger = logging.getLogger(__name__)
 
 _signals = Namespace()
 
+# The initial version timeout of a memoize version key. Will be overwritten on the first
+# write with the memoize value timeout
+VERSION_TIMEOUT = 0
+
 SUPPORTED_HASH_FUNCTIONS = [
     hashlib.sha1,
     hashlib.sha224,
@@ -77,7 +81,7 @@ cache_memoize_miss = _signals.signal("cache-memoize-miss")
 class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.cached` method accessed on an instance."""
 
-    cache_timeout: int | Callable[..., Any] | None
+    cache_timeout: int | None
     make_cache_key: Callable[..., str]
 
     @property
@@ -90,7 +94,7 @@ class _CachedFunction(Protocol[P, R]):
     """The type of the callable returned by :meth:`Cache.cached`."""
 
     uncached: Callable[P, R]
-    cache_timeout: int | Callable[..., Any] | None
+    cache_timeout: int | None
     make_cache_key: Callable[..., str]
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
@@ -115,7 +119,7 @@ class _CachedFunction(Protocol[P, R]):
 class _BoundMemoizedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.memoize` method accessed on an instance."""
 
-    cache_timeout: int | Callable[..., Any] | None
+    cache_timeout: int | None
     make_cache_key: Callable[..., str]
     delete_memoized: Callable[[], None]
 
@@ -129,7 +133,7 @@ class _MemoizedFunction(Protocol[P, R]):
     """The type of the callable returned by :meth:`Cache.memoize`."""
 
     uncached: Callable[P, R]
-    cache_timeout: int | Callable[..., Any] | None
+    cache_timeout: int | None
     make_cache_key: Callable[..., str]
     delete_memoized: Callable[[], None]
 
@@ -405,7 +409,7 @@ class Cache:
 
     def cached(
         self,
-        timeout: int | Callable[..., Any] | None = None,
+        timeout: int | None = None,
         key_prefix: str | Callable[[], str] = "view/%s",
         unless: Callable[..., Any] | None = None,
         forced_update: Callable[..., Any] | None = None,
@@ -460,11 +464,6 @@ class Cache:
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
-
-                        .. versionchanged:: 2.0.3
-                            Can optionally be a callable which expects one
-                            argument, the result of the cached function
-                            evaluation, and returns None or an integer.
 
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key. `request.path` will be the
@@ -613,8 +612,6 @@ class Cache:
                         cache_timeout = cached_fn.cache_timeout
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
-                        elif callable(cache_timeout):
-                            cache_timeout = cache_timeout(rv)
 
                         try:
                             self.set(
@@ -735,8 +732,8 @@ class Cache:
         kwargs: dict[str, Any] | None = None,
         reset: bool = False,
         delete: bool = False,
-        timeout: int | None = None,
-        forced_update: bool | Callable[..., bool] | None = False,
+        refresh: bool = False,
+        timeout: int | None = VERSION_TIMEOUT,
         args_to_ignore: list[str] | None = None,
     ) -> tuple[str, str] | tuple[str, None]:
         """Updates the hash version associated with a memoized function or
@@ -761,19 +758,7 @@ class Cache:
             return fname, None
 
         version_data_list = list(self.get_many(*fetch_keys))
-        dirty = False
-
-        if forced_update is True or (
-            callable(forced_update)
-            and (
-                forced_update(*(args or ()), **(kwargs or {}))
-                if wants_args(forced_update)
-                else forced_update()
-            )
-            is True
-        ):
-            # Mark key as dirty to update its TTL
-            dirty = True
+        dirty = refresh
 
         if version_data_list[0] is None:
             version_data_list[0] = self._memoize_make_version_hash()
@@ -792,7 +777,8 @@ class Cache:
 
         if dirty:
             self.set_many(
-                dict(zip(fetch_keys, version_data_list, strict=False)), timeout=timeout
+                dict(zip(fetch_keys, version_data_list, strict=False)),
+                timeout=timeout,
             )
 
         return fname, "".join(version_data_list)
@@ -800,8 +786,6 @@ class Cache:
     def _memoize_make_cache_key(
         self,
         make_name: Callable[..., str] | None = None,
-        timeout: "_MemoizedFunction[..., Any] | None" = None,
-        forced_update: bool | Callable[..., bool] | None = False,
         hash_method: Callable[..., Any] | None = None,
         source_check: bool | None = None,
         args_to_ignore: list[str] | None = None,
@@ -809,16 +793,10 @@ class Cache:
         """Function used to create the cache_key for memoized functions."""
 
         def make_cache_key(f: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
-            _timeout = timeout.cache_timeout if timeout is not None else None
-            if callable(_timeout):
-                _timeout = 0  # placeholder until timeout(rv) is doable
-
             fname, version_data = self._memoize_version(
                 f,
                 args=args,
                 kwargs=kwargs,
-                timeout=_timeout,
-                forced_update=forced_update,
                 args_to_ignore=args_to_ignore,
             )
 
@@ -954,7 +932,7 @@ class Cache:
 
     def memoize(
         self,
-        timeout: int | Callable[..., Any] | None = None,
+        timeout: int | None = None,
         make_name: Callable[..., str] | None = None,
         unless: Callable[..., bool] | None = None,
         forced_update: Callable[..., bool] | None = None,
@@ -1007,11 +985,6 @@ class Cache:
 
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
-
-                        .. versionchanged:: 2.0.3
-                            Can optionally be a callable which expects one
-                            argument, the result of the cached function
-                            evaluation, and returns None or an integer.
 
         :param make_name: Default None. If set this is a function that accepts
                           a single argument, the function name, and returns a
@@ -1086,8 +1059,6 @@ class Cache:
 
                     cache_key = self._memoize_make_cache_key(
                         make_name=make_name,
-                        timeout=memoized_fn,
-                        forced_update=forced_update_result,
                         hash_method=hash_method,
                         source_check=source_check,
                         args_to_ignore=args_to_ignore,
@@ -1133,14 +1104,21 @@ class Cache:
 
                     if response_filter is None or response_filter(rv):
                         cache_timeout = memoized_fn.cache_timeout
-                        if callable(cache_timeout):
-                            cache_timeout = cache_timeout(rv)
 
                         try:
                             self.set(
                                 cache_key,
                                 rv,
                                 timeout=cache_timeout,
+                            )
+                            # update the memoize version with the new cache_timeout
+                            self._memoize_version(
+                                f,
+                                args=args,
+                                kwargs=kwargs,
+                                refresh=True,
+                                timeout=cache_timeout,
+                                args_to_ignore=args_to_ignore,
                             )
                         except Exception:
                             if self.app.debug:
@@ -1153,8 +1131,6 @@ class Cache:
             memoized_fn.cache_timeout = timeout
             memoized_fn.make_cache_key = self._memoize_make_cache_key(
                 make_name=make_name,
-                timeout=memoized_fn,
-                forced_update=False,
                 hash_method=hash_method,
                 source_check=source_check,
                 args_to_ignore=args_to_ignore,

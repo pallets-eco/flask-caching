@@ -88,7 +88,14 @@ def test_memoize_uses_public_methods(app, recording_cache):
             return a + b
 
         big_foo(5, 2)
-        assert recording_cache.calls == ["get_many", "set_many", "get", "set"]
+        assert recording_cache.calls == [
+            "get_many",
+            "set_many",
+            "get",
+            "set",
+            "get_many",  # memoize version gets read
+            "set_many",  # memoize version gets updated
+        ]
 
         recording_cache.calls.clear()
         big_foo(5, 2)

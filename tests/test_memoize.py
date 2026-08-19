@@ -91,27 +91,85 @@ def test_memoize_timeout(app, clock):
         assert big_foo(5, 2) != result
 
 
-def test_memoize_dynamic_timeout_via_callable_timeout(app, clock):
-    app.config["CACHE_DEFAULT_TIMEOUT"] = 1
-    cache = Cache(app)
+def test_memoize_entry_written_late_keeps_its_own_timeout(app, cache, clock):
+    with app.test_request_context():
+        runs = []
 
+        @cache.memoize(timeout=60)
+        def f(param):
+            runs.append(param)
+            return param.upper()
+
+        assert f("icecream") == "ICECREAM"
+        clock.advance(59)
+        assert f("waffles") == "WAFFLES"
+
+        # t=61: the version key used to expire here and orphan both entries.
+        clock.advance(2)
+        assert f("waffles") == "WAFFLES"
+        assert runs == ["icecream", "waffles"]
+
+        # t=120: past this entry's own timeout, so it expires normally.
+        clock.advance(59)
+        assert f("waffles") == "WAFFLES"
+        assert runs == ["icecream", "waffles", "waffles"]
+
+
+def test_memoize_version_key_outlives_newest_entry(app, cache, clock):
     with app.test_request_context():
 
-        @cache.memoize(
-            # This should override the timeout to be 2 seconds
-            timeout=lambda rv: 2 if isinstance(rv, int) else 1
-        )
-        def big_foo(a, b):
-            return a + b + random.randrange(0, 100000)
+        @cache.memoize(timeout=60)
+        def f(param):
+            return param.upper()
 
-        result = big_foo(5, 2)
-        assert big_foo(5, 2) == result
+        version_key = cache._memvname(function_namespace(f.uncached)[0])
 
-        clock.advance(1)  # after 1 second, cache is still active
-        assert big_foo(5, 2) == result
+        f("a")
+        clock.advance(50)
+        # t=50: this entry expires at t=110, so the version key has to as well.
+        f("b")
 
-        clock.advance(1)  # after 2 seconds, cache is not still active
-        assert big_foo(5, 2) != result
+        clock.advance(59)
+        # t=109: entry "b" still has a second left, so its version must be live.
+        assert cache.get(version_key) is not None
+
+
+def test_memoize_version_key_expires_once_its_entries_have(app, cache, clock):
+    with app.test_request_context():
+
+        @cache.memoize(timeout=60)
+        def f(param):
+            return param.upper()
+
+        f("a")
+        version_key = cache._memvname(function_namespace(f.uncached)[0])
+        assert cache.get(version_key) is not None
+
+        clock.advance(61)
+        assert cache.get(version_key) is None
+
+
+def test_memoize_delete_resets_version_key(app, cache, clock):
+    with app.test_request_context():
+        runs = []
+
+        @cache.memoize(timeout=60)
+        def f(param):
+            runs.append(param)
+            return param.upper()
+
+        f("a")
+        assert runs == ["a"]
+
+        cache.delete_memoized(f)
+        assert f("a") == "A"
+        assert runs == ["a", "a"]
+
+        clock.advance(3600)
+        f("b")
+        clock.advance(30)
+        assert f("b") == "B"
+        assert runs == ["a", "a", "b"]
 
 
 def test_memoize_annotated(app, cache):
@@ -396,7 +454,7 @@ def test_memoize_classarg(app, cache):
     def bar(a):
         return a.value + random.random()
 
-    class Adder:  # noqa: B903
+    class Adder:
         def __init__(self, value):
             self.value = value
 
@@ -740,7 +798,7 @@ def test_memoize_multiple_arg_kwarg_calls(app, cache):
                 c = [1, 1]
             if d is None:
                 d = [1, 1]
-            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
+            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
 
         result_a = big_foo([5, 3, 2], [1], c=[3, 3], d=[3, 3])
 
@@ -758,7 +816,7 @@ def test_memoize_multiple_arg_kwarg_delete(app, cache):
                 c = [1, 1]
             if d is None:
                 d = [1, 1]
-            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
+            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
 
         result_a = big_foo([5, 3, 2], [1], c=[3, 3], d=[3, 3])
         cache.delete_memoized(big_foo, [5, 3, 2], [1], [3, 3], [3, 3])
@@ -867,8 +925,6 @@ def test_memoize_none(app, cache):
         def memoize_none(param):
             call_counter[param] += 1
 
-            return None
-
         memoize_none(1)
 
         # The memoized function should have been called
@@ -899,8 +955,6 @@ def test_memoize_never_accept_none(app, cache):
         @cache.memoize()
         def memoize_none(param):
             call_counter[param] += 1
-
-            return None
 
         memoize_none(1)
 
@@ -988,8 +1042,8 @@ def test_memoize_source_check_from_config(app):
         assert big_foo(5, 2) == first_try
 
         @cache.memoize()
-        def big_foo(a, b):
-            return str(time.time())  # noqa: F811
+        def big_foo(a, b):  # noqa: F811
+            return str(time.time())
 
         assert big_foo(5, 2) != first_try
 
