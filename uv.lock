@@ -647,6 +647,10 @@ tests = [
     { name = "pytest-xprocess" },
     { name = "redis" },
 ]
+tox = [
+    { name = "tox" },
+    { name = "tox-uv" },
+]
 typing = [
     { name = "mypy" },
     { name = "pyright" },
@@ -710,6 +714,10 @@ tests = [
     { name = "pytest-cov" },
     { name = "pytest-xprocess" },
     { name = "redis" },
+]
+tox = [
+    { name = "tox", specifier = ">=4.39" },
+    { name = "tox-uv" },
 ]
 typing = [
     { name = "mypy" },

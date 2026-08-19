@@ -29,12 +29,15 @@ Chat = "https://discord.gg/pallets"
 [dependency-groups]
 dev = [
     "ruff",
-    "tox>=4.39",
-    "tox-uv",
+    {include-group = "tox"},
     {include-group = "pre-commit"},
     {include-group = "docs"},
     {include-group = "tests"},
     {include-group = "typing"},
+]
+tox = [
+    "tox>=4.39",
+    "tox-uv",
 ]
 pre-commit = [
     "pre-commit",
