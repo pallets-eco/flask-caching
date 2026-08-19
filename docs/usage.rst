@@ -29,12 +29,6 @@ a subclass of `flask.Response`::
             timeout=50,
         )
 
-.. versionchanged:: 2.5.0
-    A dynamic timeout can also be achieved via setting ``@cached``'s ``timeout``
-    argument to a callable which takes the decorated function's output as a
-    positional argument and returns ``None`` or an integer. Callable timeout is
-    also available to ``@memoize``.
-
 .. warning::
 
     When using ``cached`` on a view, take care to put it between Flask's
@@ -172,12 +166,6 @@ every time this information is needed you might do something like the following:
             def __repr__(self):
                 return "%s(%s)" % (self.__class__.__name__, self.id)
 
-
-.. versionchanged:: 2.5.0
-    A dynamic timeout can be achieved via setting ``@memoize``'s ``timeout``
-    argument to a callable which takes the decorated function's output as a
-    positional argument and returns ``None`` or an integer. Callable timeout is
-    also available to ``@cached``.
 
 
 Deleting memoize cache
@@ -558,7 +546,9 @@ and the decorators:
 
 Note that :meth:`~Cache.memoize` also uses :meth:`~Cache.get_many` and
 :meth:`~Cache.set_many` for its internal version keys, so an override will see
-that bookkeeping traffic as well.
+that bookkeeping traffic as well. A cache miss makes two such round trips: one
+to read the version before building the key, and one after the entry is written
+to update the version keys expiry.
 
 To reach backend specific functionality that :class:`Cache` does not proxy, use
 the :attr:`Cache.cache` property instead of subclassing.

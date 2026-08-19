@@ -60,7 +60,9 @@ Unreleased
 - The ``{% cache %}`` Jinja tag no longer propagates backend errors. If the
   cache is unavailable, the block is rendered normally instead of raising,
   matching the existing behavior of ``@memoize``. :issue:`564` :pr:`565`
-- Added support for callable ``timeout`` in ``@cached`` and ``@memoize``. :pr:`401`
+- Fix ``@memoize`` invalidating a function's entire cache by not updating the
+  memoize version key's timeout. It is now refreshed each time an entry is written,
+  with that entry's own timeout. :issue:`531`
 
 
 Version 2.4.1
