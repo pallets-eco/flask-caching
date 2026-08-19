@@ -1,6 +1,7 @@
 import random
 import time
 
+import flask
 import pytest
 
 from flask_caching import Cache
@@ -333,3 +334,69 @@ def test_generator(app, cache):
 
         time_str = gen_yield()
         assert gen_yield() == time_str
+
+
+def test_generator_of_strings_is_joined(app, cache):
+    """A generator of strings is cached as one string, not a list."""
+    with app.test_request_context():
+
+        @cache.cached()
+        def gen():
+            yield "<p>"
+            yield "hello"
+            yield "</p>"
+
+        assert gen() == "<p>hello</p>"
+        assert gen() == "<p>hello</p>"
+
+
+def test_generator_of_bytes_is_joined(app, cache):
+    with app.test_request_context():
+
+        @cache.cached()
+        def gen():
+            yield b"<p>"
+            yield b"hello"
+            yield b"</p>"
+
+        assert gen() == b"<p>hello</p>"
+        assert gen() == b"<p>hello</p>"
+
+
+def test_generator_of_other_types_stays_a_list(app, cache):
+    with app.test_request_context():
+
+        @cache.cached()
+        def gen():
+            yield 1
+            yield 2
+
+        assert gen() == [1, 2]
+        assert gen() == [1, 2]
+
+
+def test_cached_view_returning_stream_template(app, cache):
+    """See issue #511, a streamed view must not be cached as a JSON array."""
+
+    @app.route("/stream")
+    @cache.cached()
+    def stream():
+        return flask.stream_template("test_stream.html", somevar="hello")
+
+    client = app.test_client()
+
+    for _ in range(2):
+        response = client.get("/stream")
+        assert response.content_type == "text/html; charset=utf-8"
+        assert response.get_data(as_text=True) == "<html><body>hello</body></html>"
+
+
+def test_memoized_generator_of_strings_is_joined(app, cache):
+    @cache.memoize()
+    def gen(prefix):
+        yield prefix
+        yield "hello"
+
+    assert gen("a") == "ahello"
+    assert gen("a") == "ahello"
+    assert gen("b") == "bhello"

@@ -42,6 +42,7 @@ from flask_caching.utils import function_namespace
 from flask_caching.utils import get_arg_default
 from flask_caching.utils import get_arg_names
 from flask_caching.utils import get_id
+from flask_caching.utils import join_generator
 from flask_caching.utils import make_template_fragment_key as make_template_fragment_key
 from flask_caching.utils import wants_args
 
@@ -606,7 +607,7 @@ class Cache:
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
                     if inspect.isgenerator(rv):
-                        rv = [val for val in rv]
+                        rv = join_generator(rv)
 
                     if response_filter is None or response_filter(rv):
                         cache_timeout = cached_fn.cache_timeout
@@ -1100,7 +1101,7 @@ class Cache:
                 if not found:
                     rv = self._call_fn(f, *args, **kwargs)
                     if inspect.isgenerator(rv):
-                        rv = [val for val in rv]
+                        rv = join_generator(rv)
 
                     if response_filter is None or response_filter(rv):
                         cache_timeout = memoized_fn.cache_timeout
