@@ -15,8 +15,8 @@ Cache API
 .. module:: flask_caching
 .. autoclass:: Cache
    :members: cache, init_app, get, set, add, delete, get_many, set_many,
-             delete_many, get_dict, unlink, has, clear, cached, memoize,
-             delete_memoized, delete_memoized_verhash
+             delete_many, get_dict, unlink, has, clear, cached, delete_cached,
+             memoize, delete_memoized, delete_memoized_verhash
 
 
 .. autoclass:: CachedResponse

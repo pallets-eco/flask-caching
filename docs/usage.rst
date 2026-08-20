@@ -43,6 +43,52 @@ a subclass of `flask.Response`::
     ``@route`` decorator, and not the result of your view function.
 
 
+Deleting Cached Views
+`````````````````````
+
+When you want to remove the value of a cached view you can use :meth:`~Cache.delete_cached`
+instead of :meth:`~Cache.delete`. :meth:`~Cache.delete_cached`. builds the key of the
+decorated view and deletes the cache in one go::
+
+    @app.route("/user/<name>")
+    @cache.cached(timeout=50)
+    def user(name):
+        return render_template("user.html", name=name)
+
+    cache.delete_cached(user, "/user/Fred")
+
+Outside of a request context the view doesn't know which request was used to build
+the cache key. So to make it work outside of a request context you have to pass the
+``path``. You can also use the view function and the named arguments of the view
+in which case the path is built using ``url_for()``::
+
+    cache.delete_cached(user, name="bob")
+
+When you cache views with ``query_string=True`` you also have to pass the query string/args
+because otherwise the cache key cannot be built::
+
+    @app.route("/works")
+    @cache.cached(timeout=50, query_string=True)
+    def works():
+        return do_search(request.args)
+
+    cache.delete_cached(works, "/works", "limit=15&mock=true")
+
+You can use either pass the query string as a string, a mapping or an iterable of
+``(key, value)`` pairs::
+
+    cache.delete_cached(works, "/works", {"limit": 15, "mock": "true"})
+
+Additionally, ``path`` and ``query_args`` are also supported by the views ``make_cache_key()``::
+
+    key = works.make_cache_key(path="/works", query_args={"limit": 15})
+
+.. note::
+
+    If you view has arguments named ``path`` or ``query_args`` you have to build the key
+    from via the request context!
+
+
 Caching Pluggable View Classes
 ------------------------------
 
@@ -168,7 +214,7 @@ every time this information is needed you might do something like the following:
 
 
 
-Deleting memoize cache
+Deleting Memoize Cache
 ``````````````````````
 
 .. versionadded:: 0.2
@@ -384,6 +430,9 @@ string instead of ``key_prefix``. The arguments are sorted before hashing, so
     def search():
         return do_search(request.args)
 
+Deleting such an entry needs the query string as well, see
+`Deleting cached views`_.
+
 
 response_hit_indication
 ```````````````````````
@@ -468,7 +517,8 @@ Considering we have ``render_form_field`` and ``render_submit`` macros::
 Clearing Cache
 --------------
 
-See :meth:`~Cache.clear`.
+See :meth:`~Cache.clear`. To delete the entry of a single view see
+`Deleting cached views`_.
 
 Here's an example script to empty your application's cache:
 

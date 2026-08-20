@@ -2,7 +2,14 @@ import inspect
 import string
 import sys
 from collections.abc import Callable
+from collections.abc import Iterable
+from collections.abc import Mapping
 from typing import Any
+from typing import cast
+from typing import TypeAlias
+from urllib.parse import parse_qsl
+
+from werkzeug.datastructures import MultiDict
 
 if sys.version_info >= (3, 14):
     import annotationlib
@@ -17,6 +24,8 @@ TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = str.maketrans({k: None for k in del_chars})
+
+_QueryArgs: TypeAlias = str | Mapping[str, Any] | Iterable[tuple[str, Any]]
 
 
 def wants_args(f: Callable[..., Any]) -> bool:
@@ -50,6 +59,22 @@ def get_arg_default(f: Callable[..., Any], position: int) -> Any:
     arg = get_function_parameters(f)[position]
     arg_def = arg.default
     return arg_def if arg_def != inspect.Parameter.empty else None
+
+
+def query_args_as_pairs(query_args: _QueryArgs) -> list[tuple[str, str]]:
+    """Convert the accepted query args to (key, value) pairs."""
+    if isinstance(query_args, str):
+        return parse_qsl(query_args.lstrip("?"), keep_blank_values=True)
+    if isinstance(query_args, MultiDict):
+        items: Iterable[tuple[str, Any]] = cast(
+            "MultiDict[str, Any]", query_args
+        ).items(multi=True)
+    elif isinstance(query_args, Mapping):
+        items = cast("Mapping[str, Any]", query_args).items()
+    else:
+        items = query_args
+
+    return [(key, str(value)) for key, value in items]
 
 
 def get_id(obj: Any) -> str:

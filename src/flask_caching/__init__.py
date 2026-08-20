@@ -17,6 +17,7 @@ import uuid
 import warnings
 from collections import OrderedDict
 from collections.abc import Callable
+from collections.abc import Iterable
 from typing import Any
 from typing import cast
 from typing import Concatenate
@@ -26,7 +27,6 @@ from typing import Protocol
 from typing import TypeAlias
 from typing import TypeVar
 
-from blinker import Namespace
 from cachelib.serializers import BaseSerializer
 from flask import current_app
 from flask import Flask
@@ -36,19 +36,24 @@ from flask import Response
 from flask import url_for
 from werkzeug.utils import import_string
 
-from flask_caching.backends.base import BaseCache
-from flask_caching.backends.simplecache import SimpleCache
-from flask_caching.utils import function_namespace
-from flask_caching.utils import get_arg_default
-from flask_caching.utils import get_arg_names
-from flask_caching.utils import get_id
-from flask_caching.utils import join_generator
-from flask_caching.utils import make_template_fragment_key as make_template_fragment_key
-from flask_caching.utils import wants_args
+from .backends.base import BaseCache
+from .backends.simplecache import SimpleCache
+from .signals import cache_memoize_hit as cache_memoize_hit
+from .signals import cache_memoize_miss as cache_memoize_miss
+from .signals import cache_view_hit as cache_view_hit
+from .signals import cache_view_miss as cache_view_miss
+from .utils import _QueryArgs
+from .utils import function_namespace
+from .utils import get_arg_default
+from .utils import get_arg_names
+from .utils import get_id
+from .utils import join_generator
+from .utils import make_template_fragment_key as make_template_fragment_key
+from .utils import query_args_as_pairs
+from .utils import wants_args
 
 logger = logging.getLogger(__name__)
 
-_signals = Namespace()
 
 # The initial version timeout of a memoize version key. Will be overwritten on the first
 # write with the memoize value timeout
@@ -63,6 +68,7 @@ SUPPORTED_HASH_FUNCTIONS = [
     hashlib.md5,
 ]
 
+
 P = ParamSpec("P")
 # The parameters left over after ``__get__`` binds the instance.
 P2 = ParamSpec("P2")
@@ -72,11 +78,6 @@ T = TypeVar("T")
 # return types are contravariant and covariant respectively.
 T_co = TypeVar("T_co", covariant=True)
 T_contra = TypeVar("T_contra", contravariant=True)
-
-cache_view_hit = _signals.signal("cache-view-hit")
-cache_view_miss = _signals.signal("cache-view-miss")
-cache_memoize_hit = _signals.signal("cache-memoize-hit")
-cache_memoize_miss = _signals.signal("cache-memoize-miss")
 
 
 class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
@@ -158,6 +159,10 @@ class _MemoizedFunction(Protocol[P, R]):
 # accessed on the class, or a method accessed on an instance.
 _AnyMemoizedFunction: TypeAlias = (
     "_MemoizedFunction[..., Any] | _BoundMemoizedFunction[Any, ..., Any]"
+)
+
+_AnyCachedFunction: TypeAlias = (
+    "_CachedFunction[..., Any] | _BoundCachedFunction[Any, ..., Any]"
 )
 
 
@@ -463,6 +468,20 @@ class Cache:
 
                     readable and writable
 
+                    Outside of a request context, pass ``path`` to build the
+                    key for a given ``request.path`` and, for
+                    ``query_string=True``, ``query_args`` to build the key for
+                    a given query string::
+
+                        key = view.make_cache_key(
+                            path="/works", query_args="limit=15&mock=true"
+                        )
+                        cache.delete(key)
+
+                    ``query_args`` accepts a query string, a mapping or an
+                    iterable of ``(key, value)`` pairs. See
+                    :meth:`delete_cached` for the shorthand.
+
         :param timeout: Default None. If set to an integer, will cache for that
                         amount of time. Unit of time is in seconds.
 
@@ -636,9 +655,20 @@ class Cache:
                     kwargs[arg_name] = arg
 
                 use_request = kwargs.pop("use_request", False)
-                return _make_cache_key(args, kwargs, use_request=use_request)
+                path = kwargs.pop("path", None)
+                query_args = kwargs.pop("query_args", None)
+                return _make_cache_key(
+                    args,
+                    kwargs,
+                    use_request=use_request,
+                    path=path,
+                    query_args=query_args,
+                )
 
-            def _make_cache_key_query_string() -> str:
+            def _make_cache_key_query_string(
+                path: str | None = None,
+                query_args: _QueryArgs | None = None,
+            ) -> str:
                 """Create consistent keys for query string arguments.
 
                 Produces the same cache key regardless of argument order, e.g.,
@@ -657,9 +687,12 @@ class Cache:
                 # are the same, regardless of the order in which they are
                 # provided.
 
-                args_as_sorted_tuple = tuple(
-                    sorted(pair for pair in request.args.items(multi=True))
-                )
+                if query_args is None:
+                    pairs: Iterable[tuple[str, str]] = request.args.items(multi=True)
+                else:
+                    pairs = query_args_as_pairs(query_args)
+
+                args_as_sorted_tuple = tuple(sorted(pair for pair in pairs))
                 # ... now hash the sorted (key, value) tuple so it can be
                 # used as a key for cache. Turn them into bytes so that the
                 # hash function will accept them
@@ -678,26 +711,37 @@ class Cache:
                 if callable(key_prefix):
                     cache_key = key_prefix()
                 elif "%s" in key_prefix:
-                    cache_key = key_prefix % request.path
+                    cache_key = key_prefix % (request.path if path is None else path)
                 else:
                     cache_key = key_prefix
 
                 return cache_key + cache_hash
 
             def _make_cache_key(
-                args: tuple[Any, ...], kwargs: dict[str, Any], use_request: bool
+                args: tuple[Any, ...],
+                kwargs: dict[str, Any],
+                use_request: bool,
+                path: str | None = None,
+                query_args: _QueryArgs | None = None,
             ) -> str:
                 if query_string:
-                    return _make_cache_key_query_string()
+                    return _make_cache_key_query_string(path, query_args)
                 else:
                     cache_key: str
                     if callable(key_prefix):
                         cache_key = key_prefix()
                     elif "%s" in key_prefix:
-                        if use_request:
+                        if path is not None:
+                            cache_key = key_prefix % path
+                        elif use_request:
                             cache_key = key_prefix % request.path
                         else:
-                            cache_key = key_prefix % url_for(f.__name__, **kwargs)
+                            # Outside of a request context ``url_for``
+                            # defaults to an external URL, which would not
+                            # match the key the request stored.
+                            cache_key = key_prefix % url_for(
+                                f.__name__, _external=False, **kwargs
+                            )
                     else:
                         cache_key = key_prefix
 
@@ -719,6 +763,39 @@ class Cache:
             return cached_fn
 
         return decorator
+
+    def delete_cached(
+        self,
+        f: _AnyCachedFunction,
+        path: str | None = None,
+        query_args: _QueryArgs | None = None,
+        **kwargs: Any,
+    ) -> bool:
+        """Delete the cached value of a :meth:`cached` decorated function.
+
+        Example::
+
+            @app.route("/works")
+            @cache.cached(query_string=True)
+            def view_works():
+                return do_search(request.args)
+
+            cache.delete_cached(view_works, "/works", {"limit": 15})
+
+        If you are calling this outside of a request context pass ``path`` and
+        when the function was decorated with ``query_string=True`` you also
+        have to pass ``query_args``.
+
+        :param f: The decorated function whose cached value to delete.
+        :param path: The ``request.path`` the value was cached for.
+        :param query_args: The query string the value was cached for, as a
+                           query string, a mapping or an iterable of
+                           ``(key, value)`` pairs. Only used when the function
+                           was decorated with ``query_string=True``.
+        :param kwargs: The view arguments, passed to ``url_for()`` to build
+                       the path when ``path`` is not given.
+        """
+        return self.delete(f.make_cache_key(path=path, query_args=query_args, **kwargs))
 
     def _memvname(self, funcname: str) -> str:
         return funcname + "_memver"

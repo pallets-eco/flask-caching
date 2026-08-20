@@ -601,3 +601,143 @@ def test_hit_cache(app, cache, clock):
     assert tc.get("/indication-false").headers.get("hit_cache") is None
     clock.advance(2)
     assert tc.get("/indication-false").headers.get("hit_cache") is None
+
+
+def test_delete_cached_query_string(app, cache):
+    counter = itertools.count()
+
+    @app.route("/works")
+    @cache.cached(query_string=True)
+    def view_works():
+        return str(next(counter))
+
+    tc = app.test_client()
+
+    first = tc.get("/works?mock=true&offset=20&limit=15").get_data(as_text=True)
+    assert tc.get("/works?mock=true&offset=20&limit=15").get_data(as_text=True) == first
+
+    with app.app_context():
+        assert cache.delete_cached(view_works, "/works", "limit=15&mock=true&offset=20")
+
+    second = tc.get("/works?mock=true&offset=20&limit=15").get_data(as_text=True)
+    assert second != first
+
+    with app.app_context():
+        assert cache.delete_cached(
+            view_works, "/works", {"offset": 20, "limit": 15, "mock": "true"}
+        )
+
+    third = tc.get("/works?mock=true&offset=20&limit=15").get_data(as_text=True)
+    assert third != second
+
+    with app.app_context():
+        assert cache.delete_cached(
+            view_works,
+            "/works",
+            [("offset", "20"), ("mock", "true"), ("limit", "15")],
+        )
+
+    assert tc.get("/works?mock=true&offset=20&limit=15").get_data(as_text=True) != third
+
+
+def test_delete_cached_query_string_only_deletes_matching_arguments(app, cache):
+    counter = itertools.count()
+
+    @app.route("/works")
+    @cache.cached(query_string=True)
+    def view_works():
+        return str(next(counter))
+
+    tc = app.test_client()
+
+    kept = tc.get("/works?limit=15").get_data(as_text=True)
+    deleted = tc.get("/works?limit=20").get_data(as_text=True)
+
+    with app.app_context():
+        assert cache.delete_cached(view_works, "/works", "limit=20")
+
+    assert tc.get("/works?limit=15").get_data(as_text=True) == kept
+    assert tc.get("/works?limit=20").get_data(as_text=True) != deleted
+
+
+def test_delete_cached_query_string_repeated_parameters(app, cache):
+    counter = itertools.count()
+
+    @app.route("/works")
+    @cache.cached(query_string=True)
+    def view_works():
+        return str(next(counter))
+
+    tc = app.test_client()
+
+    first = tc.get("/works?user[]=123&user[]=124").get_data(as_text=True)
+
+    with app.app_context():
+        assert cache.delete_cached(view_works, "/works", "user[]=124&user[]=123")
+
+    assert tc.get("/works?user[]=123&user[]=124").get_data(as_text=True) != first
+
+
+def test_delete_cached_view(app, cache):
+    counter = itertools.count()
+
+    @app.route("/user/<name>")
+    @cache.cached()
+    def view_user(name):
+        return f"{name}{next(counter)}"
+
+    tc = app.test_client()
+
+    first = tc.get("/user/bob").get_data(as_text=True)
+    assert tc.get("/user/bob").get_data(as_text=True) == first
+
+    with app.app_context():
+        assert cache.delete_cached(view_user, "/user/bob")
+
+    assert tc.get("/user/bob").get_data(as_text=True) != first
+
+
+def test_delete_cached_view_builds_the_path_with_url_for(app, cache):
+    app.config["SERVER_NAME"] = "localhost"
+    counter = itertools.count()
+
+    @app.route("/user/<name>")
+    @cache.cached()
+    def view_user(name):
+        return f"{name}{next(counter)}"
+
+    tc = app.test_client()
+
+    first = tc.get("/user/bob").get_data(as_text=True)
+
+    with app.app_context():
+        assert cache.delete_cached(view_user, name="bob")
+
+    assert tc.get("/user/bob").get_data(as_text=True) != first
+
+
+def test_make_cache_key_outside_request_context(app, cache):
+    app.config["SERVER_NAME"] = "localhost"
+
+    @app.route("/works")
+    @cache.cached(query_string=True)
+    def view_works():
+        return "works"
+
+    @app.route("/user/<name>")
+    @cache.cached()
+    def view_user(name):
+        return name
+
+    with app.test_request_context("/works?mock=true&limit=15"):
+        in_request = view_works.make_cache_key()
+
+    with app.test_request_context("/user/bob"):
+        in_request_user = view_user.make_cache_key(name="bob")
+
+    with app.app_context():
+        assert (
+            view_works.make_cache_key(path="/works", query_args="limit=15&mock=true")
+            == in_request
+        )
+        assert view_user.make_cache_key(name="bob") == in_request_user
