@@ -21,7 +21,7 @@ Set the timeout to ``None`` for no timeout, but with custom keys::
     ...
     {% endcache %}
 
-Set timeout to ``del`` to delete cached value::
+Set the timeout to ``del`` to delete the cached value::
 
     {% cache 'del' key1 %}
     ...
@@ -65,7 +65,7 @@ class CacheExtension(Extension):
 
         #: Parse fragment name
         #: Grab the fragment name if it exists
-        #: otherwise, default to the old method of using the templates
+        #: otherwise, default to the old method of using the template's
         #: lineno to maintain backwards compatibility.
         if parser.stream.skip_if("comma"):
             args.append(parser.parse_expression())

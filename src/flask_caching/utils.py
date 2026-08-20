@@ -62,7 +62,7 @@ def get_id(obj: Any) -> str:
 def function_namespace(
     f: Callable[..., Any], args: Any = None
 ) -> tuple[str, str | None]:
-    """Attempts to returns unique namespace for function"""
+    """Attempts to return a unique namespace for the function."""
     m_args = get_arg_names(f)
 
     instance_token = None
