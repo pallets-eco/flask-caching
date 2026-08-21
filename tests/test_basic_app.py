@@ -57,10 +57,22 @@ def test_init_app_sets_app_attribute(app):
 def test_init_app_multi_apps(app, redis_server):
     cache = Cache()
     app1 = Flask(__name__)
-    app1.config.from_mapping({"CACHE_TYPE": "RedisCache", "CACHE_KEY_PREFIX": "foo"})
+    app1.config.from_mapping(
+        {
+            "CACHE_TYPE": "RedisCache",
+            "CACHE_KEY_PREFIX": "foo",
+            "CACHE_REDIS_PORT": 6360,
+        }
+    )
 
     app2 = Flask(__name__)
-    app2.config.from_mapping({"CACHE_TYPE": "RedisCache", "CACHE_KEY_PREFIX": "bar"})
+    app2.config.from_mapping(
+        {
+            "CACHE_TYPE": "RedisCache",
+            "CACHE_KEY_PREFIX": "bar",
+            "CACHE_REDIS_PORT": 6360,
+        }
+    )
     cache.init_app(app1)
     cache.init_app(app2)
 

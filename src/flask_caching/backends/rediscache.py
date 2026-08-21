@@ -157,12 +157,6 @@ class RedisSentinelCache(RedisCache):
         ignore_delete_many_errors: bool = False,
         **kwargs: Any,
     ) -> None:
-        super().__init__(
-            key_prefix=key_prefix,
-            default_timeout=default_timeout,
-            ignore_delete_many_errors=ignore_delete_many_errors,
-        )
-
         try:
             import redis.sentinel
         except ImportError as e:
@@ -191,8 +185,17 @@ class RedisSentinelCache(RedisCache):
             **kwargs,
         )
 
-        self._write_client = sentinel.master_for(master)
-        self._read_client = sentinel.slave_for(master)
+        write_client = sentinel.master_for(master)
+        read_client = sentinel.slave_for(master)
+
+        super().__init__(
+            host=write_client,
+            key_prefix=key_prefix,
+            default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
+        )
+
+        self._read_client = read_client
 
     @classmethod
     def factory(
@@ -252,12 +255,6 @@ class RedisClusterCache(RedisCache):
         ignore_delete_many_errors: bool = False,
         **kwargs: Any,
     ) -> None:
-        super().__init__(
-            key_prefix=key_prefix,
-            default_timeout=default_timeout,
-            ignore_delete_many_errors=ignore_delete_many_errors,
-        )
-
         if kwargs.get("decode_responses", None):
             raise ValueError("decode_responses is not supported by RedisCache.")
 
@@ -295,8 +292,12 @@ class RedisClusterCache(RedisCache):
                 **kwargs,
             )
 
-        self._write_client = cluster
-        self._read_client = cluster
+        super().__init__(
+            host=cluster,
+            key_prefix=key_prefix,
+            default_timeout=default_timeout,
+            ignore_delete_many_errors=ignore_delete_many_errors,
+        )
 
     @classmethod
     def factory(
