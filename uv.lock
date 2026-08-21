@@ -131,11 +131,11 @@ wheels = [
 
 [[package]]
 name = "cachelib"
-version = "0.16.0"
+version = "0.16.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/41/81/c647a9491beb1b372b164a6489ec386e9fa3fd99f86273d86bae8364f4b4/cachelib-0.16.0.tar.gz", hash = "sha256:0417107f32beebaf6cb1895112f4cf3c92da32fd9477f2c77b95afa10774d16c", size = 132676, upload-time = "2026-08-20T18:29:45.093Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/ec/46d560764b9e3a165247da1137cff9a8241fbeae72b78f948b47f02b20e1/cachelib-0.16.1.tar.gz", hash = "sha256:597f1cba00e83b4a32d32504873367c253999a26a9ab32546a94766ff24c7a8b", size = 133807, upload-time = "2026-08-21T18:05:26.145Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/eb/428739afc954952634acad8befc6a7c8c748b1ef71bfb4a5e65d867612de/cachelib-0.16.0-py3-none-any.whl", hash = "sha256:5f8ef287471936178ccbcaac38d729248d2b4135a5d17a1eb477027bdea1c612", size = 26035, upload-time = "2026-08-20T18:29:43.752Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/98/57ccfb80c7b65b4e1d6b9aa40591506bb84fdadd24f34f43893d1af10408/cachelib-0.16.1-py3-none-any.whl", hash = "sha256:365ba096b1df85fe1e6df26716026c929076b218eb359c2b02c9a0674d26fe01", size = 26759, upload-time = "2026-08-21T18:05:24.702Z" },
 ]
 
 [[package]]
@@ -661,7 +661,7 @@ typing = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cachelib", specifier = ">=0.16.0" },
+    { name = "cachelib", specifier = ">=0.16.1" },
     { name = "flask", specifier = ">=3.0" },
 ]
 
