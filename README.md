@@ -1,6 +1,7 @@
 # Flask-Caching
 
-A fork of the [Flask-cache](https://github.com/thadeusb/flask-cache) extension which adds easy cache support to Flask.
+A fork of the [Flask-cache](https://github.com/thadeusb/flask-cache) extension
+which adds easy cache support to Flask.
 
 ## Pallets Community Ecosystem
 
@@ -14,11 +15,19 @@ A fork of the [Flask-cache](https://github.com/thadeusb/flask-cache) extension w
 
 ## Installing
 
-Install and update using [pip](https://pip.pypa.io/en/stable/getting-started/):
+You can install the extension with the following commands:
 
 ```text
-$ pip install -U flask-caching
+$ pip install -U Flask-Caching
 ```
+
+or alternatively with uv:
+
+```text
+$ uv add Flask-Caching
+```
+
+Flask-Caching 2.5.0 supports Python 3.11+.
 
 ## Links
 

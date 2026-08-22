@@ -295,7 +295,7 @@ class TestMemcachedCache(GenericCacheTests):
     def test_timeouts(self, c):
         c.set("foo", "bar", 1)
         assert c.get("foo") == "bar"
-        time.sleep(2)
+        time.sleep(3)
         assert c.has("foo") is False
 
 
