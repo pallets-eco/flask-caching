@@ -34,6 +34,7 @@ from flask import g
 from flask import request
 from flask import Response
 from flask import url_for
+from werkzeug.exceptions import HTTPException
 from werkzeug.utils import import_string
 
 from .backends.base import BaseCache
@@ -369,6 +370,15 @@ class Cache:
             return ensure_sync(fn)(*args, **kwargs)
         return fn(*args, **kwargs)
 
+    def _call_fn_or_exception(
+        self, fn: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> Any:
+        """Returns an ``HTTPException`` instead of propagating it."""
+        try:
+            return self._call_fn(fn, *args, **kwargs)
+        except HTTPException as e:
+            return e
+
     @property
     def cache(self) -> SimpleCache:
         """The backend instance the proxy methods delegate to. Use this to
@@ -572,6 +582,13 @@ class Cache:
         :param response_hit_indication: Default False.
                              If True, it will add to response header field 'hit_cache'
                              if used cache.
+
+        .. versionchanged:: 2.5.0
+            A ``werkzeug.exceptions.HTTPException`` raised by the decorated
+            function, for example through Flask's ``abort()``, is now cached
+            like a returned response and re-raised on a cache hit. Use
+            ``response_filter``, which is given the exception's response, to
+            keep it out of the cache.
         """
 
         def decorator(f: Callable[P, R]) -> _CachedFunction[P, R]:
@@ -642,12 +659,17 @@ class Cache:
                         cache=self, cache_key=cache_key, args=args, kwargs=kwargs
                     )
 
+                if found and isinstance(rv, HTTPException):
+                    raise rv
+
                 if not found:
-                    rv = self._call_fn(f, *args, **kwargs)
+                    rv = self._call_fn_or_exception(f, *args, **kwargs)
                     if inspect.isgenerator(rv):
                         rv = join_generator(rv)
 
-                    if response_filter is None or response_filter(rv):
+                    if response_filter is None or response_filter(
+                        rv.get_response() if isinstance(rv, HTTPException) else rv
+                    ):
                         cache_timeout = normalize_timeout(cached_fn.cache_timeout)
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
@@ -662,6 +684,9 @@ class Cache:
                             if self.app.debug:
                                 raise
                             logger.exception("Exception possibly due to cache backend.")
+
+                    if isinstance(rv, HTTPException):
+                        raise rv
                 return rv
 
             def default_make_cache_key(*args: Any, **kwargs: Any) -> str:
