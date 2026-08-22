@@ -43,12 +43,14 @@ from .signals import cache_memoize_miss as cache_memoize_miss
 from .signals import cache_view_hit as cache_view_hit
 from .signals import cache_view_miss as cache_view_miss
 from .utils import _QueryArgs
+from .utils import _Timeout
 from .utils import function_namespace
 from .utils import get_arg_default
 from .utils import get_arg_names
 from .utils import get_id
 from .utils import join_generator
 from .utils import make_template_fragment_key as make_template_fragment_key
+from .utils import normalize_timeout
 from .utils import query_args_as_pairs
 from .utils import wants_args
 from .utils import wants_extra_args
@@ -84,7 +86,7 @@ T_contra = TypeVar("T_contra", contravariant=True)
 class _BoundCachedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.cached` method accessed on an instance."""
 
-    cache_timeout: int | None
+    cache_timeout: _Timeout | None
     make_cache_key: Callable[..., str]
 
     @property
@@ -97,7 +99,7 @@ class _CachedFunction(Protocol[P, R]):
     """The type of the callable returned by :meth:`Cache.cached`."""
 
     uncached: Callable[P, R]
-    cache_timeout: int | None
+    cache_timeout: _Timeout | None
     make_cache_key: Callable[..., str]
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
@@ -122,7 +124,7 @@ class _CachedFunction(Protocol[P, R]):
 class _BoundMemoizedFunction(Protocol[T_contra, P, T_co]):
     """The type of a :meth:`Cache.memoize` method accessed on an instance."""
 
-    cache_timeout: int | None
+    cache_timeout: _Timeout | None
     make_cache_key: Callable[..., str]
     delete_memoized: Callable[[], None]
 
@@ -136,7 +138,7 @@ class _MemoizedFunction(Protocol[P, R]):
     """The type of the callable returned by :meth:`Cache.memoize`."""
 
     uncached: Callable[P, R]
-    cache_timeout: int | None
+    cache_timeout: _Timeout | None
     make_cache_key: Callable[..., str]
     delete_memoized: Callable[[], None]
 
@@ -175,13 +177,13 @@ class CachedResponse(Response):
 
     timeout: int | None = None
 
-    def __init__(self, response: Response, timeout: int | None) -> None:
+    def __init__(self, response: Response, timeout: _Timeout | None) -> None:
         # ``CachedResponse`` adopts the state of an existing Response in
         # place rather than calling ``Response.__init__``; copying
         # ``__dict__`` preserves headers, status and body without having
         # to round-trip the response through Werkzeug's constructor.
         self.__dict__ = response.__dict__
-        self.timeout = timeout
+        self.timeout = normalize_timeout(timeout)
 
 
 class Cache:
@@ -293,6 +295,14 @@ class Cache:
 
         if config["CACHE_OPTIONS"]:
             cache_options.update(config["CACHE_OPTIONS"])
+
+        cache_options["default_timeout"] = normalize_timeout(
+            cache_options["default_timeout"]
+        )
+
+        # Backends that are not created from cachelib read the timeout from
+        # config instead of cache_options.
+        config["CACHE_DEFAULT_TIMEOUT"] = cache_options["default_timeout"]
 
         if not hasattr(app, "extensions"):
             app.extensions = {}
@@ -419,7 +429,7 @@ class Cache:
 
     def cached(
         self,
-        timeout: int | None = None,
+        timeout: _Timeout | None = None,
         key_prefix: str | Callable[[], str] = "view/%s",
         unless: Callable[..., Any] | None = None,
         forced_update: Callable[..., Any] | None = None,
@@ -488,7 +498,9 @@ class Cache:
                     :meth:`delete_cached` for the shorthand.
 
         :param timeout: Default None. If set to an integer, will cache for that
-                        amount of time. Unit of time is in seconds.
+                        amount of time. Unit of time is in seconds. A
+                        ``datetime.timedelta`` is also accepted and is rounded
+                        up to whole seconds.
 
         :param key_prefix: Default 'view/%(request.path)s'. Beginning key to .
                            use for the cache key. `request.path` will be the
@@ -636,7 +648,7 @@ class Cache:
                         rv = join_generator(rv)
 
                     if response_filter is None or response_filter(rv):
-                        cache_timeout = cached_fn.cache_timeout
+                        cache_timeout = normalize_timeout(cached_fn.cache_timeout)
                         if isinstance(rv, CachedResponse):
                             cache_timeout = rv.timeout or cache_timeout
 
@@ -1048,7 +1060,7 @@ class Cache:
 
     def memoize(
         self,
-        timeout: int | None = None,
+        timeout: _Timeout | None = None,
         make_name: Callable[..., str] | None = None,
         unless: Callable[..., bool] | None = None,
         forced_update: Callable[..., bool] | None = None,
@@ -1101,7 +1113,9 @@ class Cache:
 
 
         :param timeout: Default None. If set to an integer, will cache for that
-                        amount of time. Unit of time is in seconds.
+                        amount of time. Unit of time is in seconds. A
+                        ``datetime.timedelta`` is also accepted and is rounded
+                        up to whole seconds.
 
         :param make_name: Default None. If set this is a function that accepts
                           a single argument, the function name, and returns a
@@ -1224,7 +1238,7 @@ class Cache:
                         rv = join_generator(rv)
 
                     if response_filter is None or response_filter(rv):
-                        cache_timeout = memoized_fn.cache_timeout
+                        cache_timeout = normalize_timeout(memoized_fn.cache_timeout)
 
                         try:
                             self.set(
