@@ -48,6 +48,9 @@ Unreleased
   cache hit with the cached value. Unlike ``forced_update`` it uses the value itself
   to check whether the cache is stale. Can be used in combination with ``forced_update``
   :issue:`392`
+- ``@cached`` now caches an ``HTTPException`` raised by the view (i.e. through ``abort()``).
+  This exception will now be re-raises on a cache hit. Use ``response_filter``,
+  to keep the exception out of the cache. :issue:`444`
 - Fix a ``@memoize`` cache-key collision when a parameter has a falsy
   default (e.g. ``0``, ``""``, ``False``): calling with the default was
   keyed the same as passing ``None``, returning the wrong cached result.

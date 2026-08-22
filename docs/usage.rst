@@ -460,6 +460,37 @@ of the cache::
     def index():
         return render_template('index.html')
 
+.. versionchanged:: 2.5.0
+
+    An ``HTTPException`` raised by a view for example through
+    :func:`flask.abort` is cached like a returned response and re-raised on a
+    cache hit, so :meth:`~flask.Flask.errorhandler` functions still run. The
+    filter is called with the exception's response.
+
+.. warning::
+
+    A view that aborts because of a server problem (i.e. status code ``503``)
+    keeps returning that error until the entry expires. Use ``response_filter`` to
+    keep such a status code out of the cache.
+
+In case a view returns just a plain string (has no ``status_code``), use a default
+value for the response. For example::
+
+    def not_server_error(response):
+        return getattr(response, "status_code", 200) < 500
+
+    @app.route("/article/<slug>")
+    @cache.cached(timeout=50, response_filter=not_server_error)
+    def article(slug):
+        if not backend.healthy():
+            abort(503)  # raised again on every request
+
+        article = load(slug)
+        if article is None:
+            abort(404)  # cached and re-raised for 50 seconds
+
+        return render_template("article.html", article=article)
+
 
 cache_none
 ``````````
