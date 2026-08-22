@@ -160,6 +160,32 @@ def test_cached_view_forced_update(app, cache):
     assert second == rv.data.decode("utf-8")
 
 
+def test_cached_view_is_stale(app, cache):
+    stale = False
+    counter = itertools.count()
+
+    @app.route("/a")
+    @cache.cached(5, is_stale=lambda response: stale)
+    def view():
+        return str(next(counter))
+
+    tc = app.test_client()
+
+    rv = tc.get("/a")
+    first = rv.data.decode("utf-8")
+    rv = tc.get("/a")
+    assert first == rv.data.decode("utf-8")
+
+    stale = True
+    rv = tc.get("/a")
+    second = rv.data.decode("utf-8")
+    assert second != first
+
+    stale = False
+    rv = tc.get("/a")
+    assert second == rv.data.decode("utf-8")
+
+
 def test_generate_cache_key_from_different_view(app, cache):
     @app.route("/cake/<flavor>")
     @cache.cached()

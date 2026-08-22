@@ -51,6 +51,7 @@ from .utils import join_generator
 from .utils import make_template_fragment_key as make_template_fragment_key
 from .utils import query_args_as_pairs
 from .utils import wants_args
+from .utils import wants_extra_args
 
 logger = logging.getLogger(__name__)
 
@@ -422,6 +423,7 @@ class Cache:
         key_prefix: str | Callable[[], str] = "view/%s",
         unless: Callable[..., Any] | None = None,
         forced_update: Callable[..., Any] | None = None,
+        is_stale: Callable[..., Any] | None = None,
         response_filter: Callable[..., Any] | None = None,
         query_string: bool = False,
         hash_method: Callable[..., Any] | None = None,
@@ -509,6 +511,12 @@ class Cache:
                               is expired or not. Useful for background
                               renewal of cached functions.
 
+        :param is_stale: Default None. Called on a cache hit with the cached
+                         value as its first argument. If it is true the cached
+                         value will be recomputed. If the callable accepts more
+                         than one argument, the calls own arguments are passed
+                         after the cached value.
+
         :param response_filter: Default None. If not None, the callable is
                                 invoked after the cached function evaluation,
                                 and is given one argument, the response
@@ -569,15 +577,7 @@ class Cache:
                             *args, use_request=True, **kwargs
                         )
 
-                    if (
-                        callable(forced_update)
-                        and (
-                            forced_update(*args, **kwargs)
-                            if wants_args(forced_update)
-                            else forced_update()
-                        )
-                        is True
-                    ):
+                    if self._forced_update(forced_update, *args, **kwargs):
                         rv = None
                         found = False
                     else:
@@ -598,6 +598,10 @@ class Cache:
                                 found = False
                             else:
                                 found = self.has(cache_key)
+
+                        if found and self._is_stale(is_stale, rv, *args, **kwargs):
+                            rv = None
+                            found = False
                 except Exception:
                     if self.app.debug:
                         raise
@@ -1011,12 +1015,44 @@ class Cache:
 
         return bypass_cache
 
+    def _forced_update(
+        self,
+        forced_update: Callable[..., Any] | None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
+        if not callable(forced_update):
+            return False
+
+        # If forced_update() takes args, pass them in.
+        if wants_args(forced_update):
+            return forced_update(*args, **kwargs) is True
+
+        return forced_update() is True
+
+    def _is_stale(
+        self,
+        is_stale: Callable[..., Any] | None,
+        rv: Any,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
+        if not callable(is_stale):
+            return False
+
+        # If is_stale() takes args besides the cached value, pass them in.
+        if wants_extra_args(is_stale):
+            return is_stale(rv, *args, **kwargs) is True
+
+        return is_stale(rv) is True
+
     def memoize(
         self,
         timeout: int | None = None,
         make_name: Callable[..., str] | None = None,
         unless: Callable[..., bool] | None = None,
         forced_update: Callable[..., bool] | None = None,
+        is_stale: Callable[..., bool] | None = None,
         response_filter: Callable[..., Any] | None = None,
         hash_method: Callable[..., Any] | None = None,
         cache_none: bool = False,
@@ -1081,6 +1117,12 @@ class Cache:
                               is expired or not. Useful for background
                               renewal of cached functions.
 
+        :param is_stale: Default None. Called on a cache hit with the cached
+                         value as its first argument. If it is true the cached
+                         value will be recomputed. If the callable accepts more
+                         than one argument, the calls own arguments are passed
+                         after the cached value.
+
         :param response_filter: Default None. If not None, the callable is
                                 invoked after the cached funtion evaluation,
                                 and is given one arguement, the response
@@ -1128,14 +1170,8 @@ class Cache:
                     return self._call_fn(f, *args, **kwargs)
 
                 try:
-                    forced_update_result = (
-                        callable(forced_update)
-                        and (
-                            forced_update(*args, **kwargs)
-                            if wants_args(forced_update)
-                            else forced_update()
-                        )
-                        is True
+                    forced_update_result = self._forced_update(
+                        forced_update, *args, **kwargs
                     )
 
                     cache_key = self._memoize_make_cache_key(
@@ -1166,6 +1202,10 @@ class Cache:
                                 found = False
                             else:
                                 found = self.has(cache_key)
+
+                        if found and self._is_stale(is_stale, rv, *args, **kwargs):
+                            rv = None
+                            found = False
                 except Exception:
                     if self.app.debug:
                         raise

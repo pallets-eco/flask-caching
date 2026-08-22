@@ -43,6 +43,10 @@ Unreleased
 - Call ``@memoize`` ``forced_update`` callbacks once per decorated function
   call instead of once while making the key and again before cache lookup.
   :issue:`387`
+- Add an ``is_stale`` option to ``@cached`` and ``@memoize``. It is called on a
+  cache hit with the cached value. Unlike ``forced_update`` it uses the value itself
+  to check whether the cache is stale. Can be used in combination with ``forced_update``
+  :issue:`392`
 - Fix a ``@memoize`` cache-key collision when a parameter has a falsy
   default (e.g. ``0``, ``""``, ``False``): calling with the default was
   keyed the same as passing ``None``, returning the wrong cached result.

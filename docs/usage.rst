@@ -342,6 +342,36 @@ otherwise it is called with none. Unlike ``unless``, the result is still
 written to the cache.
 
 
+is_stale
+````````
+
+.. versionadded:: 2.5.0
+
+A callable that accepts the cached value as argument and checks whether the
+value is stale. If it returns ``True`` the cached value will be recomputed.
+Unlike ``forced_update`` it runs only on a cache hit::
+
+    def is_outdated(cached_obj):
+        return get_last_data_updated() > cached_obj.last_update
+
+    @cache.memoize(timeout=86400, is_stale=is_outdated)
+    def build_report(user_id):
+        return Report(user_id)
+
+If the callable accepts more than one argument, the calls own arguments are
+passed after the cached value::
+
+    def is_stale(report, user_id):
+        return report.generated_at < last_import(user_id)
+
+    @cache.memoize(timeout=86400, is_stale=is_stale)
+    def build_report(user_id):
+        return Report(user_id)
+
+``forced_update`` and ``is_stale`` can be combined. ``forced_update`` is
+checked first and skips the cache read entirely.
+
+
 response_filter
 ```````````````
 

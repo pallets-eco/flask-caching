@@ -317,6 +317,78 @@ def test_cache_forced_update_params(app, cache):
         assert cached_call_counter[1] == 2
 
 
+def test_cache_is_stale(app, cache):
+    from collections import Counter
+
+    with app.test_request_context():
+        call_counter = Counter()
+        cached_values = []
+
+        def is_stale(value):
+            cached_values.append(value)
+
+            return value < 2
+
+        @cache.cached(5, key_prefix="is_stale", is_stale=is_stale)
+        def cached_function():
+            call_counter[1] += 1
+
+            return call_counter[1]
+
+        assert cached_function() == 1
+        # is_stale is only accessed on a cache hit
+        assert cached_values == []
+
+        # the cached 1 is stale so the function runs again and caches 2
+        assert cached_function() == 2
+        assert cached_values == [1]
+        assert call_counter[1] == 2
+
+        # 2 is not stale so the cached value is returned as is
+        assert cached_function() == 2
+        assert cached_values == [1, 2]
+        assert call_counter[1] == 2
+
+
+def test_cache_is_stale_params(app, cache):
+    with app.test_request_context():
+        call_params = []
+
+        def is_stale(value, param):
+            call_params.append((value, param))
+
+            return False
+
+        @cache.cached(5, key_prefix="is_stale_params", is_stale=is_stale)
+        def cached_function(param):
+            return param
+
+        assert cached_function(1) == 1
+        assert call_params == []
+
+        assert cached_function(1) == 1
+        # the cached value comes first followed by the calls own arguments
+        assert call_params == [(1, 1)]
+
+
+def test_cache_is_stale_not_called_on_forced_update(app, cache):
+    with app.test_request_context():
+        called = []
+
+        @cache.cached(
+            5,
+            key_prefix="is_stale_forced",
+            forced_update=lambda: True,
+            is_stale=lambda value: called.append(value) or True,
+        )
+        def cached_function():
+            return 1
+
+        cached_function()
+        cached_function()
+        assert called == []
+
+
 def test_generator(app, cache):
     """test function return generator"""
     with app.test_request_context():
