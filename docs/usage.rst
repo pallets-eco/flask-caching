@@ -149,6 +149,79 @@ string which should act like the key to the required value that is being cached:
       ....
 
 
+Caching Routes With Multiple HTTP Methods
+-----------------------------------------
+
+The default cache key is built from ``request.path`` alone, so a route that
+accepts more than one method serves all of them from the same entry::
+
+    @app.route("/foo", methods=["GET", "POST"])
+    @cache.cached(timeout=50)
+    def foo():
+        return f"body for {request.method}"
+
+Whichever method is requested first is stored under ``view//foo`` and returned
+for the others until the entry expires.
+
+Pass a callable ``key_prefix`` to put the method into the key::
+
+    from flask import request
+
+    def method_key():
+        return f"view/{request.method}{request.path}"
+
+    @app.route("/foo", methods=["GET", "POST"])
+    @cache.cached(timeout=50, key_prefix=method_key)
+    def foo():
+        return f"body for {request.method}"
+
+Each method now has its own entry, ``view/GET/foo`` and ``view/POST/foo``. The
+callable takes no arguments and is called inside the request context, so it
+can read anything from ``request``. It replaces the whole prefix, ``%s`` is
+not substituted.
+
+This also works with ``query_string=True``::
+
+    @app.route("/works", methods=["GET", "POST"])
+    @cache.cached(timeout=50, query_string=True, key_prefix=method_key)
+    def works():
+        return do_search(request.args)
+
+When the key depends on the request body rather than the method use
+``make_cache_key`` instead. See `Make Custom Cache Key`_.
+
+.. note::
+
+    Flask adds ``HEAD`` to every route that allows ``GET`` and strips the body
+    from ``HEAD`` responses itself, so both methods can share one entry. Map
+    ``HEAD`` onto ``GET`` to avoid caching the same body twice::
+
+        def method_key():
+            method = "GET" if request.method == "HEAD" else request.method
+            return f"view/{method}{request.path}"
+
+    However, only do this when the view builds the same response for both methods.
+
+.. warning::
+
+    A callable ``key_prefix`` replaces the ``path`` argument of
+    :meth:`~Cache.delete_cached` so you have to delete the entry
+    either from a request context::
+
+        with app.test_request_context("/foo", method="POST"):
+            cache.delete_cached(foo)
+
+    or pass the key to :meth:`~Cache.delete` yourself::
+
+        cache.delete("view/POST/foo")
+
+    With ``query_string=True`` only the path comes from the callable, the
+    ``query_args`` argument still applies::
+
+        with app.test_request_context("/works"):
+            cache.delete_cached(works, query_args={"limit": 15})
+
+
 Memoization
 -----------
 
