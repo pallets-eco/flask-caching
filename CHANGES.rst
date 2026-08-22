@@ -6,6 +6,7 @@ Version 2.5.0
 
 Unreleased
 
+- Specifying timeouts now also works with ``datetime.timedelta``. :issue:`266`
 - Add config option ``CACHE_SERIALIZER`` to set the cachelib serializer the backend uses.
   :issue:`209`
 - cachelib backends can now be configured directly via ``CACHE_TYPE="cachelib.ValkeyCache``.
