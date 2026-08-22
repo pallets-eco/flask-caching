@@ -2,6 +2,7 @@ import hashlib
 import itertools
 import time
 
+from flask import abort
 from flask import make_response
 from flask import request
 from flask.views import View
@@ -767,3 +768,88 @@ def test_make_cache_key_outside_request_context(app, cache):
             == in_request
         )
         assert view_user.make_cache_key(name="bob") == in_request_user
+
+
+def test_cached_view_http_exception(app, cache):
+    calls = []
+
+    @app.route("/missing")
+    @cache.cached(2)
+    def cached_view():
+        calls.append(1)
+        abort(404, "no such thing")
+
+    tc = app.test_client()
+
+    first = tc.get("/missing")
+    second = tc.get("/missing")
+
+    assert first.status_code == second.status_code == 404
+    assert len(calls) == 1
+
+
+def test_cached_view_http_exception_runs_error_handler(app, cache):
+    calls = []
+
+    @app.errorhandler(404)
+    def handle_404(error):
+        return f"handled {error.description}", 404
+
+    @app.route("/missing")
+    @cache.cached(2)
+    def cached_view():
+        calls.append(1)
+        abort(404, "no such thing")
+
+    tc = app.test_client()
+
+    tc.get("/missing")
+    cached = tc.get("/missing")
+
+    assert cached.get_data(as_text=True) == "handled no such thing"
+    assert len(calls) == 1
+
+
+def test_cached_view_http_exception_expires(app, cache, clock):
+    calls = []
+
+    @app.route("/missing")
+    @cache.cached(2)
+    def cached_view():
+        calls.append(1)
+        abort(404)
+
+    tc = app.test_client()
+
+    tc.get("/missing")
+    clock.advance(1)
+    tc.get("/missing")
+
+    assert len(calls) == 1
+
+    clock.advance(2)
+    assert tc.get("/missing").status_code == 404
+    assert len(calls) == 2
+
+
+def test_cached_view_http_exception_response_filter_gets_response(app, cache):
+    calls = []
+    seen = []
+
+    def only_success(response):
+        seen.append(response)
+        return response.status_code == 200
+
+    @app.route("/down")
+    @cache.cached(2, response_filter=only_success)
+    def cached_view():
+        calls.append(1)
+        abort(503)
+
+    tc = app.test_client()
+
+    assert tc.get("/down").status_code == 503
+    assert tc.get("/down").status_code == 503
+
+    assert [response.status_code for response in seen] == [503, 503]
+    assert len(calls) == 2
