@@ -164,6 +164,25 @@ def test_memoize_forced_update_sends_miss(app, signals_cache):
         assert len(recorded[cache_memoize_hit]) == 1
 
 
+def test_memoize_is_stale_sends_miss(app, signals_cache):
+    stale = False
+
+    @signals_cache.memoize(is_stale=lambda value: stale)
+    def add(a, b):
+        return a + b
+
+    add(1, 2)
+
+    with record_signals(cache_memoize_miss, cache_memoize_hit) as recorded:
+        add(1, 2)
+        assert len(recorded[cache_memoize_hit]) == 1
+
+        stale = True
+        add(1, 2)
+        assert len(recorded[cache_memoize_miss]) == 1
+        assert len(recorded[cache_memoize_hit]) == 1
+
+
 def test_signals_enabled_through_cache_config(app):
     cache = Cache(app, config={"CACHE_ENABLE_SIGNALS": True})
 

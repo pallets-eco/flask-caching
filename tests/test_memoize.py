@@ -789,6 +789,58 @@ def test_memoize_forced_update_parameters(app, cache):
         assert call_params[3] == (5, 2)
 
 
+def test_memoize_is_stale(app, cache):
+    with app.test_request_context():
+        stale = False
+        cached_values = []
+
+        def is_stale(value):
+            cached_values.append(value)
+
+            return stale
+
+        @cache.memoize(5, is_stale=is_stale)
+        def big_foo(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+        # is_stale is only consulted on a cache hit
+        assert cached_values == []
+
+        assert big_foo(5, 2) == result
+        assert cached_values == [result]
+
+        stale = True
+        new_result = big_foo(5, 2)
+        assert new_result != result
+        assert cached_values == [result, result]
+
+        stale = False
+        assert big_foo(5, 2) == new_result
+        assert cached_values == [result, result, new_result]
+
+
+def test_memoize_is_stale_parameters(app, cache):
+    with app.test_request_context():
+        call_params = []
+
+        def is_stale(value, a, b):
+            call_params.append((value, a, b))
+
+            return False
+
+        @cache.memoize(5, is_stale=is_stale)
+        def memoized_func(a, b):
+            return a + b + random.randrange(0, 100000)
+
+        result = memoized_func(5, 2)
+        assert call_params == []
+
+        assert memoized_func(5, 2) == result
+        # the cached value comes first, followed by the call's own arguments
+        assert call_params == [(result, 5, 2)]
+
+
 def test_memoize_multiple_arg_kwarg_calls(app, cache):
     with app.test_request_context():
 

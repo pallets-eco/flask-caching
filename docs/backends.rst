@@ -114,9 +114,6 @@ application, see :ref:`sharing-a-redis-client`.
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
 
-.. versionchanged::  2.5.0
-   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
-
 
 .. _redissentinelcache:
 
@@ -141,9 +138,6 @@ Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
 
-.. versionchanged::  2.5.0
-   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
-
 
 .. _redisclustercache:
 
@@ -165,9 +159,6 @@ Entries in CACHE_OPTIONS are passed to the redis client as ``**kwargs``
 
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
-
-.. versionchanged::  2.5.0
-   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
 
 
 .. _memcachedcache:
@@ -216,9 +207,6 @@ Relevant configuration values
 
 .. versionchanged::  2.5.0
    Removed the deprecated old name in favour of just using the class name.
-
-.. versionchanged::  2.5.0
-   ``CACHE_IGNORE_ERRORS`` is now honoured by this backend.
 
 
 .. _saslmemcachedcache:

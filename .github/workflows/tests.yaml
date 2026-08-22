@@ -58,6 +58,6 @@ jobs:
       - name: install external dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libmemcached-dev
+          sudo apt-get install -y libmemcached-dev
       - run: uv sync --group dev --group tests
       - run: uv run tox run -e ${{ matrix.tox || format('py{0}', matrix.python) }}

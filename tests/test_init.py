@@ -61,6 +61,12 @@ def test_init_nullcache(cache_type, app, tmp_path):
             "CACHE_REDIS_PORT": 6360,
         },
         SASLMemcachedCache: {
+            "CACHE_MEMCACHED_SERVERS": ["127.0.0.1:11212"],
+            "CACHE_MEMCACHED_USERNAME": "test",
+            "CACHE_MEMCACHED_PASSWORD": "test",
+        },
+        SpreadSASLMemcachedCache: {
+            "CACHE_MEMCACHED_SERVERS": ["127.0.0.1:11212"],
             "CACHE_MEMCACHED_USERNAME": "test",
             "CACHE_MEMCACHED_PASSWORD": "test",
         },
