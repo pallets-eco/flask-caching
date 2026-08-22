@@ -1,9 +1,11 @@
 import inspect
+import math
 import string
 import sys
 from collections.abc import Callable
 from collections.abc import Iterable
 from collections.abc import Mapping
+from datetime import timedelta
 from typing import Any
 from typing import cast
 from typing import TypeAlias
@@ -26,6 +28,17 @@ del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = str.maketrans({k: None for k in del_chars})
 
 _QueryArgs: TypeAlias = str | Mapping[str, Any] | Iterable[tuple[str, Any]]
+_Timeout: TypeAlias = int | timedelta
+
+
+def normalize_timeout(timeout: _Timeout | None) -> int | None:
+    """Convert a ``timedelta`` timeout to whole seconds. A subsecond timeout
+    (i.e. miliseconds) is rounded up to a whole second.
+    A subsecond timeout does not turn into ``0``!
+    """
+    if isinstance(timeout, timedelta):
+        return math.ceil(timeout.total_seconds())
+    return timeout
 
 
 def wants_args(f: Callable[..., Any]) -> bool:

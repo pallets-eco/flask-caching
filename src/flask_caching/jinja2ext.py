@@ -44,12 +44,15 @@ Considering we have ``render_form_field`` and ``render_submit`` macros::
 
 from collections.abc import Callable
 from typing import Any
+from typing import cast
 
 from jinja2 import nodes
 from jinja2.ext import Extension
 from jinja2.parser import Parser
 
 from flask_caching import make_template_fragment_key
+from flask_caching.utils import _Timeout
+from flask_caching.utils import normalize_timeout
 
 JINJA_CACHE_ATTR_NAME = "_template_fragment_cache"
 
@@ -89,7 +92,7 @@ class CacheExtension(Extension):
 
     def _cache(
         self,
-        timeout: int | str | None,
+        timeout: _Timeout | str | None,
         fragment_name: str,
         vary_on: list[str],
         caller: Callable[[], str],
@@ -112,7 +115,8 @@ class CacheExtension(Extension):
             rv = cache.get(key)
             if rv is None:
                 rv = caller()
-                cache.set(key, rv, timeout)
+                seconds = normalize_timeout(cast("_Timeout | None", timeout))
+                cache.set(key, rv, timeout=seconds)
             return rv
         except Exception as e:
             if cache.app.debug:

@@ -56,7 +56,8 @@ The following configuration values exist for Flask-Caching:
                                    cache class instantiation.
 ``CACHE_DEFAULT_TIMEOUT``          The timeout that is used if no other
                                    timeout is specified. Unit of time is
-                                   seconds. Defaults to ``300``.
+                                   seconds, a ``datetime.timedelta`` is also
+                                   accepted. Defaults to ``300``.
 ``CACHE_IGNORE_ERRORS``            If set to ``True`` any errors that occurred
                                    during the deletion process will be ignored.
                                    However, if it is set to ``False`` a
