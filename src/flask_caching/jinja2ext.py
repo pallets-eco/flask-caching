@@ -44,7 +44,6 @@ Considering we have ``render_form_field`` and ``render_submit`` macros::
 
 from collections.abc import Callable
 from typing import Any
-from typing import cast
 
 from jinja2 import nodes
 from jinja2.ext import Extension
@@ -115,7 +114,7 @@ class CacheExtension(Extension):
             rv = cache.get(key)
             if rv is None:
                 rv = caller()
-                seconds = normalize_timeout(cast("_Timeout | None", timeout))
+                seconds = normalize_timeout(timeout)
                 cache.set(key, rv, timeout=seconds)
             return rv
         except Exception as e:
