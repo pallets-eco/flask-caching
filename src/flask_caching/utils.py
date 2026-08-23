@@ -31,11 +31,14 @@ _QueryArgs: TypeAlias = str | Mapping[str, Any] | Iterable[tuple[str, Any]]
 _Timeout: TypeAlias = int | timedelta
 
 
-def normalize_timeout(timeout: _Timeout | None) -> int | None:
+def normalize_timeout(timeout: _Timeout | str | None) -> int | None:
     """Convert a ``timedelta`` timeout to whole seconds. A subsecond timeout
     (i.e. miliseconds) is rounded up to a whole second.
     A subsecond timeout does not turn into ``0``!
     """
+    if isinstance(timeout, str):
+        timeout = int(timeout)
+
     if isinstance(timeout, timedelta):
         return math.ceil(timeout.total_seconds())
     return timeout
