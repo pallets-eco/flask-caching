@@ -1,6 +1,6 @@
 # Flask-Caching
 
-A fork of the [Flask-cache](https://github.com/thadeusb/flask-cache) extension
+A fork of the [Flask-Cache](https://github.com/thadeusb/flask-cache) extension
 which adds easy cache support to Flask.
 
 ## Pallets Community Ecosystem
