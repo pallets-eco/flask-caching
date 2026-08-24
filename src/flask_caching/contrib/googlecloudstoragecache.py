@@ -7,6 +7,7 @@ from typing import Any
 from flask import Flask
 
 from flask_caching.backends.base import BaseCache
+from flask_caching.utils import _Timeout
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class GoogleCloudStorageCache(BaseCache):
         logger.debug("get key %r -> %s %s", full_key, hit_or_miss, expiredstr)
         return result
 
-    def set(self, key: str, value: Any, timeout: int | None = None) -> bool:
+    def set(self, key: str, value: Any, timeout: _Timeout | None = None) -> bool:
         result = False
         full_key = self.key_prefix + key
         content_type = "application/json"
@@ -117,12 +118,11 @@ class GoogleCloudStorageCache(BaseCache):
         except (UnicodeDecodeError, TypeError):
             content_type = "application/octet-stream"
         blob = self.bucket.blob(full_key)
-        if timeout is None:
-            timeout = self.default_timeout
-        if timeout != 0:
+        seconds = self._normalize_timeout(timeout)
+        if seconds != 0:
             # Use 'Custom-Time' for expiry
             # https://cloud.google.com/storage/docs/metadata#custom-time
-            blob.custom_time = self._now(delta=timeout)
+            blob.custom_time = self._now(delta=seconds)
         try:
             blob.upload_from_string(value, content_type=content_type)
             result = True
@@ -131,7 +131,7 @@ class GoogleCloudStorageCache(BaseCache):
         logger.debug("set key %r -> %s", full_key, result)
         return result
 
-    def add(self, key: str, value: Any, timeout: int | None = None) -> bool:
+    def add(self, key: str, value: Any, timeout: _Timeout | None = None) -> bool:
         full_key = self.key_prefix + key
         if self._has(full_key):
             logger.debug("add key %r -> not added", full_key)

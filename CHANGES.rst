@@ -29,7 +29,7 @@ Unreleased
   ``CACHE_HASH_METHOD = hashlib.md5``. :pr:`563`
 - Add ``CACHE_HASH_METHOD`` to set the hash method used for the cache keys of
   ``@cached`` and ``@memoize``.
-- Drop support for Python 3.10 and require cachelib 0.15.4+
+- Drop support for Python 3.10 and require cachelib 0.17.0+
 - ``CACHE_IGNORE_ERRORS`` is now used by every backend instead of only
   ``SimpleCache`` and ``FileSystemCache``.
 - The ``delete_many`` method is now used from cachelib. A key
