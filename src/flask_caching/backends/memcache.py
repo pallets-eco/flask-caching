@@ -18,6 +18,7 @@ from cachelib import MemcachedCache as CachelibMemcachedCache
 from flask import Flask
 
 from flask_caching.backends.base import BaseCache
+from flask_caching.utils import _Timeout
 
 _test_memcached_key = re.compile(r"[^\x00-\x21\xff]{1,250}$").match
 
@@ -203,7 +204,11 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
             super().delete(skey)
 
     def set(
-        self, key: str, value: Any, timeout: int | None = None, chunk: bool = True
+        self,
+        key: str,
+        value: Any,
+        timeout: _Timeout | None = None,
+        chunk: bool = True,
     ) -> bool | None:
         """Set a value in cache, potentially spreading it across multiple key.
 
@@ -222,7 +227,7 @@ class SpreadSASLMemcachedCache(SASLMemcachedCache):
         else:
             return super().set(key, value, timeout=timeout)
 
-    def _set(self, key: str, value: Any, timeout: int | None = None) -> None:
+    def _set(self, key: str, value: Any, timeout: _Timeout | None = None) -> None:
         # pickling/unpickling add an overhead,
         # I didn't found a good way to avoid pickling/unpickling if
         # key is smaller than chunksize, because in case or <werkzeug.requests>

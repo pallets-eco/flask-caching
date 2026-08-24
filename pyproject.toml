@@ -17,7 +17,7 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "flask>=3.0",
-    "cachelib>=0.16.1",
+    "cachelib>=0.17.0",
 ]
 
 [project.urls]
