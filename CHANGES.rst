@@ -4,7 +4,7 @@ Changelog
 Version 2.5.1
 -------------
 
-Unreleased
+Released 2026-09-04
 
 - ``@cached`` no longer treats view arguments named ``path`` or ``query_args``
   as the explicit ``make_cache_key()`` arguments of the same name. :issue:`679`
