@@ -699,8 +699,16 @@ class Cache:
                     kwargs[arg_name] = arg
 
                 use_request = kwargs.pop("use_request", False)
-                path = kwargs.pop("path", None)
-                query_args = kwargs.pop("query_args", None)
+                if use_request:
+                    # The remaining kwargs are the view arguments of the
+                    # current request. View arguments named ``path`` or
+                    # ``query_args`` must not be mistaken for the explicit
+                    # arguments of the same name.
+                    path = None
+                    query_args = None
+                else:
+                    path = kwargs.pop("path", None)
+                    query_args = kwargs.pop("query_args", None)
                 return _make_cache_key(
                     args,
                     kwargs,

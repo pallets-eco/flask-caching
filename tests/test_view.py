@@ -853,3 +853,45 @@ def test_cached_view_http_exception_response_filter_gets_response(app, cache):
 
     assert [response.status_code for response in seen] == [503, 503]
     assert len(calls) == 2
+
+
+def test_view_argument_named_path_does_not_change_the_key(app, cache):
+    counter = itertools.count()
+
+    @app.route("/database/<path:path>/summary")
+    @cache.cached()
+    def view_summary(path=""):
+        return f"summary{next(counter)}"
+
+    @app.route("/database/<path:path>/detail")
+    @cache.cached()
+    def view_detail(path=""):
+        return f"detail{next(counter)}"
+
+    tc = app.test_client()
+
+    summary = tc.get("/database/db/summary").get_data(as_text=True)
+    detail = tc.get("/database/db/detail").get_data(as_text=True)
+
+    assert summary.startswith("summary")
+    assert detail.startswith("detail")
+    assert tc.get("/database/db/summary").get_data(as_text=True) == summary
+    assert tc.get("/database/db/detail").get_data(as_text=True) == detail
+
+
+def test_view_argument_named_query_args_does_not_change_the_key(app, cache):
+    counter = itertools.count()
+
+    @app.route("/works/<query_args>")
+    @cache.cached(query_string=True)
+    def view_works(query_args):
+        return f"{query_args}{next(counter)}"
+
+    tc = app.test_client()
+
+    first = tc.get("/works/a?limit=15").get_data(as_text=True)
+    second = tc.get("/works/a?limit=20").get_data(as_text=True)
+
+    assert first != second
+    assert tc.get("/works/a?limit=15").get_data(as_text=True) == first
+    assert tc.get("/works/a?limit=20").get_data(as_text=True) == second

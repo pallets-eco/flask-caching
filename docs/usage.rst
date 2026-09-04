@@ -85,8 +85,10 @@ Additionally, ``path`` and ``query_args`` are also supported by the views ``make
 
 .. note::
 
-    If you view has arguments named ``path`` or ``query_args`` you have to build the key
-    from via the request context!
+    Inside a request context the view arguments are used as-is, so a view argument
+    named ``path`` or ``query_args`` is not mistaken for the arguments above. Outside
+    of a request context the two cannot be told apart, so such a view has to build its
+    key from within the request context.
 
 
 Caching Pluggable View Classes
