@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- Pass keyword-only view arguments to ``forced_update`` and ``is_stale``
+  callbacks for both ``cached`` and ``memoize``.
+
 Version 2.5.1
 -------------
 

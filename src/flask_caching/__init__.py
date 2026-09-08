@@ -583,6 +583,10 @@ class Cache:
                              If True, it will add to response header field 'hit_cache'
                              if used cache.
 
+        .. versionchanged:: 2.5.2
+            ``forced_update`` and ``is_stale`` callbacks receive
+            keyword-only arguments from the decorated function.
+
         .. versionchanged:: 2.5.0
             A ``werkzeug.exceptions.HTTPException`` raised by the decorated
             function, for example through Flask's ``abort()``, is now cached
@@ -1207,6 +1211,10 @@ class Cache:
 
         .. versionadded:: 1.10
             params ``args_to_ignore``
+
+        .. versionchanged:: 2.5.2
+            ``forced_update`` and ``is_stale`` callbacks receive
+            keyword-only arguments from the decorated function.
         """
 
         def memoize(f: Callable[P, R]) -> _MemoizedFunction[P, R]:

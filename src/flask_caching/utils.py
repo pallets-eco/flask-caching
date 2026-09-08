@@ -45,22 +45,15 @@ def normalize_timeout(timeout: _Timeout | str | None) -> int | None:
 
 
 def wants_args(f: Callable[..., Any]) -> bool:
-    """Check if the function wants any positional, *args, or **kwargs arguments."""
-    return any(
-        p.kind != inspect.Parameter.KEYWORD_ONLY for p in get_function_parameters(f)
-    )
+    """Check if the function accepts any positional or keyword arguments."""
+    return bool(get_function_parameters(f))
 
 
 def wants_extra_args(f: Callable[..., Any]) -> bool:
     """Check if the function wants an additional argument beside
     its first positional one.
     """
-    return (
-        sum(
-            p.kind != inspect.Parameter.KEYWORD_ONLY for p in get_function_parameters(f)
-        )
-        > 1
-    )
+    return len(get_function_parameters(f)) > 1
 
 
 def get_function_parameters(f: Callable[..., Any]) -> list[inspect.Parameter]:
