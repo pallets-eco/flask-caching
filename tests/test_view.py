@@ -1,13 +1,44 @@
 import hashlib
 import itertools
 import time
+from datetime import timedelta
 
+import pytest
 from flask import abort
 from flask import make_response
 from flask import request
 from flask.views import View
 
 from flask_caching import CachedResponse
+
+
+@pytest.mark.parametrize("timeout", [0, timedelta(0)])
+def test_cached_response_zero_timeout_does_not_expire(app, cache, clock, timeout):
+    counter = itertools.count()
+
+    @app.route("/")
+    @cache.cached(2)
+    def cached_view():
+        return CachedResponse(make_response(str(next(counter))), timeout=timeout)
+
+    client = app.test_client()
+    assert client.get("/").data == b"0"
+    clock.advance(3600)
+    assert client.get("/").data == b"0"
+
+
+def test_cached_response_none_timeout_uses_decorator(app, cache, clock):
+    counter = itertools.count()
+
+    @app.route("/")
+    @cache.cached(2)
+    def cached_view():
+        return CachedResponse(make_response(str(next(counter))), timeout=None)
+
+    client = app.test_client()
+    assert client.get("/").data == b"0"
+    clock.advance(3)
+    assert client.get("/").data == b"1"
 
 
 def test_cached_view(app, cache, clock):

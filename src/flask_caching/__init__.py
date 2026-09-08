@@ -174,6 +174,10 @@ class CachedResponse(Response):
     """
     views wraped by @cached can return this (which inherits from flask.Response)
     to override the cache TTL dynamically
+
+    .. versionchanged:: 2.5.2
+        A zero timeout disables expiration. ``None`` uses the decorator's
+        timeout.
     """
 
     timeout: int | None = None
@@ -671,8 +675,8 @@ class Cache:
                         rv.get_response() if isinstance(rv, HTTPException) else rv
                     ):
                         cache_timeout = normalize_timeout(cached_fn.cache_timeout)
-                        if isinstance(rv, CachedResponse):
-                            cache_timeout = rv.timeout or cache_timeout
+                        if isinstance(rv, CachedResponse) and rv.timeout is not None:
+                            cache_timeout = rv.timeout
 
                         try:
                             self.set(
