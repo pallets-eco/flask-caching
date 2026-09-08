@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- Preserve a zero timeout on ``CachedResponse`` so it disables expiration
+  instead of falling back to the decorator's timeout.
+
 Version 2.5.1
 -------------
 
