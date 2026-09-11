@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 2.5.2
+-------------
+
+Unreleased
+
+- Fix test compatibility with redis-py <= 5.2.x where
+  ``ConnectionPool.get_connection()`` requires a ``command_name``
+  argument.
+
+
 Version 2.5.1
 -------------
 

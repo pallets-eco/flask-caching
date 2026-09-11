@@ -96,9 +96,9 @@ def test_app_redis_cache_backend_url_default_db(app, redis_server):
     from flask_caching.backends.rediscache import RedisCache
 
     assert isinstance(app.extensions["cache"][cache], RedisCache)
-    rconn = app.extensions["cache"][
-        cache
-    ]._write_client.connection_pool.get_connection()
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
+        "PING"
+    )
     assert rconn.db == 0
 
 
@@ -110,9 +110,9 @@ def test_app_redis_cache_backend_url_custom_db(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    rconn = app.extensions["cache"][
-        cache
-    ]._write_client.connection_pool.get_connection()
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
+        "PING"
+    )
     assert rconn.db == 2
 
 
@@ -125,9 +125,9 @@ def test_app_redis_cache_backend_url_explicit_db_arg(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    rconn = app.extensions["cache"][
-        cache
-    ]._write_client.connection_pool.get_connection()
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
+        "PING"
+    )
     assert rconn.db == 1
 
 
