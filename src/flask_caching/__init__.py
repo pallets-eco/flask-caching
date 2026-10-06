@@ -24,7 +24,6 @@ from typing import Concatenate
 from typing import overload
 from typing import ParamSpec
 from typing import Protocol
-from typing import TypeAlias
 from typing import TypeVar
 
 from cachelib.serializers import BaseSerializer
@@ -161,12 +160,12 @@ class _MemoizedFunction(Protocol[P, R]):
 
 # A memoized function, however it was reached: a plain function, a method
 # accessed on the class, or a method accessed on an instance.
-_AnyMemoizedFunction: TypeAlias = (
-    "_MemoizedFunction[..., Any] | _BoundMemoizedFunction[Any, ..., Any]"
+type _AnyMemoizedFunction = (
+    _MemoizedFunction[..., Any] | _BoundMemoizedFunction[Any, ..., Any]
 )
 
-_AnyCachedFunction: TypeAlias = (
-    "_CachedFunction[..., Any] | _BoundCachedFunction[Any, ..., Any]"
+type _AnyCachedFunction = (
+    _CachedFunction[..., Any] | _BoundCachedFunction[Any, ..., Any]
 )
 
 
