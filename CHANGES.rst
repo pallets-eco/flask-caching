@@ -8,6 +8,8 @@ Unreleased
 - Add support for Python 3.15.
 - Preserve a zero timeout on ``CachedResponse`` so it disables expiration
   instead of falling back to the decorator's timeout.
+- Pass the decorated function's arguments to ``forced_update`` and
+  ``is_stale`` callbacks that declare required keyword-only parameters.
 
 Version 2.5.1
 -------------

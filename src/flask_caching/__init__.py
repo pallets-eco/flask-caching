@@ -24,6 +24,7 @@ from typing import Concatenate
 from typing import overload
 from typing import ParamSpec
 from typing import Protocol
+from typing import TypeAlias
 from typing import TypeVar
 
 from cachelib.serializers import BaseSerializer
@@ -54,6 +55,7 @@ from .utils import normalize_timeout
 from .utils import query_args_as_pairs
 from .utils import wants_args
 from .utils import wants_extra_args
+from .utils import wants_view_args
 
 logger = logging.getLogger(__name__)
 
@@ -160,12 +162,12 @@ class _MemoizedFunction(Protocol[P, R]):
 
 # A memoized function, however it was reached: a plain function, a method
 # accessed on the class, or a method accessed on an instance.
-type _AnyMemoizedFunction = (
-    _MemoizedFunction[..., Any] | _BoundMemoizedFunction[Any, ..., Any]
+_AnyMemoizedFunction: TypeAlias = (
+    "_MemoizedFunction[..., Any] | _BoundMemoizedFunction[Any, ..., Any]"
 )
 
-type _AnyCachedFunction = (
-    _CachedFunction[..., Any] | _BoundCachedFunction[Any, ..., Any]
+_AnyCachedFunction: TypeAlias = (
+    "_CachedFunction[..., Any] | _BoundCachedFunction[Any, ..., Any]"
 )
 
 
@@ -585,6 +587,11 @@ class Cache:
         :param response_hit_indication: Default False.
                              If True, it will add to response header field 'hit_cache'
                              if used cache.
+
+        .. versionchanged:: 2.5.2
+            ``forced_update`` and ``is_stale`` receive the decorated
+            function's arguments when they declare required keyword-only
+            parameters.
 
         .. versionchanged:: 2.5.0
             A ``werkzeug.exceptions.HTTPException`` raised by the decorated
@@ -1073,7 +1080,7 @@ class Cache:
             return False
 
         # If forced_update() takes args, pass them in.
-        if wants_args(forced_update):
+        if wants_view_args(forced_update):
             return forced_update(*args, **kwargs) is True
 
         return forced_update() is True
@@ -1210,6 +1217,11 @@ class Cache:
 
         .. versionadded:: 1.10
             params ``args_to_ignore``
+
+        .. versionchanged:: 2.5.2
+            ``forced_update`` and ``is_stale`` receive the decorated
+            function's arguments when they declare required keyword-only
+            parameters.
         """
 
         def memoize(f: Callable[P, R]) -> _MemoizedFunction[P, R]:
