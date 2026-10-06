@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from datetime import timedelta
 from typing import Any
 from typing import cast
+from typing import TypeAlias
 from urllib.parse import parse_qsl
 
 from werkzeug.datastructures import MultiDict
@@ -26,8 +27,8 @@ valid_chars = set(string.ascii_letters + string.digits + "_.")
 del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = str.maketrans({k: None for k in del_chars})
 
-type _QueryArgs = str | Mapping[str, Any] | Iterable[tuple[str, Any]]
-type _Timeout = int | timedelta
+_QueryArgs: TypeAlias = str | Mapping[str, Any] | Iterable[tuple[str, Any]]
+_Timeout: TypeAlias = int | timedelta
 
 
 def normalize_timeout(timeout: _Timeout | str | None) -> int | None:
@@ -54,12 +55,18 @@ def wants_extra_args(f: Callable[..., Any]) -> bool:
     """Check if the function wants an additional argument beside
     its first positional one.
     """
-    return (
-        sum(
-            p.kind != inspect.Parameter.KEYWORD_ONLY for p in get_function_parameters(f)
-        )
-        > 1
-    )
+    return sum(map(_receives_view_args, get_function_parameters(f))) > 1
+
+
+def wants_view_args(f: Callable[..., Any]) -> bool:
+    """Check if the function wants the decorated function's arguments,
+    including required keyword-only ones.
+    """
+    return any(map(_receives_view_args, get_function_parameters(f)))
+
+
+def _receives_view_args(p: inspect.Parameter) -> bool:
+    return p.kind != p.KEYWORD_ONLY or p.default is p.empty
 
 
 def get_function_parameters(f: Callable[..., Any]) -> list[inspect.Parameter]:
