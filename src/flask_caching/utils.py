@@ -8,7 +8,6 @@ from collections.abc import Mapping
 from datetime import timedelta
 from typing import Any
 from typing import cast
-from typing import TypeAlias
 from urllib.parse import parse_qsl
 
 from werkzeug.datastructures import MultiDict
@@ -27,8 +26,8 @@ valid_chars = set(string.ascii_letters + string.digits + "_.")
 del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
 null_control = str.maketrans({k: None for k in del_chars})
 
-_QueryArgs: TypeAlias = str | Mapping[str, Any] | Iterable[tuple[str, Any]]
-_Timeout: TypeAlias = int | timedelta
+type _QueryArgs = str | Mapping[str, Any] | Iterable[tuple[str, Any]]
+type _Timeout = int | timedelta
 
 
 def normalize_timeout(timeout: _Timeout | str | None) -> int | None:
