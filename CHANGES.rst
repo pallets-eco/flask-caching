@@ -4,7 +4,6 @@ Changelog
 Unreleased
 ----------
 
-- Drop support for Python 3.11.
 - Add support for Python 3.15.
 - Preserve a zero timeout on ``CachedResponse`` so it disables expiration
   instead of falling back to the decorator's timeout.
