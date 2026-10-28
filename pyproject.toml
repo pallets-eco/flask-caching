@@ -16,8 +16,8 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "flask>=3.0",
     "cachelib>=0.17.0",
+    "flask>=3.0.0",
 ]
 
 [project.urls]
@@ -36,7 +36,7 @@ dev = [
     {include-group = "typing"},
 ]
 tox = [
-    "tox>=4.39",
+    "tox>=4.67.4",
     "tox-uv",
 ]
 pre-commit = [
@@ -46,30 +46,30 @@ pre-commit = [
 docs = [
     "pallets-sphinx-themes",
     "sphinx",
+    "sphinx-intl>=2.4.0",
     "sphinx-issues",
     "sphinx-tabs",
-    "sphinx-intl>=2.3.1",
     "sphinxcontrib-log-cabinet",
 ]
 docs-auto = [
     "sphinx-autobuild",
 ]
 tests = [
-    "flask[async]",
-    "pytest",
-    "pytest-cov",
-    "pytest-asyncio",
-    "pytest-xprocess",
-    "pylibmc",
-    "redis",
     "asgiref",
+    "flask[async]",
+    "pylibmc",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-xprocess",
+    "redis",
 ]
 typing = [
     "mypy",
     "pyright",
     "pytest",
     "types-redis>=4.6.0.20241004",
-    "types-uwsgi>=2.0.0.20260408",
+    "types-uwsgi>=2.0.0.20260827",
 ]
 gha-update = [
     "gha-update ; python_full_version >= '3.12'",
