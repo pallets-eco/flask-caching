@@ -137,6 +137,7 @@ exclude_also = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     "error",
     "default::pytest.PytestUnraisableExceptionWarning",
