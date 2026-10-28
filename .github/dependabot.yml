@@ -1,8 +1,24 @@
 version: 2
 updates:
-- package-ecosystem: pip
-  directory: "/requirements"
+- package-ecosystem: uv
+  directory: "/"
   schedule:
-    interval: monthly
+    interval: weekly
     time: "08:00"
-  open-pull-requests-limit: 99
+  groups:
+    dependencies:
+      patterns:
+        - "*"
+    security:
+      applies-to: security-updates
+      patterns:
+        - "*"
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "08:00"
+  groups:
+    actions:
+      patterns:
+        - "*"
