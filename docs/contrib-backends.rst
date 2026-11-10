@@ -10,6 +10,13 @@ Contributed Cache Backends
 Unlike the built-in backends, these cannot be selected by their class name
 alone.  Set ``CACHE_TYPE`` to the full import path of the class.
 
+.. deprecated:: 2.6.0
+   These backends are deprecated and will be removed in Flask-Caching 3.0.0.
+   Using one emits a ``FutureWarning``. Use
+   ``cachelib.GoogleCloudStorageCache`` or ``cachelib.UWSGICache`` instead by
+   setting ``CACHE_TYPE`` to that import path and passing its arguments with
+   ``CACHE_ARGS`` and ``CACHE_OPTIONS``.
+
 
 .. _googlecloudstoragecache:
 

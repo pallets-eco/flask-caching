@@ -9,6 +9,13 @@ Unreleased
   instead of falling back to the decorator's timeout.
 - Pass the decorated function's arguments to ``forced_update`` and
   ``is_stale`` callbacks that declare required keyword-only parameters.
+- Deprecate all Flask-Caching backends, including ``BaseCache`` and the
+  contributed ``GoogleCloudStorageCache`` and ``UWSGICache``, in favour of the
+  cachelib backends. Using one emits a ``FutureWarning``, they will be
+  removed in Flask-Caching 3.0.0. Set ``CACHE_TYPE`` to the cachelib
+  class instead, for example ``cachelib.RedisCache``, and pass its arguments
+  with ``CACHE_ARGS`` and ``CACHE_OPTIONS``.
+
 
 Version 2.5.1
 -------------
