@@ -52,3 +52,18 @@ def test_jinjaext_cache(app, cache):
         k = make_template_fragment_key("fragment4", vary_on=["fragment5"])
         assert cache.get(k) == somevar
         assert output == somevar
+
+
+def test_jinjaext_cache_non_string_keys(app, cache):
+    assert make_template_fragment_key("fragment6", vary_on=[7, None]) == (
+        make_template_fragment_key("fragment6", vary_on=["7", "None"])
+    )
+
+    with app.test_request_context():
+        template = """{% cache 60, "fragment6", user_id %}{{ user_id }}{% endcache %}"""
+
+        for user_id in (7, 8):
+            output = render_template_string(template, user_id=user_id)
+            k = make_template_fragment_key("fragment6", vary_on=[user_id])
+            assert output == str(user_id)
+            assert cache.get(k) == str(user_id)

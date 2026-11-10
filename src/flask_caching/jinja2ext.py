@@ -93,7 +93,7 @@ class CacheExtension(Extension):
         self,
         timeout: _Timeout | str | None,
         fragment_name: str,
-        vary_on: list[str],
+        vary_on: list[Any],
         caller: Callable[[], str],
     ) -> Any:
         cache = getattr(self.environment, JINJA_CACHE_ATTR_NAME)

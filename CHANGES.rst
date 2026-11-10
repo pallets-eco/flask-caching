@@ -15,6 +15,9 @@ Unreleased
   removed in Flask-Caching 3.0.0. Set ``CACHE_TYPE`` to the cachelib
   class instead, for example ``cachelib.RedisCache``, and pass its arguments
   with ``CACHE_ARGS`` and ``CACHE_OPTIONS``.
+- The ``{% cache %}`` template tag and ``make_template_fragment_key`` accept
+  keys that are not strings, such as an integer id, instead of raising
+  ``TypeError``. :issue:`702`
 
 
 Version 2.5.1
