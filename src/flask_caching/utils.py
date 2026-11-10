@@ -177,14 +177,22 @@ def function_namespace(
 
 
 def make_template_fragment_key(
-    fragment_name: str, vary_on: list[str] | None = None
+    fragment_name: str, vary_on: list[Any] | None = None
 ) -> str:
-    """Make a cache key for a specific fragment name."""
+    """Make a cache key for a specific fragment name.
+
+    .. versionchanged:: 2.5.2
+        Values in ``vary_on`` that are not strings, for example an integer
+        id, are converted with ``str()`` instead of raising ``TypeError``.
+    """
     if vary_on:
         fragment_name = f"{fragment_name}_"
     else:
         vary_on = []
-    return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))
+    return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (
+        fragment_name,
+        "_".join(str(key) for key in vary_on),
+    )
 
 
 def join_generator(rv: Any) -> Any:
