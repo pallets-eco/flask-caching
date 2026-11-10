@@ -3,6 +3,12 @@
 Custom Cache Backends
 ---------------------
 
+.. deprecated:: 2.6.0
+   :class:`.BaseCache` and its ``factory`` hook are deprecated and will be
+   removed in Flask-Caching 3.0.0. Subclass
+   ``cachelib.BaseCache`` instead, and use a factory function as shown at the
+   end of this section if the backend needs the Flask config.
+
 You are able to easily add your own custom cache backends by exposing a
 function that can instantiate and return a cache object. ``CACHE_TYPE`` will be
 the import string to your custom cache type. If not a subclass of

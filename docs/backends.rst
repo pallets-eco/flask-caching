@@ -1,6 +1,20 @@
 Built-in Cache Backends
 -----------------------
 
+.. deprecated:: 2.6.0
+   The built-in backends are deprecated and will be removed in Flask-Caching
+   3.0.0. Using one emits a ``FutureWarning``. Use the
+   `cachelib <https://cachelib.readthedocs.io/>`_ backend of the same name
+   instead by setting ``CACHE_TYPE`` to its import path, for example
+   ``cachelib.RedisCache``, and passing its arguments with ``CACHE_ARGS`` and
+   ``CACHE_OPTIONS``::
+
+       app.config["CACHE_TYPE"] = "cachelib.RedisCache"
+       app.config["CACHE_OPTIONS"] = {"host": "localhost", "port": 6379}
+
+   The backend specific ``CACHE_*`` values listed below are not used by the
+   cachelib backends.
+
 .. _basecache:
 
 BaseCache
@@ -13,6 +27,9 @@ BaseCache
 Baseclass for all the cache backends listed below. It isn't meant to be
 used directly, but you can subclass it to implement your own
 :ref:`custom cache backend <custom-cache-backends>`.
+
+.. deprecated:: 2.6.0
+   Subclass ``cachelib.BaseCache`` instead.
 
 
 .. _nullcache:

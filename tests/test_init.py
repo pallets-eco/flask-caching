@@ -7,6 +7,7 @@ from flask import make_response
 
 from flask_caching import Cache
 from flask_caching import CachedResponse
+from flask_caching.backends import BaseCache
 from flask_caching.backends import FileSystemCache
 from flask_caching.backends import MemcachedCache
 from flask_caching.backends import NullCache
@@ -76,6 +77,27 @@ def test_init_nullcache(cache_type, app, tmp_path):
     cache = Cache(app=app)
 
     assert isinstance(app.extensions["cache"][cache], cache_type)
+
+
+@pytest.mark.parametrize("cache_type", cache_types)
+def test_backend_is_deprecated(cache_type, app, tmp_path):
+    app.config.update(
+        CACHE_TYPE=cache_type.__name__,
+        CACHE_NO_NULL_WARNING=True,
+        CACHE_DIR=tmp_path,
+        CACHE_MEMCACHED_SERVERS=["127.0.0.1:11212"],
+    )
+
+    with pytest.warns(FutureWarning, match=f"'cachelib.{cache_type.__name__}'"):
+        Cache(app=app)
+
+
+def test_custom_backend_is_deprecated():
+    class CustomCache(BaseCache):
+        pass
+
+    with pytest.warns(FutureWarning, match="Subclass 'cachelib.BaseCache'"):
+        CustomCache()
 
 
 def test_cached_response_init_is_typed():

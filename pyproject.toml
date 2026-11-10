@@ -16,7 +16,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "cachelib>=0.17.0",
+    "cachelib>=0.17.2",
     "flask>=3.0.0",
 ]
 
@@ -141,6 +141,8 @@ asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     "error",
     "default::pytest.PytestUnraisableExceptionWarning",
+    # The built-in backends are deprecated, test_init.py asserts the warning.
+    "ignore:.* is deprecated and will be removed in Flask-Caching 3.0.0:FutureWarning",
 ]
 
 [tool.mypy]
