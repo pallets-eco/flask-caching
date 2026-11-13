@@ -1415,6 +1415,11 @@ class Cache:
 
             >>> cache.delete_memoized(Adder.add, adder1, 3)
 
+        .. versionchanged:: 2.5.2
+
+            Bound methods retain their instance namespace regardless of
+            the instance's truth value.
+
         .. versionchanged:: 2.5.0
 
             A bound method no longer needs to be given its own instance as the
@@ -1497,6 +1502,11 @@ class Cache:
 
     def delete_memoized_verhash(self, f: _AnyMemoizedFunction, *args: Any) -> None:
         """Delete the version hash associated with the function.
+
+        .. versionchanged:: 2.5.2
+
+            Bound methods retain their instance namespace regardless of
+            the instance's truth value.
 
         .. warning::
 
