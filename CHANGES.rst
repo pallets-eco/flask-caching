@@ -4,6 +4,8 @@ Changelog
 Unreleased
 ----------
 
+- Forward function keyword arguments such as ``fn`` without collisions
+  with the cache decorators' internal parameters. :issue:`712`
 - Add support for Python 3.15.
 - Preserve a zero timeout on ``CachedResponse`` so it disables expiration
   instead of falling back to the decorator's timeout.

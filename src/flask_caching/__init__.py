@@ -369,14 +369,14 @@ class Cache:
             return source_check
         return self.source_check
 
-    def _call_fn(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+    def _call_fn(self, fn: Callable[..., Any], /, *args: Any, **kwargs: Any) -> Any:
         ensure_sync = getattr(self.app, "ensure_sync", None)
         if ensure_sync is not None:
             return ensure_sync(fn)(*args, **kwargs)
         return fn(*args, **kwargs)
 
     def _call_fn_or_exception(
-        self, fn: Callable[..., Any], *args: Any, **kwargs: Any
+        self, fn: Callable[..., Any], /, *args: Any, **kwargs: Any
     ) -> Any:
         """Returns an ``HTTPException`` instead of propagating it."""
         try:
@@ -591,7 +591,8 @@ class Cache:
         .. versionchanged:: 2.5.2
             ``forced_update`` and ``is_stale`` receive the decorated
             function's arguments when they declare required keyword-only
-            parameters.
+            parameters. Keyword arguments no longer collide with internal
+            forwarding parameters.
 
         .. versionchanged:: 2.5.0
             A ``werkzeug.exceptions.HTTPException`` raised by the decorated
@@ -932,7 +933,7 @@ class Cache:
     ) -> Callable[..., str]:
         """Function used to create the cache_key for memoized functions."""
 
-        def make_cache_key(f: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
+        def make_cache_key(f: Callable[..., Any], /, *args: Any, **kwargs: Any) -> str:
             fname, version_data = self._memoize_version(
                 f,
                 args=args,
@@ -946,7 +947,7 @@ class Cache:
 
             if callable(f):
                 keyargs, keykwargs = self._memoize_kwargs_to_args(
-                    f, *args, **kwargs, args_to_ignore=args_to_ignore
+                    f, args, kwargs, args_to_ignore
                 )
             else:
                 keyargs, keykwargs = args, kwargs
@@ -970,7 +971,11 @@ class Cache:
         return make_cache_key
 
     def _memoize_kwargs_to_args(
-        self, f: Callable[..., Any], *args: Any, **kwargs: Any
+        self,
+        f: Callable[..., Any],
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+        args_to_ignore: list[str] | None = None,
     ) -> Any:
         #: Inspect the arguments to the function
         #: This allows the memoization to be the same
@@ -978,7 +983,7 @@ class Cache:
         #: 1, b=2 is equivalent to a=1, b=2, etc.
         new_args = []
         arg_num = 0
-        args_to_ignore = kwargs.pop("args_to_ignore", None) or []
+        args_to_ignore = args_to_ignore or []
 
         # If the function uses VAR_KEYWORD type of parameters,
         # we need to pass these further
@@ -1051,6 +1056,7 @@ class Cache:
         self,
         unless: Callable[..., Any] | None,
         f: Callable[..., Any],
+        /,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -1073,6 +1079,7 @@ class Cache:
     def _forced_update(
         self,
         forced_update: Callable[..., Any] | None,
+        /,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -1089,6 +1096,7 @@ class Cache:
         self,
         is_stale: Callable[..., Any] | None,
         rv: Any,
+        /,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -1221,7 +1229,8 @@ class Cache:
         .. versionchanged:: 2.5.2
             ``forced_update`` and ``is_stale`` receive the decorated
             function's arguments when they declare required keyword-only
-            parameters.
+            parameters. Keyword arguments no longer collide with internal
+            forwarding parameters.
         """
 
         def memoize(f: Callable[P, R]) -> _MemoizedFunction[P, R]:
