@@ -4,6 +4,10 @@ Changelog
 Unreleased
 ----------
 
+- ``delete_memoized`` and ``delete_memoized_verhash`` invalidate only the
+  given instance's memoized values when the instance is false-valued
+  (``__bool__`` returning ``False`` or ``__len__`` returning zero) instead
+  of resetting the version shared by every instance. :issue:`700`
 - Add support for Python 3.15.
 - Preserve a zero timeout on ``CachedResponse`` so it disables expiration
   instead of falling back to the decorator's timeout.
