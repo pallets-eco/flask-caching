@@ -274,6 +274,121 @@ def test_memoize_classfunc_delete_via_attribute(app, cache):
         assert adder2.add(3) != a2
 
 
+def test_memoize_delete_false_valued_instance(app, cache):
+    with app.test_request_context():
+
+        class Adder:
+            def __init__(self, initial):
+                self.initial = initial
+
+            def __bool__(self):
+                return False
+
+            @cache.memoize(5)
+            def add(self, b):
+                return self.initial + b + random.random()
+
+        adder1 = Adder(1)
+        adder2 = Adder(2)
+
+        a1 = adder1.add(3)
+        a2 = adder2.add(3)
+
+        assert adder1.add(3) == a1
+        assert adder2.add(3) == a2
+
+        cache.delete_memoized(adder1.add)
+
+        assert adder1.add(3) != a1
+        assert adder2.add(3) == a2
+
+
+def test_memoize_delete_zero_len_instance(app, cache):
+    with app.test_request_context():
+
+        class Adder:
+            def __init__(self, initial):
+                self.initial = initial
+
+            def __len__(self):
+                return 0
+
+            @cache.memoize(5)
+            def add(self, b):
+                return self.initial + b + random.random()
+
+        adder1 = Adder(1)
+        adder2 = Adder(2)
+
+        a1 = adder1.add(3)
+        a2 = adder2.add(3)
+
+        assert adder1.add(3) == a1
+        assert adder2.add(3) == a2
+
+        cache.delete_memoized(adder1.add)
+
+        assert adder1.add(3) != a1
+        assert adder2.add(3) == a2
+
+
+def test_memoize_verhash_delete_false_valued_instance(app, cache):
+    with app.test_request_context():
+
+        class Adder:
+            def __init__(self, initial):
+                self.initial = initial
+
+            def __bool__(self):
+                return False
+
+            @cache.memoize(5)
+            def add(self, b):
+                return self.initial + b + random.random()
+
+        adder1 = Adder(1)
+        adder2 = Adder(2)
+
+        a1 = adder1.add(3)
+        a2 = adder2.add(3)
+
+        fname, instance_fname = function_namespace(adder1.add)
+        assert instance_fname is not None
+
+        cache.delete_memoized_verhash(adder1.add)
+
+        version_key = cache._memvname(instance_fname)
+        assert cache.get(version_key) is None
+
+        assert adder1.add(3) != a1
+        assert adder2.add(3) == a2
+
+
+def test_function_namespace_false_valued_instance(app, cache):
+    class Adder:
+        def __bool__(self):
+            return False
+
+        def add(self, b):
+            return self.initial + b
+
+    fname, instance_fname = function_namespace(Adder().add)
+    assert instance_fname is not None
+    assert instance_fname.startswith(fname)
+
+
+def test_function_namespace_false_valued_class_not_confused(app, cache):
+    # a class object is never treated as a per-instance namespace, even
+    # though classes are truthy in a different way than instances
+    class Adder:
+        @classmethod
+        def add(cls, b):
+            return b
+
+    fname, instance_fname = function_namespace(Adder.add)
+    assert instance_fname is None
+
+
 def test_memoize_no_timeout_delete(app, cache):
     with app.test_request_context():
 

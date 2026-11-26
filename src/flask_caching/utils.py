@@ -128,7 +128,7 @@ def function_namespace(
 
     instance_self = getattr(f, "__self__", None)
 
-    if instance_self and not inspect.isclass(instance_self):
+    if instance_self is not None and not inspect.isclass(instance_self):
         instance_token = get_id(instance_self)
     elif m_args and m_args[0] == "self" and args:
         instance_token = get_id(args[0])
