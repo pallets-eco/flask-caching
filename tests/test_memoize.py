@@ -904,19 +904,23 @@ def test_memoize_kwargs_to_args(app, cache):
 
         expected = (1, 2, "foo", "bar")
 
-        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, "foo", "bar")
-        assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 2, "foo", "bar", a=1)
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, (1, 2, "foo", "bar"), {})
         assert args == expected
         args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, a=1, b=2, c="foo", d="bar"
+            big_foo, (2, "foo", "bar"), {"a": 1}
         )
         assert args == expected
         args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, d="bar", b=2, a=1, c="foo"
+            big_foo, (), {"a": 1, "b": 2, "c": "foo", "d": "bar"}
         )
         assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, d="bar", c="foo")
+        args, kwargs = cache._memoize_kwargs_to_args(
+            big_foo, (), {"d": "bar", "b": 2, "a": 1, "c": "foo"}
+        )
+        assert args == expected
+        args, kwargs = cache._memoize_kwargs_to_args(
+            big_foo, (1, 2), {"d": "bar", "c": "foo"}
+        )
         assert args == expected
 
 
